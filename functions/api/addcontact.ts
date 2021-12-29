@@ -1,4 +1,4 @@
-export const post: PagesFunction = async (context) => {
+export const onRequestPost: PagesFunction = async (context) => {
 	if (
 		context.request.headers["content-type"] !==
 			"application/x-www-form-urlencoded" &&

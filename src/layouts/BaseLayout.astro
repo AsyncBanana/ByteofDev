@@ -5,17 +5,10 @@ import HeadSEO from "$lib/components/headSEO.astro";
 
 <html lang="en-US">
 	<head>
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<HeadSEO SEO={Astro.props.SEO || {}} />
 		<link rel="icon" href="/favicon.svg" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true"
-		/>
-		<link
-			href="https://fonts.googleapis.com/css2?family=Inter:wght@700&family=Inter:wght@400&family=Fira+Code:wght@400&display=swap"
-			rel="stylesheet"
-		/>
 		<link rel="stylesheet" href={Astro.resolve("../lib/stylesheets/theme.css")}
 		/>
-		<HeadSEO SEO={Astro.props.SEO || {}} />
 	</head>
 	<body>
 		<div class={`shadow bg-base-200 drawer`} id="root">

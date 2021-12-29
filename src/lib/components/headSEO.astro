@@ -1,7 +1,7 @@
 ---
 const {
 	title = "ByteofDev - Bite sized articles for developers",
-	description,
+	description = "ByteofDev is a web developer focused publication",
 	type = "webite",
 	image = {
 		url: "https://byteofdev.com/ByteofDevFrame.png",
@@ -16,7 +16,7 @@ const canonicalURL = Astro.request.canonicalURL;
 
 <meta charset="UTF-8" />
 <title>{title}</title>
-<meta property="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta property="og:title" content={title} />
 <meta name="canonical" content={canonicalURL} />
 <meta property="og:url" content={canonicalURL} />

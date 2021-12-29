@@ -1,6 +1,33 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* inter-regular - latin */
+@font-face {
+	font-family: "Inter";
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: local(""), url("/fonts/inter-latin-regular.woff2") format("woff2"),
+		url("/fonts/inter-latin-regular.woff") format("woff");
+}
+/* inter-700 - latin */
+@font-face {
+	font-family: "Inter";
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+	src: local(""), url("/fonts/inter-latin-700.woff2") format("woff2"),
+		url("/fonts/inter-latin-700.woff") format("woff");
+}
+/* fira-code-regular - latin */
+@font-face {
+	font-family: "Fira Code";
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: local(""), url("/fonts/fira-code-latin-regular.woff2") format("woff2"),
+		url("/fonts/fira-code-latin-regular.woff") format("woff");
+}
 * {
 	@apply font-sans;
 }
