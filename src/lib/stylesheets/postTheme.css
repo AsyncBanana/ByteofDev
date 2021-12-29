@@ -1,0 +1,78 @@
+article :is(h1, h2, h3, h4, h5, h6) {
+	@apply font-bold my-2;
+}
+article a {
+	@apply underline decoration-blue-500;
+}
+article a:visited {
+	@apply decoration-purple-600;
+}
+article h2 {
+	@apply border-b-gray-400 border-b-2 border-opacity-25 my-4 p-1 text-3xl;
+}
+article h3 {
+	@apply text-2xl;
+}
+article h4 {
+	@apply text-xl;
+}
+article h5 {
+	@apply text-lg;
+}
+article h6 {
+	@apply text-base;
+}
+article pre {
+	@apply rounded p-3;
+}
+article p {
+	@apply indent-8;
+}
+article img {
+	@apply m-4 m-auto;
+	max-height: 50%;
+}
+article blockquote {
+	padding-left: 20px;
+	margin-left: 0;
+	border-left: 2px solid lightgrey;
+}
+:is(h1, h2, h3, h4, h5, h6):hover .headerLink {
+	opacity: 0.5;
+}
+.headerLink {
+	opacity: 0;
+	transition-duration: 50ms;
+	position: relative;
+	margin: 0;
+	display: inline-block;
+	transform: rotate(-45deg);
+	width: 8px;
+	height: 2px;
+	background: currentColor;
+	margin-left: 10px;
+	vertical-align: middle;
+}
+.headerLink::after,
+.headerLink::before {
+	content: "";
+	display: inline-block;
+	position: absolute;
+	border-radius: 3px;
+	width: 8px;
+	height: 10px;
+	border: 2px solid;
+	top: -4px;
+}
+.headerLink::before {
+	border-right: 0;
+	border-top-left-radius: 40px;
+	border-bottom-left-radius: 40px;
+	left: -6px;
+}
+.headerLink::after {
+	border-left: 0;
+	border-top-right-radius: 40px;
+	border-bottom-right-radius: 40px;
+	right: -6px;
+}

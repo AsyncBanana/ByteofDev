@@ -1,0 +1,22 @@
+---
+import EmailPrompt from "$lib/components/emailPrompt.svelte";
+import BaseLayout from "$layouts/BaseLayout.astro";
+---
+
+<BaseLayout>
+	<div class="min-h-screen bg-base-200 hero">
+		<div class="text-center hero-content">
+			<div class="max-w-md">
+				<h1 class="font-bold mb-5 text-5xl">Thanks for subscribing!</h1>
+				<p class="text-xl mb-6">It really helps us out!</p>
+				<button
+					class="btn btn-primary"
+					onclick={() => {
+						window.history.back();
+					}}>Return to previous page</button
+				>
+				<a class="btn btn-outline" href="/">Return home</a>
+			</div>
+		</div>
+	</div>
+</BaseLayout>

@@ -1,0 +1,41 @@
+---
+import StoryCard from "$lib/components/card.svelte";
+import BaseLayout from "$layouts/BaseLayout.astro";
+let posts = Astro.fetchContent("/src/pages/posts/*.md");
+posts.sort((a, b) => b.published - a.published);
+posts = posts.slice(0, 20);
+---
+
+<BaseLayout>
+	<title slot="head">ByteofDev - Bite Sized articles for developers</title>
+	<meta
+		name="title"
+		content="ByteofDev - Bite Sized articles for developers"
+		slot="head"
+	/>
+	<meta
+		name="description"
+		content="ByteofDev is a blog and newsletter for developers across many different groups, offering tutorials, ecosystem roundups, tool comparisons, and more."
+		slot="head"
+	/>
+	<meta
+		property="og:title"
+		content="ByteofDev - bite sized articles for developers"
+		slot="head"
+	/>
+	<meta property="og:type" content="website" slot="head" />
+	<meta property="og:site_name" value="ByteofDev" slot="head" />
+	<meta
+		property="og:image"
+		content="https://byteofdev.com/ByteofDevFrame.png"
+		slot="head"
+	/>
+	<meta property="twitter:card" content="summary_large_image" slot="head" />
+	<h1 class="font-bold font-sans text-center text-4xl">ByteofDev</h1>
+	<h2 class="text-center italic ">Bite Sized articles for developers</h2>
+	<div class="m-auto grid w-3/4 gap-5 md:grid-cols-2 lg:grid-cols-3">
+		{posts.map((item) => {
+			return <StoryCard item={item} />;
+		})}
+	</div>
+</BaseLayout>

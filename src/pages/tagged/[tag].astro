@@ -1,0 +1,38 @@
+---
+import StoryCard from "$lib/components/card.svelte";
+import BaseLayout from "$layouts/BaseLayout.astro";
+export function getStaticPaths() {
+	let tagObj = {};
+	Astro.fetchContent("/src/pages/posts/*.md").forEach((post) => {
+		post.tags.forEach((tag) => {
+			if (!tagObj[tag]) {
+				tagObj[tag] = true;
+			}
+		});
+	});
+	let paths = [];
+	Object.keys(tagObj).forEach((tag) => {
+		paths.push({ params: { tag } });
+	});
+	return paths;
+}
+let posts = Astro.fetchContent("/src/pages/posts/*.md");
+const tag = Astro.request.params.tag;
+posts = posts.filter((value) => value.tags.includes(tag));
+
+posts.sort((a, b) => b.published - a.published);
+
+posts = posts.slice(0, 20);
+---
+
+<BaseLayout>
+	<svelte:head>
+		<title>Stories tagged {tag} - Byteofdev</title>
+	</svelte:head>
+	<h1 class="font-sans font-bold text-center text-4xl md:text-6xl">
+		Tag: {tag}
+	</h1>
+	<main class="m-auto grid w-3/4 gap-5 md:grid-cols-3 lg:grid-cols-4">
+		{posts.map((post) => <StoryCard item={post} />)}
+	</main>
+</BaseLayout>

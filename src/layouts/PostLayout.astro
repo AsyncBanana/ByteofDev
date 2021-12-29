@@ -1,0 +1,158 @@
+---
+import dayjs from "dayjs";
+import Icon from "svelte-fa";
+import "$lib/stylesheets/prismTheme.css";
+import "balloon-css/balloon.css";
+import EmailPrompt from "$lib/components/emailPrompt.svelte";
+import { faLink } from "@fortawesome/free-solid-svg-icons";
+import BaseLayout from "$layouts/BaseLayout.astro";
+import {
+	faTwitterSquare,
+	faFacebookSquare,
+	faLinkedin,
+} from "@fortawesome/free-brands-svg-icons";
+const { title, description, publishedRAW, updatedRAW, image, author, tags } =
+	Astro.props.content;
+const published = dayjs(publishedRAW).toISOString();
+const updated = dayjs(updatedRAW).toISOString();
+const canonicalURL = Astro.request.canonicalURL;
+---
+
+<BaseLayout SEO={{ title, description, updated, published, author, image }}>
+	<div class="mt-1/2 max-w-1/5 p-6 top-1/3 sticky float-left hidden lg:block">
+		<h2
+			class="font-bold border-b-gray-400  border-b-2 border-opacity-25 text-lg mb-2"
+		>
+			{title}
+		</h2>
+		<div class="grid grid-cols-4">
+			<a
+				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
+				href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+					title
+				)}&url=${encodeURIComponent(canonicalURL)}`}
+				target="_blank"
+				aria-label="Share to Twitter"
+				rel="noopener"
+				data-balloon-pos="down"><Icon icon={faTwitterSquare} size="2x" /></a
+			>
+			<a
+				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
+				href={`https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(
+					title
+				)}&u=${encodeURIComponent(canonicalURL)}`}
+				target="_blank"
+				rel="noopener"
+				aria-label="Share to Facebook"
+				data-balloon-pos="down"><Icon icon={faFacebookSquare} size="2x" /></a
+			>
+			<a
+				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
+				href={`https://www.linkedin.com/sharing/share-offsite?url=${encodeURIComponent(
+					canonicalURL
+				)}`}
+				target="_blank"
+				rel="noopener"
+				aria-label="Share to LinkedIn"
+				data-balloon-pos="down"><Icon icon={faLinkedin} size="2x" /></a
+			>
+			<button
+				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
+				aria-label="Copy Link"
+				data-balloon-pos="down"
+				><Icon
+					icon={faLink}
+					size="2x"
+					on:click={() => {
+						navigator.clipboard.writeText(canonicalURL);
+					}}
+				/></button
+			>
+		</div>
+		<EmailPrompt primary={false} />
+	</div>
+	<article class="m-auto p-4 lg:w-3/5">
+		<img
+			src={image.url}
+			alt="Story heading"
+			class="rounded m-auto max-w-full max-h-70vh"
+		/>
+		<div class="flex">
+			{tags.map((tag) => (
+				<a
+					style="color: hsla(var(--p))"
+					class="font-sans font-bold mr-3 text-lg uppercase hover:underline no-underline decoration-purple-500"
+					href={`/tagged/${tag}`}
+				>
+					{tag}
+				</a>
+			))}
+		</div>
+		<h1
+			class="font-bold text-shadow-md shadow-warm-gray-600 text-4xl md:text-6xl"
+		>
+			{title}
+		</h1>
+		<h2 class="font-normal text-xl">&emsp;By {author}</h2>
+		<br />
+
+		<span class="m-auto leading-relaxed"><slot /></span>
+	</article>
+	<div class="m-auto lg:w-3/5">
+		<h2
+			class="font-bold border-b-gray-400  border-b-2 border-opacity-25 mb-2 text-2xl"
+		>
+			Share
+		</h2>
+		<div class="grid grid-cols-4 grid-flow-col w-1/4">
+			<a
+				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
+				href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+					title
+				)}&url=${encodeURIComponent(canonicalURL)}`}
+				target="_blank"
+				aria-label="Share to Twitter"
+				rel="noopener"
+				data-balloon-pos="down"><Icon icon={faTwitterSquare} size="2x" /></a
+			>
+			<a
+				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
+				href={`https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(
+					title
+				)}&u=${encodeURIComponent(canonicalURL)}`}
+				target="_blank"
+				rel="noopener"
+				aria-label="Share to Facebook"
+				data-balloon-pos="down"><Icon icon={faFacebookSquare} size="2x" /></a
+			>
+			<a
+				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
+				href={`https://www.linkedin.com/sharing/share-offsite?url=${encodeURIComponent(
+					canonicalURL
+				)}`}
+				target="_blank"
+				rel="noopener"
+				aria-label="Share to LinkedIn"
+				data-balloon-pos="down"><Icon icon={faLinkedin} size="2x" /></a
+			>
+			<button
+				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
+				aria-label="Copy Link"
+				data-balloon-pos="down"
+				><Icon
+					icon={faLink}
+					size="2x"
+					on:click={() => {
+						navigator.clipboard.writeText(canonicalURL);
+					}}
+				/></button
+			>
+		</div>
+		<EmailPrompt />
+	</div>
+	<link
+		rel="stylesheet"
+		type="text/css"
+		href={Astro.resolve("../lib/stylesheets/postTheme.css")}
+	/>
+</BaseLayout>

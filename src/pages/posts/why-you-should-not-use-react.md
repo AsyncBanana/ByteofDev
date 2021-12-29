@@ -1,0 +1,74 @@
+---
+title: When you should and shouldn't use React
+description: While very popular, React is not always the best web framework to use. In this article, we go over when to use React and when not to.
+author: AsyncBanana
+tags: [React, JSX, Performance]
+published: 1640485142322
+updated: 1640485142322
+image:
+  {
+    url: https://ik.imagekit.io/serenity/ByteofDev/tr:n-default/react-logo_8Ky052lTp.jpg,
+    alt: React logo,
+  }
+layout: $layouts/PostLayout.astro
+---
+
+If you do web development, chances are, you know what React is. It is one of the most well-known frameworks for building user interfaces using an HTML-like language called JSX.
+
+However, React is not the only solution for making complex interactive user interfaces. Many alternatives, like Vue, Svelte, and vanilla JavaScript, can also be good choices. In this article, we will go over when you should and should not use React.
+
+# React’s creation
+
+In 2011, Facebook needed an easier way to build their web app without wasting developer time. In 2011, Jordan Walke, an engineer at Facebook, created an experimental web framework called FaxJS. It promised easy component reuse, declarative updating based on state, and a seamless way to render on the client and server. FaxJS was first used on Facebook that year. Later, FaxJS was improved and renamed React. React was quickly adopted by developers, and many more features were added, like JSX in 2013, which allowed developers to write using an HTML-like language instead of raw function calls. They also have added things like React Native, allowing developers to use React to build mobile apps, and hooks that make it possible to use functions instead of classes for React components. All of this created the React known today.
+
+# When to use React
+
+## When you need a large ecosystem
+
+If you are building an app that uses a lot of different packages and libraries, React can be a good choice. It currently has one of the largest ecosystems for web development frameworks, with helpful libraries like Material UI and React Spring. In fact, there are more than 75,000 packages on NPM with the React Keyword, which is almost three times the next largest framework, Vue. React also has a large and mature community, with lots of tutorials and guides on various aspects of React.
+
+## When you need a mature and widely used base
+
+React is mature, having been used for years in production by many large companies, like Facebook, Netflix, Uber, and more. It is almost guaranteed to be stable, as Facebook uses the latest releases in production on their website and app. If you have an app that is required to be extremely reliable and stable, then React can be a good choice.
+
+# When to not use React
+
+## When you are worried about your app’s size
+
+React can be very large. Just by adding React to your app, you add more than 121 kilobytes of code.
+
+![Graph of React's bundle size](https://ik.imagekit.io/serenity/ByteofDev/react-dom-bundlephobia_x_BEYnNEPo.png)
+
+That 121 kilobytes can mean the difference between a snappy website and a slow-loading one. Slow websites can make your users more likely to leave the website. Many other frameworks like Vue, Preact, and Svelte have a much smaller bundle size and can be integrated without creating a much slower website.
+
+Additionally, all of your JavaScript needs to download before your website can even be rendered if you use approaches like Create React App. This is because Create React App and other Single Page App approaches require React to build the HTML using the JavaScript downloaded, instead of serving a pre-built HTML file. This can hurt SEO by making it harder for search engines to understand your content and can make the content load slower for your users. However, there are solutions to this that render the HTML on the server like Next.js. Although even if you do that, it still can take some time for the page to become interactive.
+
+## When you need fast rendering
+
+When you are making an app like a game or a demanding creative app, React is not the best choice. This problem stems from the fact that it uses a Virtual DOM. Virtual DOMs, or VDOMs, are layers that help make unoptimized DOM manipulations faster. For example, let’s look at an example of rendering data:
+
+```js
+function render(data) {
+    document.body.innerHTML = `<div><h1>DATA</h1><span>${data}</span></div>`
+}
+render("Lorem ipsum colour")
+```
+
+In the example above, even though there is only a small string that is used, the whole document is rerendered. This can be very slow, as it takes time for the HTML to be parsed and rendered again. To solve this problem, React uses a VDOM. VDOMs keep the structure of the document in memory and then use that to figure out what has changed by checking to see what is different when you update the VDOM, making it possible to have tiny changes in HTML. However, managing the Virtual DOM has overhead and it is faster to just make optimized JavaScript in the first place. An example of this would be:
+
+```js
+function render(data) {
+    document.querySelector("dataText").innerText = data
+}
+render("Lorem ipsum colour")
+```
+
+That example changes a lot less HTML, which makes it faster, and it does not have the overhead of the VDOM. So, while the VDOM can make unoptimized JavaScript faster, if you need top rendering performance, it is not the way to go. Additionally, some frameworks like Svelte move all of the VDOM computation into the compile step, making the output optimized JavaScript.
+
+## When you want a more powerful markup language
+
+JSX is nice, but sometimes it can be verbose due to it basically being HTML with JavaScript mixed in. While it is easy to learn JSX due to it being so related to HTML, some markup languages, like Svelte, can be much less verbose. Svelte offers more abstractions, like built-in conditional blocks and reactive variables. for example, when you want to trigger an update, with React you need to use where in Svelte you can just set the variable. This can create more concise code and less development work once you learn the new syntax.
+
+# Conclusion
+
+React is a great tool for building websites quickly. However, it is not for everything or everyone. It is not great for performance in general, and JSX could be more concise. There are also many great alternatives, like Vue, Svelte, and native JS. However, this might be somewhat biased, as I am a Svelte user. Anyway, I hoped you learned something from this, and thanks for reading.

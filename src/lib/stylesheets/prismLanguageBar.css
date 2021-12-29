@@ -1,0 +1,35 @@
+div.code-toolbar {
+	position: relative;
+}
+
+div.code-toolbar > .toolbar {
+	position: absolute;
+	top: 0.2em;
+	right: 0.2em;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item {
+	display: inline-block;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > a {
+	cursor: pointer;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > button {
+	background: none;
+	border: 0;
+	color: inherit;
+	font: inherit;
+	line-height: normal;
+	overflow: visible;
+	padding: 0;
+	user-select: none;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > :is(a, button, span) {
+	font-size: 0.6em;
+	padding: 0 0.5em;
+	font-family: "Inter", Verdana, Geneva, Tahoma, sans-serif;
+	font-weight: bold;
+}
