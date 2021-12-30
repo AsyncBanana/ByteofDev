@@ -1,15 +1,15 @@
 export const onRequestPost: PagesFunction = async (context) => {
 	if (
-		context.request.headers["content-type"] !==
-			"application/x-www-form-urlencoded" &&
-		context.request.headers["content-type"] !== "application/json"
+		context.request.headers.get("content-type") !==
+		"application/x-www-form-urlencoded"
 	) {
 		return new Response("Invalid headers", { status: 400 });
 	}
-	const email = (await context.request.json())["email"];
+	const email = (await context.request.formData()).get("email");
 	if (!email) {
 		return new Response("No email passed", { status: 400 });
 	}
+	console.log(context.request.headers.get("referer"));
 	const res = await fetch("https://api.sendgrid.com/v3/marketing/contacts", {
 		method: "PUT",
 		headers: {
@@ -27,7 +27,7 @@ export const onRequestPost: PagesFunction = async (context) => {
 	return new Response("", {
 		status: 303,
 		headers: {
-			Location: "/thanks",
+			Location: `/thanks?returnTo=${context.request.headers.get("referer")}`,
 		},
 	});
 };

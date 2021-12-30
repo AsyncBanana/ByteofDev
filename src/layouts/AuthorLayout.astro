@@ -1,0 +1,21 @@
+---
+import BaseLayout from "$layouts/BaseLayout.astro";
+import "$lib/stylesheets/postTheme.css";
+const { name, image, website, email } = Astro.props.content;
+---
+
+<BaseLayout SEO={{ title: `About ${name}` }}>
+	<div class="w-3/5 m-auto">
+		<div class="flex">
+			<img src={image} alt={`Profile picture of ${name}`} class="rounded-full"
+			/>
+			<h1 class="text-4xl font-bold self-center">{name}</h1>
+		</div>
+		<article>
+			<slot />
+		</article>
+		<div class="flex justify-evenly">
+			<a href={website} class="btn" target="_blank">Visit website</a>
+		</div>
+	</div>
+</BaseLayout>

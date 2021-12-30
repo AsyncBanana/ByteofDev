@@ -17,8 +17,6 @@ layout: $layouts/PostLayout.astro
 
 # Background of WebAssembly
 
-![WebAssembly logo](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/wasm_logo)
-
 A coalition of browsers created WebAssembly in 2015 as a successor to asm.js and Google Native Client. Later, in 2017, it was released on all modern browsers, and in 2018 a formal spec was released. WebAssembly is a binary format that allows for cross-platform execution of sandboxed code without using JavaScript. It is also designed to be compact and be parsed and executed significantly faster than JavaScript. It can be used on the web and servers to allow secure and portable sandboxed code execution.
 
 # Why WebAssembly is significant
