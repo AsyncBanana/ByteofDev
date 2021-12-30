@@ -29,7 +29,7 @@ article p {
 	@apply indent-8;
 }
 article img {
-	@apply m-4 m-auto;
+	@apply my-4 mx-auto;
 	max-height: 50%;
 }
 article blockquote {
