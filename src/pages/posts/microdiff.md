@@ -7,8 +7,8 @@ image: {
     alt: Microdiff Logo
 }
 tags: [Microdiff, Performance]
-published: 1641071271
-updated: 1641071271
+published: 1641072124246
+updated: 1641072124246
 layout: $layouts/PostLayout.astro
 setup: |
   import Callout from '$lib/components/callout.svelte'

@@ -3,8 +3,8 @@ title: When you should and shouldn't use React
 description: While very popular, React is not always the best web framework to use. In this article, we go over when to use React and when not to.
 author: AsyncBanana
 tags: [React, JSX, Performance]
-published: 1640485142322
-updated: 1640485142322
+published: 1630069200000
+updated: 1630069200000
 image:
   {
     url: https://ik.imagekit.io/serenity/ByteofDev/tr:n-default/react-logo_8Ky052lTp.jpg,
