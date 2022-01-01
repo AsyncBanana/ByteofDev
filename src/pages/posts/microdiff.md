@@ -8,7 +8,7 @@ image: {
 }
 tags: [Microdiff, Performance]
 published: 1641072124246
-updated: 1641072124246
+updated: 1641078650896
 layout: $layouts/PostLayout.astro
 setup: |
   import Callout from '$lib/components/callout.svelte'
@@ -109,14 +109,14 @@ if (richTypes[Object.getPrototypeOf(value).constructor.name]) {
 }
 ```
 
-This code first gets a list of types that cannot be compared directly (`richTypes`). Then, it checks if the value is one of those types. If it is, then the code checks if the value can be coerced into a number with `isNaN`. If it can (which is true in the case of dates and `new Numer()`s), it checks the version coerced into a number. If not (which is the case for RegEx and `new String()`), it coerces the value into a string and compares that version. The actual rich type conversion logic is not that different in Microdiff, although there are a few differences that decrease the size and help the logic fit in with the rest of the code.
+This code first gets a list of types that cannot be compared directly (`richTypes`). Then, it checks if the value is one of those types. If it is, then the code checks if the value can be coerced into a number with `isNaN`. If it can (which is true in the case of dates and `new Number()`s), it checks the version coerced into a number. If not (which is the case for RegEx and `new String()`), it coerces the value into a string and compares that version. The actual rich type conversion logic is not that different in Microdiff, although there are a few differences that decrease the size and help the logic fit in with the rest of the code.
 
 Things like that are part of why Microdiff is fast. However, another reason is that it focuses on only more common cases instead of every possible edge case.
 
 ## Focusing on 99% of cases instead of fixing all edge cases
 
-In this regard, Microdiff has improved massively since its release. In fact, since writing the [initial explanation](https://github.com/AsyncBanana/microdiff/issues/2#issuecomment-960291469), Microdiff has added support for more rich types and cyclical references. However, there are still cases where Microdiff has less correct behavior, like when comparing objects with prototype properties, because it includes prototype properties. Type combination solves this for the listed types but not for all other types. In testing previously, ways of excluding prototype properties have not been fast. However, I might add a way for you to pass custom inheritance types for string/number coercion, which might help for certain things. Nontheless, currently, this is not possible.
+In this regard, Microdiff has improved massively since its release. In fact, since writing the [initial explanation](https://github.com/AsyncBanana/microdiff/issues/2#issuecomment-960291469), Microdiff has added support for more rich types and cyclical references. However, there are still cases where Microdiff has less correct behavior, like when comparing objects with prototype properties, because it includes prototype properties. Type combination solves this for the listed types but not for all other types. In testing previously, ways of excluding prototype properties have not been fast. However, I might add a way for you to pass custom inheritance types for string/number coercion, which might help certain things. Nonetheless, currently, this is not possible.
 
 # Conclusion
 
-In conclusion, Microdiff is the fastest diffing library because of its performance focused architecture and the focus on 99% of cases, and Microdiff is still able to also use modern features and make it possible to use easily. If you are interested in Microdiff, [check out the GitHub repo](https://github.com/AsyncBanana/microdiff). I hope you have learned something from this, and thank you for reading.
+In conclusion, Microdiff is the fastest diffing library because of its performance-focused architecture and the focus on 99% of cases, and Microdiff is still able to also use modern features and make it possible to use easily. If you are interested in Microdiff, [check out the GitHub repo](https://github.com/AsyncBanana/microdiff). I hope you have learned something from this, and thank you for reading.
