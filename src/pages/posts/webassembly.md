@@ -1,10 +1,10 @@
 ---
 title: "State of the Web: WebAssembly"
-description: What is WebAssembly, why does it matter, and how is it currently used in the web?
+description: What is WebAssembly, why does it matter, and how is it currently used on the web?
 author: AsyncBanana
 tags: [State of the Web, WebAssembly, Rust, Cloudflare Workers]
-published: 1640485142322
-updated: 1640485142322
+published: 1641071271
+updated: 1641071271
 image:
   {
     url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/wasm_logo,

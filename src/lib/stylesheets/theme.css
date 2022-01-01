@@ -1,6 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+:root {
+	color-scheme: light dark;
+}
+
 /* inter-regular - latin */
 @font-face {
 	font-family: "Inter";
@@ -28,6 +32,7 @@
 	src: url("/fonts/fira-code-latin-regular.woff2") format("woff2"),
 		url("/fonts/fira-code-latin-regular.woff") format("woff");
 }
+
 * {
 	@apply font-sans;
 }

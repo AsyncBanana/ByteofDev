@@ -26,16 +26,27 @@ article pre {
 	@apply rounded p-3;
 }
 article p {
-	@apply indent-8;
+	font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui,
+		helvetica neue, helvetica, Ubuntu, roboto, noto, arial, sans-serif;
+	@apply indent-8 my-4 text-xl break-words;
+}
+article p code {
+	font-family: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco,
+		Consolas, Liberation Mono, Courier New, monospace;
+	@apply bg-base-100 py-0.5 rounded-sm;
 }
 article img {
 	@apply my-4 mx-auto;
 	max-height: 50%;
 }
 article blockquote {
+	text-indent: 0;
 	padding-left: 20px;
 	margin-left: 0;
 	border-left: 2px solid lightgrey;
+}
+article blockquote p {
+	text-indent: 0;
 }
 :is(h1, h2, h3, h4, h5, h6):hover .headerLink {
 	opacity: 0.5;
