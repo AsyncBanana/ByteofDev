@@ -1,5 +1,5 @@
 article :is(h1, h2, h3, h4, h5, h6) {
-	@apply font-bold my-2;
+	@apply font-bold my-2 indent-0;
 }
 article a {
 	@apply underline decoration-blue-500;
@@ -25,6 +25,7 @@ article h6 {
 article pre {
 	@apply rounded p-3;
 }
+article,
 article p {
 	font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui,
 		helvetica neue, helvetica, Ubuntu, roboto, noto, arial, sans-serif;
@@ -40,7 +41,6 @@ article img {
 	max-height: 50%;
 }
 article blockquote {
-	text-indent: 0;
 	padding-left: 20px;
 	margin-left: 0;
 	border-left: 2px solid lightgrey;
