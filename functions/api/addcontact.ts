@@ -9,8 +9,14 @@ export const onRequestPost: PagesFunction = async (context) => {
 	if (!email) {
 		return new Response("No email passed", { status: 400 });
 	}
-	console.log(context.request.headers.get("referer"));
-	const res = await fetch("https://api.sendgrid.com/v3/marketing/contacts", {
+	if (
+		!/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+			email.toString()
+		)
+	) {
+		return new Response("Invalid email", { status: 400 });
+	}
+	await fetch("https://api.sendgrid.com/v3/marketing/contacts", {
 		method: "PUT",
 		headers: {
 			Authorization: `Bearer ${context.env["SENDGRID_KEY"]}`,

@@ -1,6 +1,10 @@
 ---
 import ThemeSwitcher from "$lib/components/themeSwitcher.svelte";
 import HeadSEO from "$lib/components/headSEO.astro";
+const navUrls = [
+	{ text: "About", url: "/about" },
+	{ text: "Tips", url: "/tips" },
+];
 ---
 
 <html lang="en-US">
@@ -32,9 +36,11 @@ import HeadSEO from "$lib/components/headSEO.astro";
 					<ThemeSwitcher client:idle />
 					<div class="flex-none hidden lg:block">
 						<ul class="menu horizontal">
-							<li>
-								<a href="/about">About</a>
-							</li>
+							{navUrls.map((item) => (
+								<li>
+									<a href={item.url}>{item.text}</a>
+								</li>
+							))}
 						</ul>
 					</div>
 					<div class="flex-none lg:hidden">
@@ -63,7 +69,11 @@ import HeadSEO from "$lib/components/headSEO.astro";
 					</div>
 					<div>
 						<span class="footer-title">ByteofDev</span>
-						<a class="link link-hover" href="/about">About</a>
+						{navUrls.map((item) => (
+							<a href={item.url} class="link link-hover">
+								{item.text}
+							</a>
+						))}
 						<a
 							class="link link-hover"
 							href="https://github.com/AsyncBanana/Byteofdev"
@@ -76,9 +86,13 @@ import HeadSEO from "$lib/components/headSEO.astro";
 			<div class="drawer-side">
 				<label for="toggle" class="drawer-overlay"></label>
 				<ul class="bg-base-100 p-4 w-80 overflow-y-auto menu">
-					<li>
-						<a href="/about">About</a>
-					</li>
+					<ul class="menu horizontal">
+						{navUrls.map((item) => (
+							<li>
+								<a href={item.url}>{item.text}</a>
+							</li>
+						))}
+					</ul>
 				</ul>
 			</div>
 		</div>

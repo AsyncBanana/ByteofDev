@@ -31,14 +31,29 @@ article p {
 		helvetica neue, helvetica, Ubuntu, roboto, noto, arial, sans-serif;
 	@apply indent-8 my-4 text-xl break-words;
 }
+article pre {
+	@apply indent-0;
+}
 article p code {
 	font-family: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco,
 		Consolas, Liberation Mono, Courier New, monospace;
 	@apply bg-base-100 py-0.5 rounded-sm;
 }
+article li {
+	@apply list-disc;
+}
 article img {
 	@apply my-4 mx-auto;
 	max-height: 50%;
+}
+article table {
+	@apply table m-auto w-full;
+}
+article table thead tr th {
+	@apply bg-base-300 text-xl;
+}
+article table tbody tr td {
+	@apply bg-base-200;
 }
 article blockquote {
 	padding-left: 20px;

@@ -1,14 +1,14 @@
 ---
 import StoryCard from "$lib/components/card.svelte";
 import BaseLayout from "$layouts/BaseLayout.astro";
-let posts = Astro.fetchContent("/src/pages/posts/*.md");
+let posts = Astro.fetchContent("/src/pages/tips/*.md");
 posts.sort((a, b) => b.published - a.published);
 posts = posts.slice(0, 20);
 ---
 
 <BaseLayout>
-	<h1 class="font-bold font-sans text-center text-4xl">ByteofDev</h1>
-	<h2 class="text-center italic ">Bite Sized articles for developers</h2>
+	<h1 class="font-bold font-sans text-center text-4xl">Tips</h1>
+	<h2 class="text-center italic ">Tiny programming guides</h2>
 	<div class="m-auto grid w-3/4 gap-5 md:grid-cols-2 lg:grid-cols-3">
 		{posts.map((item) => {
 			return <StoryCard item={item} />;

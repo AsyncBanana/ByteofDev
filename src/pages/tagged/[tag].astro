@@ -25,10 +25,7 @@ posts.sort((a, b) => b.published - a.published);
 posts = posts.slice(0, 20);
 ---
 
-<BaseLayout>
-	<svelte:head>
-		<title>Stories tagged {tag} - Byteofdev</title>
-	</svelte:head>
+<BaseLayout SEO={{ title: `Stories tagged ${tag} - Byteofdev` }}>
 	<h1 class="font-sans font-bold text-center text-4xl md:text-6xl">
 		Tag: {tag}
 	</h1>
