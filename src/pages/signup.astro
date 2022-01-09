@@ -1,0 +1,29 @@
+---
+import BaseLayout from "$layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+	SEO={{
+		title: "Sign up for the ByteofDev mailing list",
+		description:
+			"Sign up here to get programming news delivered to your mailbox",
+	}}
+>
+	<div class="m-auto md:w-3/4 lg:w-1/2">
+		<h1 class="font-bold text-center mb-6 text-5xl">
+			Sign up for the mailing list
+		</h1>
+		<h2 class="text-center italic">
+			Get programming news delivered to your mailbox
+		</h2>
+		<form
+			method="POST"
+			action="/api/addcontact"
+			class="form-control m-auto w-3/5 mb-6"
+		>
+			<label for="email">Enter email here</label>
+			<input type="input" class="shadow input" name="email" />
+			<input type="submit" class="mt-4 w-min btn btn-md btn-primary" />
+		</form>
+	</div>
+</BaseLayout>
