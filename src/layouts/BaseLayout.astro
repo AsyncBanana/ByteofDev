@@ -33,8 +33,7 @@ const navUrls = [
 							></a
 						>
 					</div>
-					<ThemeSwitcher client:idle />
-					<div class="flex-none hidden lg:block">
+					<div class="flex-none hidden lg:block mr-3">
 						<ul class="menu horizontal">
 							{navUrls.map((item) => (
 								<li>
@@ -43,6 +42,7 @@ const navUrls = [
 							))}
 						</ul>
 					</div>
+					<ThemeSwitcher client:idle />
 					<div class="flex-none lg:hidden">
 						<label for="toggle" class="btn btn-square">
 							<svg
