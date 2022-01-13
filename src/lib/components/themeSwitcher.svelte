@@ -5,8 +5,6 @@
 	$: if (!import.meta.env.SSR && document.querySelector("#root")) {
 		localStorage.setItem("theme", theme);
 		document.querySelector("#root").setAttribute("theme", theme);
-	} else {
-		console.log("ThemeSwitch: No root");
 	}
 </script>
 
