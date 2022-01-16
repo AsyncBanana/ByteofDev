@@ -3,7 +3,10 @@ import StoryCard from "$lib/components/card.svelte";
 import BaseLayout from "$layouts/BaseLayout.astro";
 export function getStaticPaths() {
 	let tagObj = {};
-	Astro.fetchContent("/src/pages/posts/*.md").forEach((post) => {
+	[
+		...Astro.fetchContent("/src/pages/tips/*.md"),
+		...Astro.fetchContent("/src/pages/posts/*.md"),
+	].forEach((post) => {
 		post.tags.forEach((tag) => {
 			if (!tagObj[tag]) {
 				tagObj[tag] = true;
@@ -16,7 +19,10 @@ export function getStaticPaths() {
 	});
 	return paths;
 }
-let posts = Astro.fetchContent("/src/pages/posts/*.md");
+let posts = [
+	...Astro.fetchContent("/src/pages/tips/*.md"),
+	...Astro.fetchContent("/src/pages/posts/*.md"),
+];
 const tag = Astro.request.params.tag;
 posts = posts.filter((value) => value.tags.includes(tag));
 
