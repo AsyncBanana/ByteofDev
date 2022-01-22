@@ -1,4 +1,5 @@
 <script>
+	import { trackEvent } from "$lib/modules/analytics";
 	export let primary = true;
 </script>
 
@@ -16,6 +17,12 @@
 			name="email"
 			id={`email${primary ? "-primary" : ""}`}
 		/>
-		<input type="submit" class="mt-4 w-min btn btn-md" />
+		<input
+			type="submit"
+			class="mt-4 w-min btn btn-md"
+			on:submit={() => {
+				trackEvent("Newsletter signup");
+			}}
+		/>
 	</form>
 </div>

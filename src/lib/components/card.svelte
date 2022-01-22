@@ -3,7 +3,7 @@
 	import dayjs from "dayjs";
 </script>
 
-<a class="rounded-md bg-base-100 p-4" href={item.url}>
+<a class="rounded-md bg-base-100 p-4" href={item.url + "/"}>
 	<img
 		src={item.image.url}
 		alt="Article header"

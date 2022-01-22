@@ -32,8 +32,8 @@ posts = posts.slice(0, 20);
 ---
 
 <BaseLayout SEO={{ title: `Stories tagged ${tag} - Byteofdev` }}>
-	<h1 class="font-sans font-bold text-center text-4xl md:text-6xl">
-		Tag: {tag}
+	<h1 class="font-sans font-bold text-center text-4xl md:text-6xl mb-6">
+		{tag}
 	</h1>
 	<main class="m-auto grid w-3/4 gap-5 md:grid-cols-3 lg:grid-cols-4">
 		{posts.map((post) => <StoryCard item={post} />)}
