@@ -1,9 +1,9 @@
 ---
-import ThemeSwitcher from "$lib/components/themeSwitcher.svelte";
 import HeadSEO from "$lib/components/headSEO.astro";
 const navUrls = [
 	{ text: "About", url: "/about" },
 	{ text: "Tips", url: "/tips" },
+	{ text: "State of the Web", url: "/tagged/State%20of%20the%20Web" },
 ];
 ---
 
@@ -14,90 +14,48 @@ const navUrls = [
 		<link rel="stylesheet" href={Astro.resolve("../lib/stylesheets/theme.css")}
 		/>
 	</head>
-	<body>
-		<div class={`shadow bg-base-200 drawer`} id="root">
-			<input id="toggle" type="checkbox" class="drawer-toggle" />
-			<div
-				class="flex flex-col min-h-screen drawer-content"
-				style="scroll-behavior: smooth;"
-			>
-				<div
-					class="rounded-box mx-auto bg-base-100 shadow-md mt-3 mb-6 top-0 z-30 navbar sm:w-3/4"
-				>
-					<div class="flex-1 mx-2 px-2">
-						<a
-							class="flex flex-row font-extrabold text-xl align-middle"
-							href="/"
-							><img src="/favicon.svg" alt="Logo" class="h-8" /><span
-								class="ml-2 hidden md:inline">ByteofDev</span
-							></a
-						>
-					</div>
-					<div class="flex-none hidden lg:block mr-3">
-						<ul class="menu horizontal">
-							{navUrls.map((item) => (
-								<li>
-									<a href={item.url}>{item.text}</a>
-								</li>
-							))}
-						</ul>
-					</div>
-					<ThemeSwitcher client:idle />
-					<div class="flex-none lg:hidden">
-						<label for="toggle" class="btn btn-square">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								class="h-6 stroke-current w-6 inline-block"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M4 6h16M4 12h16M4 18h16"></path>
-							</svg>
-						</label>
-					</div>
+	<body class="bg-base-200">
+		<div class="flex flex-col min-h-screen" style="scroll-behavior: smooth;">
+			<header class="bg-base-100 shadow-md mb-6 top-0 z-30 navbar flex-wrap">
+				<div class="mx-2 px-2">
+					<a class="flex flex-row font-extrabold text-xl align-middle" href="/"
+						><img src="/favicon.svg" alt="Logo" height="32" width="32" /><span
+							class="ml-2 inline">ByteofDev</span
+						></a
+					>
 				</div>
-				<main id="page">
-					<slot />
-				</main>
-				<footer class="bg-neutral text-neutral-content p-10 footer">
-					<div>
-						<img src="/favicon.svg" alt="Logo" class="h-24" />
-					</div>
-					<div>
-						<span class="footer-title">ByteofDev</span>
-						{navUrls.map((item) => (
-							<a href={item.url} class="link link-hover">
-								{item.text}
-							</a>
-						))}
-						<a
-							class="link link-hover"
-							href="https://github.com/AsyncBanana/Byteofdev"
-							target="_blank"
-							rel="noopener">GitHub</a
-						>
-						<a href="/signup" class="link-hover">Sign up</a>
-					</div>
-				</footer>
-			</div>
-			<div class="drawer-side">
-				<label for="toggle" class="drawer-overlay"></label>
-				<ul class="bg-base-100 p-4 w-80 overflow-y-auto menu">
-					<ul class="menu horizontal">
-						{navUrls.map((item) => (
-							<li>
-								<a href={item.url}>{item.text}</a>
-							</li>
-						))}
-					</ul>
-				</ul>
-			</div>
+				<nav class="block mr-3 w-full md:w-auto flex-auto">
+					{navUrls.map((item) => (
+						<a href={item.url} class="btn btn-ghost btn-sm mr-3">
+							{item.text}
+						</a>
+					))}
+				</nav>
+			</header>
+			<main id="page">
+				<slot />
+			</main>
+			<footer class="bg-neutral text-neutral-content p-10 footer">
+				<div>
+					<img src="/favicon.svg" alt="Logo" height="96" width="96" />
+				</div>
+				<div>
+					<span class="footer-title">ByteofDev</span>
+					{navUrls.map((item) => (
+						<a href={item.url} class="link link-hover">
+							{item.text}
+						</a>
+					))}
+					<a
+						class="link link-hover"
+						href="https://github.com/AsyncBanana/Byteofdev"
+						target="_blank"
+						rel="noopener">GitHub</a
+					>
+					<a href="/signup" class="link-hover">Sign up</a>
+				</div>
+			</footer>
 		</div>
-
 		<style>
 			a {
 				@apply rounded-btn;

@@ -37,5 +37,5 @@
 		"/**/*.astro",
 		"/**/*.js"
 	],
-	"exclude": ["dist/**/*.js"]
+	"exclude": ["dist/**/*.js", "scripts/**/*.js"]
 }

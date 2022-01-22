@@ -9,8 +9,13 @@
 >
 	<h2 class="font-bold text-xl">Sign up for updates</h2>
 	<form method="POST" action="/api/addcontact" class="form-control">
-		<label for="email">Enter email here</label>
-		<input type="email" class="shadow input text-base-content" name="email" />
+		<label for={`email${primary ? "-primary" : ""}`}>Enter email here</label>
+		<input
+			type="email"
+			class="shadow input text-base-content"
+			name="email"
+			id={`email${primary ? "-primary" : ""}`}
+		/>
 		<input type="submit" class="mt-4 w-min btn btn-md" />
 	</form>
 </div>
