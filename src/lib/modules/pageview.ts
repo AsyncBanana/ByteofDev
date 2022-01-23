@@ -1,2 +1,2 @@
-import { trackPageView } from "./analytics";
+import { trackPageView } from "./events";
 trackPageView();

@@ -11,7 +11,7 @@ export async function trackEvent(
 		return;
 	}
 	try {
-		fetch("https://plausible.io/api/event", {
+		fetch("/api/event", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
