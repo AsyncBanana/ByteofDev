@@ -1,5 +1,5 @@
 <script>
-	import { trackEvent } from "$lib/modules/analytics";
+	import { trackEvent } from "$lib/modules/events";
 	export let primary = true;
 </script>
 
