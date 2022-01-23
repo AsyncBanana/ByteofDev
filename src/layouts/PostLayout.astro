@@ -4,7 +4,7 @@ import Icon from "svelte-fa";
 import "$lib/stylesheets/prismTheme.css";
 import "balloon-css/balloon.css";
 import EmailPrompt from "$lib/components/emailPrompt.svelte";
-import { faLink } from "@fortawesome/free-solid-svg-icons";
+import { faLink, faRssSquare } from "@fortawesome/free-solid-svg-icons";
 import BaseLayout from "$layouts/BaseLayout.astro";
 import {
 	faTwitterSquare,
@@ -25,7 +25,7 @@ const canonicalURL = Astro.request.canonicalURL;
 		>
 			{title}
 		</h2>
-		<div class="grid grid-cols-4">
+		<div class="grid grid-cols-5">
 			<a
 				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
 				href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
@@ -55,6 +55,13 @@ const canonicalURL = Astro.request.canonicalURL;
 				rel="noopener"
 				aria-label="Share to LinkedIn"
 				data-balloon-pos="down"><Icon icon={faLinkedin} size="2x" /></a
+			>
+			<a
+				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
+				href={`/rss.xml`}
+				target="_blank"
+				aria-label="Subscribe to RSS"
+				data-balloon-pos="down"><Icon icon={faRssSquare} size="2x" /></a
 			>
 			<button
 				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
@@ -108,7 +115,7 @@ const canonicalURL = Astro.request.canonicalURL;
 		>
 			Share
 		</h2>
-		<div class="grid grid-cols-4 grid-flow-col md:w-1/4">
+		<div class="grid grid-cols-5 grid-flow-col md:w-1/4">
 			<a
 				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
 				href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
@@ -138,6 +145,13 @@ const canonicalURL = Astro.request.canonicalURL;
 				rel="noopener"
 				aria-label="Share to LinkedIn"
 				data-balloon-pos="down"><Icon icon={faLinkedin} size="2x" /></a
+			>
+			<a
+				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
+				href={`/rss.xml`}
+				target="_blank"
+				aria-label="Subscribe to RSS"
+				data-balloon-pos="down"><Icon icon={faRssSquare} size="2x" /></a
 			>
 			<button
 				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"

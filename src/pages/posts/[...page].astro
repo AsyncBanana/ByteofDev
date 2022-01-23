@@ -1,0 +1,28 @@
+---
+export async function getStaticPaths({ paginate, rss }) {
+	const allPosts = Astro.fetchContent("./*.md");
+	allPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+	rss({
+		title: "ByteofDev",
+		description: "Bite Sized articles for developers",
+		customData: `<language>en-us</language>`,
+
+		items: allPosts.map((item) => {
+			const customData = `<guid isPermaLink="true">https://byteofdev.com${item.url}</guid>`;
+
+			return {
+				title: item.title,
+				description: item.description,
+				link: item.url,
+				pubDate: new Date(item.published),
+				customData,
+			};
+		}),
+
+		dest: "/rss.xml",
+	});
+
+	return paginate(allPosts, { pageSize: 25 });
+}
+---
