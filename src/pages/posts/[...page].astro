@@ -9,7 +9,7 @@ export async function getStaticPaths({ paginate, rss }) {
 		customData: `<language>en-us</language>`,
 
 		items: allPosts.map((item) => {
-			const customData = `<guid isPermaLink="true">https://byteofdev.com${item.url}</guid>`;
+			const customData = `<guid isPermaLink="true">https://byteofdev.com${item.url}/</guid>`;
 
 			return {
 				title: item.title,
