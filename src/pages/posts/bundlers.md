@@ -3,8 +3,8 @@ title: "State of the Web: Bundlers & Build Tools"
 description: Learn more about the past, present, and future of bundlers like Webpack, Rollup, and Vite
 author: AsyncBanana
 tags: [State of the Web, Serverless, Cloudflare Workers]
-published: 1642347419284
-updated: 1642347419284
+published: 1642971389512
+updated: 1642971389512
 image:
   {
     url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/State_of_the_Web_Bundlers,

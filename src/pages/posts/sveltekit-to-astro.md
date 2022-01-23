@@ -3,8 +3,8 @@ title: "Migrating ByteofDev from SvelteKit to Astro"
 description: Why and how I rebuilt my blog in Astro
 author: AsyncBanana
 tags: [Astro, SvelteKit, JAMStack]
-published: 1642347419284
-updated: 1642347419284
+published: 1642971389511
+updated: 1642971389511
 image:
   {
     url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/SvelteKit_to_Astro,
