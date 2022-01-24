@@ -13,6 +13,12 @@ const navUrls = [
 		<link rel="icon" href="/favicon.svg" />
 		<link rel="stylesheet" href={Astro.resolve("../lib/stylesheets/theme.css")}
 		/>
+		<link
+			rel="alternate"
+			type="application/rss+xml"
+			href="https://byteofdev.com/rss.xml"
+			title="ByteofDev RSS"
+		/>
 		<script src={Astro.resolve("../lib/modules/pageview.ts")} hoist></script>
 	</head>
 	<body class="bg-base-200">

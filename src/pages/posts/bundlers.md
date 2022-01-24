@@ -2,9 +2,9 @@
 title: "State of the Web: Bundlers & Build Tools"
 description: Learn more about the past, present, and future of bundlers like Webpack, Rollup, and Vite
 author: AsyncBanana
-tags: [State of the Web, Serverless, Cloudflare Workers]
+tags: [State of the Web, Bundlers, Webpack, Vite]
 published: 1642971389512
-updated: 1642971389512
+updated: 1642988057627
 image:
   {
     url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/State_of_the_Web_Bundlers,
@@ -102,4 +102,4 @@ Webpack is still the most popular bundler. While it has not been taking advantag
 
 # Conclusion
 
-The world of web bundlers is advancing quickly. Hopefully this article gave you a overview of what is currently happening for bundlers. If you liked this article, sign up for the ByteofDev mailing list below (or don't, but I hope you do 🙃), and thank you for reading.
+The world of web bundlers is advancing quickly. Hopefully, this article gave you an overview of what is currently happening for bundlers. If you liked this article, sign up for the ByteofDev mailing list below (or don't, but I hope you do 🙃), and thank you for reading.
