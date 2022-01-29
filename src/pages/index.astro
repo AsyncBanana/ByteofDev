@@ -9,7 +9,9 @@ posts = posts.slice(0, 20);
 <BaseLayout>
 	<h1 class="font-bold font-sans text-center text-4xl">ByteofDev</h1>
 	<h2 class="text-center italic">Bite Sized articles for developers</h2>
-	<div class="m-auto grid w-3/4 gap-5 md:grid-cols-2 lg:grid-cols-3">
+	<div
+		class="m-auto grid md:w-3/4 gap-5 md:grid-cols-2 lg:grid-cols-3 md:p-0 p-4"
+	>
 		{posts.map((item) => {
 			return <StoryCard item={item} />;
 		})}
