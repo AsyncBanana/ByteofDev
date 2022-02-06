@@ -8,6 +8,7 @@ export function getStaticPaths() {
 		...Astro.fetchContent("/src/pages/posts/*.md"),
 	].forEach((post) => {
 		post.tags.forEach((tag) => {
+			tag = tag.toLowerCase();
 			if (!tagObj[tag]) {
 				tagObj[tag] = true;
 			}
@@ -15,7 +16,10 @@ export function getStaticPaths() {
 	});
 	let paths = [];
 	Object.keys(tagObj).forEach((tag) => {
-		paths.push({ params: { tag } });
+		paths.push({
+			params: { tag: tag.replaceAll(" ", "-") },
+			props: { tag: tag },
+		});
 	});
 	return paths;
 }
@@ -23,8 +27,11 @@ let posts = [
 	...Astro.fetchContent("/src/pages/tips/*.md"),
 	...Astro.fetchContent("/src/pages/posts/*.md"),
 ];
-const tag = Astro.request.params.tag;
-posts = posts.filter((value) => value.tags.includes(tag));
+
+const { tag } = Astro.props;
+posts = posts.filter((value) =>
+	value.tags.find((val) => val.toLowerCase() === tag.toLowerCase())
+);
 
 posts.sort((a, b) => b.published - a.published);
 

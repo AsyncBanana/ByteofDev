@@ -99,7 +99,7 @@ const canonicalURL = Astro.request.canonicalURL;
 				<a
 					style="color: hsla(var(--p))"
 					class="font-sans font-bold mr-3 text-xl uppercase hover:underline no-underline decoration-purple-500"
-					href={`/tagged/${tag}/`}
+					href={`/tagged/${tag.replaceAll(" ", "-")}/`}
 				>
 					{tag}
 				</a>
@@ -111,9 +111,9 @@ const canonicalURL = Astro.request.canonicalURL;
 			{title}
 		</h1>
 		<h2 class="font-normal text-xl">
-			&emsp;By <a href={"/author/" + author}>{author}</a> on {dayjs(
-				publishedRAW
-			).format("MMMM D, YYYY")}
+			&emsp;By <a href={"/author/" + author.replace(" ", "-")} rel="author"
+				>{author}</a
+			> on {dayjs(publishedRAW).format("MMMM D, YYYY")}
 		</h2>
 		<br />
 

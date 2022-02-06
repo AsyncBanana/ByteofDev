@@ -1,7 +1,10 @@
 ---
 import BaseLayout from "$layouts/BaseLayout.astro";
 import "$lib/stylesheets/postTheme.css";
-const { name, image, website, email } = Astro.props.content;
+import Icon from "svelte-fa";
+import { faEnvelope, faGlobe } from "@fortawesome/free-solid-svg-icons";
+import { faGithub } from "@fortawesome/free-brands-svg-icons";
+const { name, image, website, email, github } = Astro.props.content;
 ---
 
 <BaseLayout SEO={{ title: `About ${name}` }}>
@@ -15,7 +18,18 @@ const { name, image, website, email } = Astro.props.content;
 			<slot />
 		</article>
 		<div class="flex justify-evenly">
-			<a href={website} class="btn" target="_blank">Visit website</a>
+			<a href={website} class="btn btn-outline" target="_blank" rel="noopener"
+				><Icon icon={faGlobe} class="m-1" />Visit website</a
+			>
+			<a
+				href={`mailto:${email.name}@${email.host}`}
+				class="btn btn-outline"
+				target="_blank"
+				rel="noopener"><Icon icon={faEnvelope} class="m-1" />Email</a
+			>
+			<a href={github} class="btn btn-outline" target="_blank" rel="noopener"
+				><Icon icon={faGithub} class="m-1" />GitHub</a
+			>
 		</div>
 	</div>
 </BaseLayout>
