@@ -3,8 +3,8 @@ title: "State of the Web: Atomic CSS"
 description: Learn more about the past, present, and future of Atomic CSS and frameworks like Tachyons, Tailwind, and more.
 author: AsyncBanana
 tags: [CSS, Atomic CSS, Tailwind]
-published: 1642971389512
-updated: 1642988057627
+published: 1644160199453
+updated: 1644160199453
 image:
   {
     url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/State_of_the_Web_Atomic_CSS,
