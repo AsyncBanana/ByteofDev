@@ -3,8 +3,8 @@ title: "10 ways to speed up web font loading"
 description: Font loading can hurt performance a lot. This article shows you how to reduce the impact
 author: AsyncBanana
 tags: [Web fonts, performance]
-published: 1642971389512
-updated: 1642988057627
+published: 1644541426307
+updated: 1644541426307
 image:
   {
     url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/Web_Font_Optimization,
