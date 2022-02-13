@@ -20,7 +20,10 @@ const navUrls = [
 			href="https://byteofdev.com/rss.xml"
 			title="ByteofDev RSS"
 		/>
-		<script src={await import("../lib/modules/pageview.ts")} hoist></script>
+		<script
+			src={Astro.resolve("../lib/modules/pageview.ts")}
+			hoist
+			type="module"></script>
 	</head>
 	<body class="bg-base-200">
 		<div class="flex flex-col min-h-screen" style="scroll-behavior: smooth;">

@@ -12,7 +12,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^3.3.0",
     "@fec/remark-a11y-emoji": "^3.1.0",
-    "astro": "^0.22.19",
+    "astro": "^0.22.20",
     "critical": "^4.0.1",
     "prettier": "^2.5.1",
     "prettier-plugin-astro": "^0.0.11",
