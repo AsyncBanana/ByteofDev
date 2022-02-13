@@ -3,7 +3,7 @@ import HeadSEO from "$lib/components/headSEO.astro";
 const navUrls = [
 	{ text: "About", url: "/about/" },
 	{ text: "Tips", url: "/tips/" },
-	{ text: "State of the Web", url: "/tagged/State%20of%20the%20Web/" },
+	{ text: "State of the Web", url: "/tagged/State-of-the-Web/" },
 ];
 ---
 
@@ -11,15 +11,16 @@ const navUrls = [
 	<head>
 		<HeadSEO SEO={Astro.props.SEO || {}} />
 		<link rel="icon" href="/favicon.svg" />
-		<link rel="stylesheet" href={Astro.resolve("../lib/stylesheets/theme.css")}
-		/>
+		<style global>
+			@import "../lib/stylesheets/theme.css";
+		</style>
 		<link
 			rel="alternate"
 			type="application/rss+xml"
 			href="https://byteofdev.com/rss.xml"
 			title="ByteofDev RSS"
 		/>
-		<script src={Astro.resolve("../lib/modules/pageview.ts")} hoist></script>
+		<script src={await import("../lib/modules/pageview.ts")} hoist></script>
 	</head>
 	<body class="bg-base-200">
 		<div class="flex flex-col min-h-screen" style="scroll-behavior: smooth;">

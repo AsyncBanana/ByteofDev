@@ -3,10 +3,11 @@ export async function trackEvent(
 	props?: Record<string, unknown>
 ) {
 	if (
-		/^localhost$|^127(?:\.[0-9]+){0,2}\.[0-9]+$|^(?:0*:)*?:?0*1$/.test(
+		!import.meta.env.SSR &&
+		(/^localhost$|^127(?:\.[0-9]+){0,2}\.[0-9]+$|^(?:0*:)*?:?0*1$/.test(
 			location.hostname
 		) ||
-		location.protocol === "file:"
+			location.protocol === "file:")
 	) {
 		return;
 	}

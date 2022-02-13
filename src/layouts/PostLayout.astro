@@ -99,7 +99,7 @@ const canonicalURL = Astro.request.canonicalURL;
 				<a
 					style="color: hsla(var(--p))"
 					class="font-sans font-bold mr-3 text-xl uppercase hover:underline no-underline decoration-purple-500"
-					href={`/tagged/${tag.replaceAll(" ", "-")}/`}
+					href={`/tagged/${tag.replaceAll(" ", "-")}/`.toLowerCase()}
 				>
 					{tag}
 				</a>
@@ -178,9 +178,7 @@ const canonicalURL = Astro.request.canonicalURL;
 		</div>
 		<EmailPrompt client:visible />
 	</div>
-	<link
-		rel="stylesheet"
-		type="text/css"
-		href={Astro.resolve("../lib/stylesheets/postTheme.css")}
-	/>
+	<style global>
+		@import "../lib/stylesheets/postTheme.css";
+	</style>
 </BaseLayout>
