@@ -2,7 +2,7 @@
 title: "State of the Web: React"
 description: Learn more about the past, present, and future of React and things like Remix, React 18, Solid, and more.
 author: AsyncBanana
-tags: [React, Remix, Solid, Preact]
+tags: [State of the Web, React, Remix, Solid, Preact]
 published: 1644783699393
 updated: 1644783699393
 image:
