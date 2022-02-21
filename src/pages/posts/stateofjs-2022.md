@@ -1,0 +1,181 @@
+---
+title: "State of JS 2021 Results and Analysis"
+description: State of JS 2021/2022 is a major survey in web development. Learn all about it and what the results really mean.
+author: AsyncBanana
+tags: [State of the Web, StateofJS]
+published: 1645411701850
+updated: 1645411701850
+image:
+  {
+    url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/State_of_JS_Results_Analysis,
+    alt: State of JS logo
+  }
+layout: $layouts/PostLayout.astro
+setup: |
+  import Callout from '$lib/components/callout.svelte'
+---
+
+This week for State of the Web, we have a special edition about one of the most extensive surveys in web development, the State of JS. State of JS is a survey about everything related to JavaScript, including language features, front-end frameworks, and bundlers. This year's version, the 2021/2022 version, collected more than 15,000 responses. This article looks at the results and what they mean for web development.
+
+<Callout type="info">
+There are a few terms in this that mean things specific to this survey:<br>
+<b>Usage</b>: The percentage of people that have used the library or feature out of the total survey takers<br>
+<b>Awareness</b>: The percentage of people who know about a feature/library out of the total survey takers<br>
+<b>Interest</b>: (Only for libraries) The percentage of people that want to learn a library out of everyone who does not already use that library<br>
+<b>Satisfaction</b>: (Only for libraries) The percentage of people who have used a library and are satisfied out of everyone who has used that library
+</Callout>
+
+# Languages Features + Web APIs
+
+First, let's look at the usage of modern language features and web APIs.
+
+## Language Features
+
+### Nullish Coalescing (??) and Optional Chaining (?.) Quickly Grow
+
+Two new features in JavaScript, [nullish coalescing](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing_operator) and [optional chaining](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining), have grown quickly. Nullish coalescing is a feature that allows you to return the right-hand side of the operator if the left-hand side is null, and optional chaining allows you to return `undefined` when accessing properties of a nonexistent object instead of erroring.
+
+```js
+// Nullish coalescing
+1 ?? 2 // returns 1
+null ?? 2 // returns 2
+
+// Optional chaining
+const obj = {a: undefined}
+obj.a.test // errors
+obj.a?.test // returns undefined
+```
+
+These methods have been gaining momentum quickly, with more than 65% of users reporting to have used nullish coalescing and >75% using optional chaining. This is despite being introduced in ES2020. They have most likely grown so much because they help provide clearer, more efficient code, they are easy to adopt, and you can easily transpile them into older syntax using something like Babel or ESBuild.
+
+## ESM Dynamic Imports are gaining steam
+
+[Dynamic importing](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import#dynamic_imports) is a way to dynamically load ECMAScript Modules, similar to how you could call `require()` dynamically for CommonJS. If you have not heard of ESM before, it is a module format introduced in ES6 that is native to browsers. However, before dynamic importing, you had to import modules statically at the top of your JavaScript module. Static imports are helpful for tree shaking and static analysis, but sometimes you need to import things dynamically. Now, you can run the function `import()` to import modules.
+
+```js
+// Static importing
+import something from "./example.js" // Always has to be at the top of the file
+// Dynamic importing
+const something = await import("./example.js")
+```
+Dynamic importing opens doors to ESM code splitting, lazy loading, and more. Because of all these features, dynamic importing has grown a lot, with almost 50% of users reporting to have used it. This feature is also related to a newer feature, [top level await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await#top_level_await), as top-level await makes it possible to import modules dynamically outside of am async function. Top-level await very new but already has 31% usage according to State of JS.
+
+## Web APIs
+
+### Service workers and PWAs are mainstream
+
+[Service Workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API) are scripts that can intercept HTTP requests coming from websites, which allows for more advanced caching, offline access, and other network capabilities. They have been around for a few years now and have steadily gained usage. In this survey, they come in at 45% usage. The growth of service workers is bolstered by Progressive Web Apps (PWAs), which usually require service workers and have a usage rate of 52.3%. Progressive web apps are web apps that can you can install like a native app and [include many native capabilities](https://developers.google.com/web/updates/capabilities). The high usage rate is surprising, especially since Firefox does not support PWAs and has stated they do not intend to do so.
+
+## WebAssembly is growing but is still uncommon
+
+[WebAssembly](https://developer.mozilla.org/en-US/docs/WebAssembly) is an Assembly-like language designed for the web and serverless. It can be faster than JavaScript, and allows you to use a wider variety of languages that compile to WebAssembly, but its usage rate is still low, at 15.6%. That still growing (usage was only at 10.5% in 2020), and awareness is very high at 97.9%, but it still has not gone mainstream. That is likely due to how hard it is to adopt (you need to learn another language) and the smaller ecosystem. To learn more about WebAssembly, check out this [State of the Web webassembly article](https://byteofdev.com/posts/webassembly).
+
+## Websockets are very popular
+
+[Websockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) are connections designed for real-time communication both from client to server and server to client. More than half of the respondents to State of JS 2022 said they had used Websockets before, making it the most well-used browser API. That is likely due to the wide use cases, from real-time chat to gaming to streaming analytics, and the fact that the Websocket browser API has been around for a long time and is supported in browsers like IE 11.
+
+## WebGL is well known but uncommonly used
+
+[WebGL](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Getting_started_with_WebGL) is a browser API that enables web developers to create graphical applications with an OpenGL ES-like interface. While most people are aware of it (87.6%), only 21.6% of people actually use it. That is likely because of the WebGL learning curve, as well as the alternatives to WebGl, like SVG, and, more notably, Canvas. Another interesting related browser API is [WebGPU](https://web.dev/gpu/), which mirrors the Vulkan API and is being standardized.
+
+# Libraries
+
+Almost any web developer is using bundlers, frameworks, and more. Because everyone needs them, there are many different JavaScript tools, and it can be hard to choose between them. Now we will look at the state of libraries like bundlers, frameworks, mobile/desktop tools, and monorepo tools.
+
+## Front-end frameworks
+
+![Satisfaction of front-end frameworks](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/front_end_frameworks_experience_ranking)
+
+### React keeps the crown of usage
+
+[React](https://reactjs.org/) has been the most popular front-end framework in the State of JS for 5 years and continues this tradition this year. React has a usage rate of 80%, significantly higher than the next most popular framework, Angular (at 54%). React is popular because it is relatively stable and established and has a lower learning curve than something like Angular. For more information on why Facebook created React and its current state, take a look at [State of the Web: React](https://byteofdev.com/posts/react/). However, newer frameworks have some advantages over React, which this article covers later.
+
+## Vue is steadily growing
+
+[Vue](https://vuejs.org/) is a newer alternative to React that has grown over the past few years. It now has a 51% usage rate and seems like it could surpass React in the future. Vue has the advantage of a different template syntax and is faster, both in loading speed and runtime performance.
+
+## Svelte and Solid take the highest satisfaction
+
+[Svelte](https://svelte.dev/) and [Solid](https://www.solidjs.com/) lead the front-end frameworks in satisfaction, both with 90%. Svelte has been around for a few years and offers a concise template syntax and a compiler that compiles to native JavaScript. Developers use Svelte for its performance and the power of the templating language, which offers things like two-way binding and the ability to update the DOM by reassigning a variable with data rather than having to use something like `setState()`. Svelte has already gained some usage, with a 20% usage rate.
+
+On the other hand, Solid is a newer framework closer to React but is the fastest framework by far. Solid uses the same JSX and hooks patterns but has a different updating system that removes the need for a virtual DOM and the need to reevaluate components every time the state is changed. Solid's bundle size is also significant smaller than React's. In contrast to Svelte, since Solid is newer, it has much less usage, at 3%.
+
+### Other interesting Newer frameworks
+
+There are some other newer frameworks, like Lit, Alpine.js, and Stimulus. Lit is a web component-based framework that aims to offer an easy to use layer over web components. It has only 7% usage but 40% interest. Alpine.js is another interesting framework that is special in that you use attributes inside HTML to control behavior. However, I cannot recommend it, as it does not have very good runtime performance. Alpine is slightly lower than Lit with usage and interest, at 6% and 33%. Finally, Stimulus is another framework that is part of the [Hotwire](https://hotwired.dev/) project. Stimulus is somewhat like Alpine, although it relies a little less on HTML attributes. It is designed to compliment Hotwire Turbo, which provides HTML AJAX, by making it possible to add small bits of interactivity where needed. Stimulus is the smallest framework, with 2% usage and 21% interest.
+
+## Backend Frameworks
+
+![Satisfaction of backend frameworks](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/back_end_frameworks_experience_ranking)
+
+### Express is the top framework by far
+
+[Express](https://expressjs.com/) is a basic Node.js backend framework that provides routing and middleware. That simplicity has made it the most used backend framework by a large margin, with 80% usage, compared to 45% for the next highest, Next.js. Express also tops awareness and does moderately well in interest at 59%. Additionally, Express is growing, so it does not seem like it will soon lose its throne.
+
+### Front-end framework based frameworks are growing
+
+Nowadays, many backend frameworks use front-end frameworks. For example, take the second most popular backend framework, [Next.js](https://nextjs.org/). Next.js is built for React. In fact, about half of the frameworks in State of JS integrate with various front-end frameworks like React, Vue, and Svelte. This trend is quickly growing as people look for alternatives to running a Single Page App (SPA) due to SPA's SEO and performance.
+
+### SvelteKit has the happiest developers
+
+Once again, we see Svelte. However, this time it is for Svelte's official framework, [SvelteKit](https://kit.svelte.dev/). SvelteKit offers built-in server-side rendering and static generation for Svelte websites, as well as other helpful features for Svelte developers. SvelteKit is like Next.js, but it is the official Svelte backend framework, and it is for Svelte, not React. Because Svelte has such high satisfaction and SvelteKit works very well with Svelte, SvelteKit has a satisfaction rate of 96%, which is the highest satisfaction out of all the backend frameworks.
+
+### Other new frameworks like Remix and Astro have high satisfaction
+
+There is a group of frameworks at 91% satisfaction. They are Astro, Fastify, Next.js, and Remix. Next.js is not new, but all of the other frameworks are, and each brings new features to the table.
+
+#### Next.js
+
+[Next.js](https://nextjs.org/) has been around for a few years and is established as the most popular framework for React, but it has still managed to match or do better than other newer frameworks in satisfaction. However, Next.js satisfaction has decreased after peaking at 92%, although that is not a huge drop.
+
+#### Fastify
+
+[Fastify](https://www.fastify.io/) is unique in that it is not designed to be used with a front-end framework. Instead, it is more like Express, just significantly faster. According to [Fastify's own benchmarks](https://www.fastify.io/benchmarks/), Fastify is more than 3x faster than Express. Fastify also offers built-in support for JSON parsing and JSON Schema. Fastify's performance has given it 11% usage and 60% interest, which is not bad for a new Express alternative.
+
+#### Remix
+
+[Remix](https://remix.run/) is a React backend framework created by the creators of React Router, the most popular client-side router for React used today. Remix focuses on web fundamentals, server-side rendering, and advanced routing to improve performance and user experience. Remix is also designed to have support for multiple serverless providers just like SvelteKit. Because of all of its features, Remix is growing at a fast pace. It only has 5% usage due to it being released very recently, but it already has 69% interest and, of course, 91% satisfaction.
+
+#### Astro
+
+[Astro](https://astro.build/) is probably the most innovative of the bunch. Not only does it offer partial hydration on the component level using [the "Islands" architecture](https://jasonformat.com/islands-architecture/), it also supports multiple different client-side frameworks. You can even use multiple at the same time. For example, you could code most of your site in Svelte but then use React for one component and avoid hydrating the components that are not needed to be interactive, even if other components on the page need to be interactive. These features brought Astro 3% usage and 66% interest, despite Astro being published partway through 2021.
+
+## Testing
+
+![Satisfaction of testing tools](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/testing_experience_ranking)
+
+### Jest remains the most popular
+
+[Jest](https://jestjs.io/), an easy-to-use testing library from Facebook, is the most popular JavaScript testing library. It has a usage rate of 73%, which is significantly higher than the next most popular's, Mocha (50%). Jest's popularity is due to its ease of use and speed.
+
+### Testing library takes satisfaction
+
+[Testing Library](https://testing-library.com/) is another testing library that ranks the highest for satisfaction, with a satisfaction rate of 96%. Additionally, Testing Library has moderately high usage, at 35%. The interesting thing about Testing Library is that it is not a testing runtime, nor is it a test runner. What is does it provides a querying toolkit that can be used on DOM runtimes like Jest or a real browser. The querying toolkit tries to mimic user behavior, which helps you make better UI tests.
+
+### Vitest makes testing fast
+
+[Vitest](https://vitest.dev/) is a mostly Jest compatible testing framework that uses Vite under the hood. Using Vite makes Vitest significantly faster than Jest and makes it possible to use only one build pipeline for testing and building if you use Vite already. Vitetest has been well received, with satisfaction at 94% and interest at 82%. In fact, the most modern testing pipeline you could use is probably Testing Library running on Vitest.
+
+## Build Tools
+
+![Satisfaction of build tools](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/build_tools_experience_ranking)
+
+### Webpack is the most used
+
+[Webpack](https://webpack.js.org/) is the most used bundler/build tool (no surprises here). That is because Webpack was created when the alternatives were much worse, and it has been able to retain its dominant position. However, it is now being challenging by alternatives like Vite, so its future domination is uncertain.
+
+### Vite is becoming the next big thing in bundling
+
+[Vite](https://vitejs.dev/) is a bundler that has quickly grown to 30% usage and is used by frameworks like SvelteKit and Astro, despite only becoming public in the past two years. Vite also has the highest satisfaction rating, at 98%. Most people attribute Vite's popularity to its [massive speed improvements due to ESM](https://byteofdev.com/posts/bundlers/#unbundled-development) and easy configuration. Vite's growth is also bolstered by the fact that was created by the team behind Vue and is used in modern Vue frameworks like Vitepress.
+
+### esbuild and SWC are climbing quickly
+
+[esbuild](https://esbuild.github.io/) and [SWC](https://swc.rs/) are both JavaScript build tools that are significantly faster than previous tools due to the choice to use languages like Go and Rust, as well as better multithreaded design. They replace tools like Babel and Terser and can be tens of times faster. That speed has brought large amounts of interest (81% for esbuild and 75% for SWC) and satisfaction (96% and 94% for esbuild and SWC, respectively). SWC is especially notable, as Next.js recently adopted it, so it has a bright future ahead.
+
+### tsc CLI is quietly becoming popular
+
+Surprisingly, the [TypeScript](https://www.typescriptlang.org/) CLI is the second most popular build tool after Webpack, at 79% usage. The usage was up from 62% in the 2020 survey, so the usage is proliferating. The TypeScript CLI is the main way to compile TypeScript projects. However, projects like esbuild and SWCD offer TypeScript compilation, and TypeScript cannot do much beyond compiling TypeScript.
+
+# Conclusion
+
+Whew! That was a lot. If you want to view the full results, you can look at [2021 State of JS Results](https://2021.stateofjs.com/en-US/). If you enjoyed reading this article, be sure to subscribe to RSS and join the mailing list below. I hope you learned about a new tool today, and thanks for reading!
