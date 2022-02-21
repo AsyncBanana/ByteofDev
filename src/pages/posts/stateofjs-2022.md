@@ -4,7 +4,7 @@ description: State of JS 2021/2022 is a major survey in web development. Learn a
 author: AsyncBanana
 tags: [State of the Web, StateofJS]
 published: 1645411701850
-updated: 1645411701850
+updated: 1645417241455
 image:
   {
     url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/State_of_JS_Results_Analysis,
@@ -66,15 +66,15 @@ Dynamic importing opens doors to ESM code splitting, lazy loading, and more. Bec
 
 [Service Workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API) are scripts that can intercept HTTP requests coming from websites, which allows for more advanced caching, offline access, and other network capabilities. They have been around for a few years now and have steadily gained usage. In this survey, they come in at 45% usage. The growth of service workers is bolstered by Progressive Web Apps (PWAs), which usually require service workers and have a usage rate of 52.3%. Progressive web apps are web apps that can you can install like a native app and [include many native capabilities](https://developers.google.com/web/updates/capabilities). The high usage rate is surprising, especially since Firefox does not support PWAs and has stated they do not intend to do so.
 
-## WebAssembly is growing but is still uncommon
+### WebAssembly is growing but is still uncommon
 
 [WebAssembly](https://developer.mozilla.org/en-US/docs/WebAssembly) is an Assembly-like language designed for the web and serverless. It can be faster than JavaScript, and allows you to use a wider variety of languages that compile to WebAssembly, but its usage rate is still low, at 15.6%. That still growing (usage was only at 10.5% in 2020), and awareness is very high at 97.9%, but it still has not gone mainstream. That is likely due to how hard it is to adopt (you need to learn another language) and the smaller ecosystem. To learn more about WebAssembly, check out this [State of the Web webassembly article](https://byteofdev.com/posts/webassembly).
 
-## Websockets are very popular
+### Websockets are very popular
 
 [Websockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) are connections designed for real-time communication both from client to server and server to client. More than half of the respondents to State of JS 2022 said they had used Websockets before, making it the most well-used browser API. That is likely due to the wide use cases, from real-time chat to gaming to streaming analytics, and the fact that the Websocket browser API has been around for a long time and is supported in browsers like IE 11.
 
-## WebGL is well known but uncommonly used
+### WebGL is well known but uncommonly used
 
 [WebGL](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Getting_started_with_WebGL) is a browser API that enables web developers to create graphical applications with an OpenGL ES-like interface. While most people are aware of it (87.6%), only 21.6% of people actually use it. That is likely because of the WebGL learning curve, as well as the alternatives to WebGl, like SVG, and, more notably, Canvas. Another interesting related browser API is [WebGPU](https://web.dev/gpu/), which mirrors the Vulkan API and is being standardized.
 
@@ -100,7 +100,7 @@ Almost any web developer is using bundlers, frameworks, and more. Because everyo
 
 On the other hand, Solid is a newer framework closer to React but is the fastest framework by far. Solid uses the same JSX and hooks patterns but has a different updating system that removes the need for a virtual DOM and the need to reevaluate components every time the state is changed. Solid's bundle size is also significant smaller than React's. In contrast to Svelte, since Solid is newer, it has much less usage, at 3%.
 
-### Other interesting Newer frameworks
+### Other interesting newer frameworks
 
 There are some other newer frameworks, like Lit, Alpine.js, and Stimulus. Lit is a web component-based framework that aims to offer an easy to use layer over web components. It has only 7% usage but 40% interest. Alpine.js is another interesting framework that is special in that you use attributes inside HTML to control behavior. However, I cannot recommend it, as it does not have very good runtime performance. Alpine is slightly lower than Lit with usage and interest, at 6% and 33%. Finally, Stimulus is another framework that is part of the [Hotwire](https://hotwired.dev/) project. Stimulus is somewhat like Alpine, although it relies a little less on HTML attributes. It is designed to compliment Hotwire Turbo, which provides HTML AJAX, by making it possible to add small bits of interactivity where needed. Stimulus is the smallest framework, with 2% usage and 21% interest.
 
