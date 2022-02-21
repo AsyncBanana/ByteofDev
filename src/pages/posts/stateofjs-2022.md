@@ -48,7 +48,7 @@ obj.a?.test // returns undefined
 
 These methods have been gaining momentum quickly, with more than 65% of users reporting to have used nullish coalescing and >75% using optional chaining. This is despite being introduced in ES2020. They have most likely grown so much because they help provide clearer, more efficient code, they are easy to adopt, and you can easily transpile them into older syntax using something like Babel or ESBuild.
 
-## ESM Dynamic Imports are gaining steam
+### ESM Dynamic Imports are gaining steam
 
 [Dynamic importing](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import#dynamic_imports) is a way to dynamically load ECMAScript Modules, similar to how you could call `require()` dynamically for CommonJS. If you have not heard of ESM before, it is a module format introduced in ES6 that is native to browsers. However, before dynamic importing, you had to import modules statically at the top of your JavaScript module. Static imports are helpful for tree shaking and static analysis, but sometimes you need to import things dynamically. Now, you can run the function `import()` to import modules.
 
