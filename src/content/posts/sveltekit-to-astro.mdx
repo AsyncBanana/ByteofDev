@@ -4,7 +4,7 @@ description: Why and how I rebuilt my blog in Astro
 author: AsyncBanana
 tags: [Astro, SvelteKit, JAMStack]
 published: 1642971389511
-updated: 1642971389511
+updated: 1660687077550
 image:
   {
     url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/SvelteKit_to_Astro,
@@ -18,13 +18,13 @@ image:
 
 ### Performance
 
-![ByteofDev Lighthouse Scores](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/byteofdev_performance)
+![ByteofDev Lighthouse Scores](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/byteofdev_performance "ByteofDev's Scores using Lighthouse")
 
 Astro supports [component-level partial hydration](https://docs.astro.build/en/core-concepts/component-hydration/), which Astro based on the [Islands Architecture](https://jasonformat.com/islands-architecture/). Component hydration is much more granular than SvelteKit's page hydration because you can isolate JavaScript to one specific part of the page rather than either shipping JavaScript for the whole page or no JavaScript period. Partial hydration helped heavily reduce the JavaScript shipped to the client, significantly improving performance.
 
 ### Blog-related features
 
-While doing this, I also was trying to migrate from a headless CMS to using markdown and Git to allow for more flexibility and performance. For markdown with Svelte components, Svelte has [mdsvex](https://mdsvex.com/), which works pretty well, but Astro has components in markdown built-in. Astro also has an easy-to-use API for getting the frontmatter of markdown files (`Astro.fetchContent()`), making it easy to implement features like tag pages. Finally, Astro offers built-in sitemap and RSS feed generation, which is helpful for SEO and reaching a wider range of readers.
+While doing this, I also was trying to migrate from a headless CMS to using markdown and Git to allow for more flexibility and performance. For markdown with Svelte components, Svelte has [mdsvex](https://mdsvex.com/), which works pretty well, but Astro has officially supported integration with [MDX](https://mdxjs.com) (which is what inspired mdsvex), which I found easier to use. Astro also has an easy-to-use API for getting the frontmatter of markdown files (`Astro.glob()`), making it easy to implement features like tag pages. Finally, Astro an easy-to-use plugin for sitemap and RSS feed generation, which is helpful for SEO and reaching a wider range of readers.
 
 ## Migrating to Astro
 
@@ -32,7 +32,7 @@ Overall, migrating to Astro was not overly complex, as both Astro's JSX and Svel
 
 ### Frontmatter
 
-In Svelte, all frontmatter is handled inside `<script>` tags. However, in Astro, this is not the case. In Astro, you put everything in `---`, like markdown frontmatter. There were also differences in loading data and displaying it due to the differences in API (this was exemplified due to also moving away from a CMS). Finally, with SvelteKit, there is a `<svelte:head>` component, which does not exist in Astro. It is possible to use slots in Astro, but ultimately I settled on using a custom headSEO component like [Astro SEO](https://github.com/jonasmerlin/astro-seo).
+In Svelte, all frontmatter is handled inside `<script>` tags. However, in Astro, this is not the case. In Astro, you put everything in `---`, like markdown frontmatter. There were also differences in loading data and displaying it due to the differences in API (this was exemplified due to also moving away from a CMS). Finally, with SvelteKit, there is a `<svelte:head>` component, which does not exist in Astro. It is possible to use slots in Astro, but ultimately I settled on using a custom SEO component like [Astro SEO](https://github.com/jonasmerlin/astro-seo).
 
 ### Conditionals and iteration
 
@@ -80,8 +80,8 @@ These differences made it harder to migrate, but it was pretty simple to change 
 
 ### API Endpoints
 
-SvelteKit has built-in support of API Endpoints, but Astro does not. I reduced the number of endpoints I needed, but I still needed one for signing up for the ByteofDev [mailing list](/signup/). This is where a recent development helped me. [Fullstack pages](https://blog.cloudflare.com/cloudflare-pages-goes-full-stack/) a new feature for Cloudflare made it significantly easier to set up an API Endpoint compared to using a Worker. It still was not as easy as using SvelteKit's integration with Cloudflare, and the endpoint does not run in development, but overall it works pretty well. If you are using Netlify, Netlify [Functions](https://www.netlify.com/products/functions/) or [Edge](https://www.netlify.com/products/edge/) will work. If you are using Vercel, [Vercel Serverless Functions](https://vercel.com/docs/concepts/functions/serverless-functions) should work.
+SvelteKit has built-in support of API Endpoints, but Astro does not. I reduced the number of endpoints I needed, but I still needed one for signing up for the ByteofDev [mailing list](/signup/). This is where a recent development helped me. [Fullstack pages](https://blog.cloudflare.com/cloudflare-pages-goes-full-stack/), a new feature in Cloudflare Pages, made it significantly easier to set up an API Endpoint compared to using a Worker. It still was not as easy as using SvelteKit's integration with Cloudflare, and the endpoint does not run in development, but overall it works pretty well. If you are using Netlify, Netlify [Functions](https://www.netlify.com/products/functions/) or [Edge](https://www.netlify.com/products/edge/) will work. If you are using Vercel, [Vercel Serverless Functions](https://vercel.com/docs/concepts/functions/serverless-functions) should work.
 
 ## Conclusion
 
-Moving from SvelteKit to Astro has been beneficial for my blog because of the features provided and the performance. Using Astro, I reduced my server hosting costs by eliminating the CMS and reducing Cloudflare Worker requests to only one route while improving performance by reducing the JavaScript sent (see Lighthouse scores above). If you liked this article, be sure to sign up for the newsletter below. I hope you have learned something from this, and thank you for reading.
+Moving from SvelteKit to Astro has benefited my blog because of the features provided and the performance. Using Astro, I reduced my server hosting costs by eliminating the CMS and reducing Cloudflare Worker requests to only one route while improving performance by reducing the JavaScript sent (see Lighthouse scores above). If you liked this article, sign up for the newsletter below. I hope you have learned something from this, and thank you for reading.
