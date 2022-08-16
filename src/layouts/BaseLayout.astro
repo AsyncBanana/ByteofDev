@@ -27,9 +27,9 @@ const navUrls = [
 				<a class="flex flex-row font-extrabold text-xl align-middle" href="/"><img src="/favicon.svg" alt="Logo"
 						height="32" width="32" /><span class="ml-2 inline">ByteofDev</span></a>
 			</div>
-			<nav class="flex-auto mr-3 w-full block md:w-auto">
+			<nav class="flex-auto mr-3 w-full block overflow-x-auto md:!w-auto">
 				{navUrls.map((item) => (
-				<a href={item.url} class="mr-3 btn btn-ghost btn-sm">
+				<a href={item.url} class="mr-3 btn btn-ghost btn-md">
 					{item.text}
 				</a>
 				))}
