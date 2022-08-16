@@ -10,73 +10,72 @@ image:
     url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/State_of_the_Web_React,
     alt: Logos of various React Tools,
   }
-layout: $layouts/PostLayout.astro
 ---
 
 React is one of the most popular JavaScript frameworks out there. While many other frameworks offer some advantages, React has retained dominance. There is also a vast ecosystem around React, which is changing quickly. This article aims to provide an overview of the recent trends in React, like Remix, server components, partial hydration, and more.
 
-# Background of React
+## Background of React
 
-## Bolt & FaxJS
+### Bolt & FaxJS
 
 Around a decade ago, Facebook started looking for a way to modernize its web app. It was becoming increasingly complicated, and they needed a framework to make it easier to build and maintain. To fix this, they created a project called Bolt. Bolt was an MVC framework built on top of JavelinJS, and it solved many of the problems Facebook had. However, it was not perfect. Jordan Walke, a developer at Facebook, created the next iteration of Bolt, called [FaxJS](https://github.com/jordwalke/FaxJs). It offered many features that React has today, like rendering on both client and server, DOM diffing, and more. Jordan Walke renamed FaxJS FBolt and started using it in Facebook's codebase.
 
-## React's creation
+### React's creation
 
 In 2013, Facebook renamed FBolt, you guessed it, React. Additionally, they started working on JSX, an abstraction layer for defining UI in React. JSX made compiling HTML like statements to JavaScript function calls. Interestingly, according to [a post by the React team](https://reactjs.org/blog/2016/09/28/our-first-50000-stars.html#adding-jsx), JSX was initially based on a system in PHP that allowed for embedding XML literals. JSX was initially just a fork of [jsx-xml-literal](https://github.com/laverdet/js-xml-literal).
 
-## Initial Growth
+### Initial Growth
 
 React started growing quite a bit after that. React's GitHub repository reached 10k stars in late 2014, 20k in 2015, and 50k in 2016. Additionally, React's ecosystem started to grow with things like [Reactiflux](https://www.reactiflux.com/).
 
-## Hooks
+### Hooks
 
 Hooks are ways of defining lifecycle methods in functional components. In 2019, React released hooks, which completely changed the way people wrote applications in React. Before hooks existed, you had to use classes for stateful components. Functional components could only be simple components that just relied on props. However, hooks offered a way of accessing state through functions, which opened the door to completely using functional components. Nowadays, most new applications use hooks instead of class components, as hooks are simpler to use and more concise.
 
-# Why People use React
+## Why People use React
 
-## Dynamic updating
+### Dynamic updating
 
 React automatically updates your UI if your data changes, saving a significant amount of time. For example, if you had a table of various transactions set to update every 15 seconds, you would have to define the difference checking and updating manually. However, with a framework like React, you can just change the value of the data, and everything happens for you. Dynamic updating also makes your UI easier to reason with, as you can guarantee it represents the data.
 
-## Isomorphic rendering
+### Isomorphic rendering
 
 React can render UI on both the client and server with the same code. That opens up opportunities for server-side rendering and hydrating on the client. In this way, React contrasts with lots of traditional templating languages where you could generate static HTML but not make that automatically interactive.
 
 React does this through two different APIs. Their primary rendering API function exposed through `react-dom` is `render`, which renders the JSX passed on to the client. However, to render HTML on the server, there is `renderToString` under `react-dom/server`, which renders static HTML that can be hydrated later using `render`.
 
-## Advanced templating
+### Advanced templating
 
 React allows you to do many things to reduce repetition in your code, including embedding JavaScript and modularizing markup inside components. These features help reduce repetition and the maintenance burden by making it easier to update repeated pieces of markup.
 
-# The State of React
+## The State of React
 
-## Remix and the new React frameworks
+### Remix and the new React frameworks
 
 [Remix](https://remix.run) is a new React framework (like Next.js), created by the people who made React Router, that was only recently open-sourced but has been growing very quickly. Remix promises better integration with web platform features, integration with the edge, and simpler isomorphic code. Remix has already managed to gain 12k stars. Another unique thing about Remix is that instead of offering static site generation and dynamic server-side rendering, it focuses entirely on server-side rendering. That means that while Remix does not support static site generation, if you prefer rendering dynamic data on the server rather than using API fetching on the client, Remix works quite well. Of course, there are tradeoffs to both rendering on the server and fetching data on the client for dynamic data, and it depends on your use case. Finally, due to the author's experience building React Router, Remix has advanced routing, with features like nested routing and isolated errors.
 
 Remix is not the only new React framework. There are others, like [Astro](https://astro.build/). Astro is a promising [static site generator](https://byteofdev.com/posts/static-site-generators/) that supports multiple ways of building UI, including React. Astro is also notable because it supports partial hydration, which reduces the JavaScript sent to the client by only including what is needed to make your web app interactive.
 
-## React 18
+### React 18
 
 React 18 is an upcoming React release that offers many new features, like the concurrent renderer. The concurrent renderer allows for multiple versions of the UI to be built at once, which opens up opportunities for new features like automatic batched updates, streaming server-side rendering, and more. These features help improve performance. For example, automatic batched updates reduce the amount of UI updates needed, which increases performance on the client.
 
-## CSS
+### CSS
 
 There are numerous approaches to using CSS in React. Of course, you can use native CSS, but there are many other approaches that work better with React's UI style.
 
-### CSS in JS
+#### CSS in JS
 
 CSS in JS integrates with React very well. The most popular CSS in JS tool is [styled-components](https://www.npmjs.com/package/styled-components), which allows you to define styles inside JavaScript using tagged templates. However, there are newer approaches to CSS in JS that are often superior in certain ways. Some of the most interesting of those are Linaria and vanilla-extract. [Linaria](https://linaria.dev/) is a library that aims to optimize CSS in JS by compiling CSS in JS to native CSS. Linaria also has built-in React integration, making it easier to add dynamic styling without a high runtime cost. [vanilla-extract](https://vanilla-extract.style/) does the same thing but better integrates with TypeScript and offers features like building custom utility styles.
 
-## Atomic CSS
+### Atomic CSS
 
 [Atomic CSS](https://byteofdev.com/posts/atomic-css/) works well with React due to its scoping. Since the styles are atomic, they are automatically scoped to just the elements that use them, making it easier to reason about styling with components. Additionally, Atomic CSS's repetition can be solved using components. Some of the most notable Atomic CSS libraries currently are [Tailwind](https://tailwindcss.com/) and [UnoCSS](https://github.com/unocss/unocss). Tailwind is, by far, the most dominant Atomic CSS library out there due to its wide variety of features and ease of use. UnoCSS is a more recent project that is significantly faster and more flexible than Tailwind.
 
-## Faster React Replacements
+### Faster React Replacements
 
 While React has many advantages, performance is not one of them. Luckily, there are replacements for React that retain a identical or almost identical API. The most notable are [Preact](https://preactjs.com/) and [Solid](https://www.solidjs.com/). First, we have Preact. Preact is faster and significantly smaller (3kb Gzipped) than React while having an identical API. You can use Preact almost anywhere, and it can be used as a drop in replace with `preact/compat`. Second, there is Solid. Solid does not have an identical API to React, but the ways it differs allows it to get a large performance advantage. In terms of runtime performance, Solid is significantly faster than both Preact and React. Solid achieves this by forgoing a virtual DOM and building components only once instead of whenever state updates. Solid is also smaller than React, although it is a bit bigger than Preact.
 
-# Conclusion
+## Conclusion
 
 I hope you learned something from this today. If you enjoyed reading this, sign up for the mailing list below and subscribe to RSS to get more of these articles. Thanks for reading!

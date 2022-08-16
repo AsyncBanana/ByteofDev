@@ -2,30 +2,30 @@
 title: Array.map() versus Array.forEach()
 description: Learn the difference between Array.map() and Array.forEach() and how to use each in JavaScript
 author: AsyncBanana
-image: {
+image:
+  {
     url: https://ik.imagekit.io/serenity/ByteofDev/Tip_Heading_Images/map_vs_foreach,
-    alt: Stock photo of JavaScript by Ferenc Almasi
-}
+    alt: Stock photo of JavaScript by Ferenc Almasi,
+  }
 tags: [JavaScript, Arrays]
 published: 1641764814162
 updated: 1641764814162
-layout: $layouts/PostLayout.astro
-setup: |
-  import Callout from '$lib/components/callout.svelte'
 ---
+
+import Callout from "$lib/components/callout.svelte";
 
 If you are learning about iterating through arrays, you have likely come across two different methods. `Array.map()` and `Array.forEach()`. At first glance, it might seem like they are the same, as they both iterate through arrays and call a function for each item. However, they are different, and many people mix them up, which can be very bad.
 
-## What Array.forEach() does
+### What Array.forEach() does
 
 `Array.forEach()` is pretty simple. When you run `.forEach(function)` on an array, it calls `function` for each element with that element passed to it.
 
 ```js
-const fruits = ["bananas","pears","oranges"]
+const fruits = ["bananas", "pears", "oranges"];
 
-fruits.forEach((fruit)=> {
-    console.log(fruit)
-})
+fruits.forEach((fruit) => {
+	console.log(fruit);
+});
 // expected output: "bananas"
 // expected output: "pears"
 // expected output: "oranges"
@@ -33,23 +33,23 @@ fruits.forEach((fruit)=> {
 
 `Array.forEach()` does not return anything, so if you assigned a variable to it, the variable would be set to `undefined`.
 
-## What Array.map() does differently
+### What Array.map() does differently
 
 `Array.map()` is similar in most ways. However, it differs in one important way. Instead of not returning anything, it returns an array of new values from the result of the function callback.
 
 ```js
-let fruits = ["bananas","pears","oranges"]
+let fruits = ["bananas", "pears", "oranges"];
 
-fruits = fruits.map((fruit)=> {
-    return `${fruit} are awesome`
-})
+fruits = fruits.map((fruit) => {
+	return `${fruit} are awesome`;
+});
 
-console.log(fruits)
+console.log(fruits);
 // expected output: ["bananas are awesome", "pears are awesome", "oranges are awesome"]
 ```
 
 This can make it easy to modify every value in an array. However, it is commonly misused to do what `Array.forEach()` is intended to do.
 
-# Conclusion
+## Conclusion
 
 `Array.forEach()` and `Array.map()` are related, but not the same. Use `Array.map()` when trying to modify every item in an array, and `Array.forEach()` otherwise, because you are less likely to mess up your code, and it is usually faster. Enforcing these rules also makes your code clearer and improves quality. If you found this interesting, be sure to sign up for the mailing list below to get tips and posts like these delivered to your mailbox. I hope you learned something from this, and thank you for reading.

@@ -1,3 +1,9 @@
+article {
+	@apply w-full;
+}
+#article-content {
+	@apply !w-screen !overflow-x-hidden;
+}
 article :is(h1, h2, h3, h4, h5, h6) {
 	@apply font-bold my-2 indent-0;
 }
@@ -29,7 +35,7 @@ article,
 article p {
 	font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui,
 		helvetica neue, helvetica, Ubuntu, roboto, noto, arial, sans-serif;
-	@apply indent-8 my-4 text-xl break-words;
+	@apply my-4 text-xl break-words indent-8;
 }
 article pre {
 	@apply indent-0;
@@ -37,17 +43,20 @@ article pre {
 article p code {
 	font-family: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco,
 		Consolas, Liberation Mono, Courier New, monospace;
-	@apply bg-base-100 py-0.5 rounded-sm;
+	@apply rounded-sm bg-base-100 py-0.5;
 }
 article li {
 	@apply list-disc;
 }
 article img {
-	@apply my-4 mx-auto;
+	@apply mx-auto my-4;
 	max-height: 50%;
 }
+article figcaption {
+	@apply text-center italic;
+}
 article table {
-	@apply table m-auto w-full;
+	@apply m-auto w-full table ;
 }
 article table thead tr th {
 	@apply bg-base-300 text-xl;
@@ -62,6 +71,9 @@ article blockquote {
 }
 article blockquote p {
 	text-indent: 0;
+}
+article img + em {
+	@apply m-auto text-lg text-center block;
 }
 :is(h1, h2, h3, h4, h5, h6):hover .headerLink {
 	opacity: 0.5;

@@ -1,0 +1,22 @@
+---
+// @ts-nocheck
+import PostLayout from "$layouts/PostLayout.astro";
+import getPostUrl from "$lib/modules/getPostUrl";
+import mdxComponents from "$lib/modules/mdxComponents"
+import type { Post } from "$lib/modules/types";
+export async function getStaticPaths() {
+	const posts: Array<Post> = await Astro.glob("/src/content/tips/*.mdx")
+	return posts.map((post) => {
+		console.log(post)
+		return {
+			params: { post: getPostUrl(post, false) },
+			props: { post: post }
+		}
+	})
+}
+const post: Post = Astro.props.post
+---
+
+<PostLayout content={post.frontmatter}>
+	<post.default components={mdxComponents} />
+</PostLayout>

@@ -8,72 +8,62 @@ const navUrls = [
 ---
 
 <html lang="en-US">
-	<head>
-		<HeadSEO SEO={Astro.props.SEO || {}} />
-		<link rel="icon" href="/favicon.svg" />
-		<style global>
-			@import "../lib/stylesheets/theme.css";
-		</style>
-		<link
-			rel="alternate"
-			type="application/rss+xml"
-			href="https://byteofdev.com/rss.xml"
-			title="ByteofDev RSS"
-		/>
-		<script
-			src={Astro.resolve("../lib/modules/pageview.ts")}
-			hoist
-			type="module"></script>
-	</head>
-	<body class="bg-base-200">
-		<div class="flex flex-col min-h-screen" style="scroll-behavior: smooth;">
-			<header class="bg-base-100 shadow-md mb-6 top-0 z-30 navbar flex-wrap">
-				<div class="mx-2 px-2">
-					<a class="flex flex-row font-extrabold text-xl align-middle" href="/"
-						><img src="/favicon.svg" alt="Logo" height="32" width="32" /><span
-							class="ml-2 inline">ByteofDev</span
-						></a
-					>
-				</div>
-				<nav class="block mr-3 w-full md:w-auto flex-auto">
-					{navUrls.map((item) => (
-						<a href={item.url} class="btn btn-ghost btn-sm mr-3">
-							{item.text}
-						</a>
-					))}
-				</nav>
-			</header>
-			<main id="page" class="mb-6">
-				<slot />
-			</main>
-			<footer class="bg-neutral text-neutral-content p-10 footer">
-				<div>
-					<img src="/favicon.svg" alt="Logo" height="96" width="96" />
-				</div>
-				<div>
-					<span class="footer-title">ByteofDev</span>
-					{navUrls.map((item) => (
-						<a href={item.url} class="link link-hover p-1">
-							{item.text}
-						</a>
-					))}
-					<a
-						class="link link-hover p-1"
-						href="https://github.com/AsyncBanana/Byteofdev"
-						target="_blank"
-						rel="noopener">GitHub</a
-					>
-					<a href="/signup/" class="link-hover p-1">Sign up</a>
-				</div>
-			</footer>
-		</div>
-		<style>
-			a {
-				@apply rounded-btn;
-			}
-			:is(h1, h2, h3, h4, h5, h6) {
-				font-family: "Inter", Verdana, Geneva, Tahoma, sans-serif;
-			}
-		</style>
-	</body>
+
+<head>
+	<HeadSEO SEO={Astro.props.SEO || {}} />
+	<meta http-equiv="Accept-CH" content="DPR, Width">
+	<link rel="icon" href="/favicon.svg" />
+	<style is:global>
+		@import "../lib/stylesheets/theme.css";
+	</style>
+	<link rel="alternate" type="application/rss+xml" href="https://byteofdev.com/rss.xml" title="ByteofDev RSS" />
+	<script>import "../lib/modules/pageview.ts"</script>
+</head>
+
+<body class="bg-base-200">
+	<div class="flex flex-col min-h-screen" style="scroll-behavior: smooth;">
+		<header class="flex-wrap bg-base-100 shadow-md mb-6 top-0 z-30 navbar">
+			<div class="mx-2 px-2">
+				<a class="flex flex-row font-extrabold text-xl align-middle" href="/"><img src="/favicon.svg" alt="Logo"
+						height="32" width="32" /><span class="ml-2 inline">ByteofDev</span></a>
+			</div>
+			<nav class="flex-auto mr-3 w-full block md:w-auto">
+				{navUrls.map((item) => (
+				<a href={item.url} class="mr-3 btn btn-ghost btn-sm">
+					{item.text}
+				</a>
+				))}
+			</nav>
+		</header>
+		<main id="page" class="mb-6">
+			<slot />
+		</main>
+		<footer class="bg-neutral text-neutral-content p-10 footer">
+			<div>
+				<img src="/favicon.svg" alt="Logo" height="96" width="96" />
+			</div>
+			<div>
+				<span class="footer-title">ByteofDev</span>
+				{navUrls.map((item) => (
+				<a href={item.url} class="p-1 link link-hover">
+					{item.text}
+				</a>
+				))}
+				<a class="p-1 link link-hover" href="https://github.com/AsyncBanana/Byteofdev" target="_blank"
+					rel="noopener">GitHub</a>
+				<a href="/signup/" class="p-1 link-hover">Sign up</a>
+			</div>
+		</footer>
+	</div>
+	<style>
+		a {
+			@apply rounded-btn;
+		}
+
+		:is(h1, h2, h3, h4, h5, h6) {
+			font-family: "Inter", Verdana, Geneva, Tahoma, sans-serif;
+		}
+	</style>
+</body>
+
 </html>

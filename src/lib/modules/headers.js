@@ -1,8 +1,8 @@
 const CSPDirectives = {
 	"img-src": ["*", "'self'"],
 	"font-src": ["*", "'self'", "data:"],
-	"style-src": ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
-	"default-src": ["'self'", "*.storyblok.com", "ws://localhost:24678"],
+	"style-src": ["'self'", "'unsafe-inline'"],
+	"default-src": ["'self'", "ws://localhost:24678"],
 	"script-src": ["'self'", "'unsafe-inline'"],
 };
 const CSP = Object.entries(CSPDirectives)

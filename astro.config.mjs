@@ -1,40 +1,31 @@
-// @ts-check
-export default /** @type {import('astro').AstroUserConfig} */ ({
-	// Comment out "renderers: []" to enable Astro's default component support.
-	//renderers: [],
+import svelte from "@astrojs/svelte";
+import sitemap from "@astrojs/sitemap";
+import { defineConfig } from "astro/config";
+import mdx from "@astrojs/mdx";
+import tailwind from "@astrojs/tailwind";
+import remarkPrism from "remark-prism";
+import remarkEmoji from "@fec/remark-a11y-emoji";
+import rehypeSlug from "rehype-slug";
+// https://astro.build/config
+export default defineConfig({
+	integrations: [
+		svelte(),
+		sitemap({
+			filter: (page) => page !== "https://byteofdev.com/posts/",
+		}),
+		mdx({
+			remarkPlugins: {
+				extends: [remarkPrism, remarkEmoji],
+			},
+			rehypePlugins: [rehypeSlug],
+		}),
+		tailwind(),
+	],
 	vite: {
 		plugins: [],
 	},
-	buildOptions: {
-		site: "https://byteofdev.com",
-	},
-	markdownOptions: {
-		render: [
-			"@astrojs/markdown-remark",
-			{
-				remarkPlugins: [
-					"remark-gfm",
-					"remark-smartypants",
-					"remark-prism",
-					"@fec/remark-a11y-emoji",
-					["remark-behead", { depth: 1 }],
-				],
-				rehypePlugins: [
-					"rehype-slug",
-					[
-						"rehype-autolink-headings",
-						{
-							content: {
-								type: "element",
-								tagName: "span",
-								properties: { className: ["headerLink"], ariaHidden: true },
-								children: [],
-							},
-							behavior: "append",
-						},
-					],
-				],
-			},
-		],
+	site: "https://byteofdev.com",
+	markdown: {
+		syntaxHighlight: "prism",
 	},
 });

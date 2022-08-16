@@ -4,80 +4,81 @@ description: What is Deno, why does it matter, and how is it currently used for 
 author: AsyncBanana
 tags: [State of the Web, Deno, TypeScript]
 published: 1641764814162
-updated: 1641764814162
+updated: 1660676129038
 image:
   {
     url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/State_of_the_Web_Deno,
     alt: Deno logo,
   }
-layout: $layouts/PostLayout.astro
 ---
-[Deno](https://deno.land/) is a modern JavaScript runtime, competing with Node.js, that promises features like secure I/O and built-in TypeScript support. Ryan Dahl, Node.js' original creator, created Deno, building it in Rust.
 
-# Background of Deno
+[Deno](https://deno.land/) is a modern JavaScript runtime, competing with Node.js (and more recently [Bun](https://byteofdev.com/posts/what-is-bun)), that promises features like secure I/O and built-in TypeScript support. Ryan Dahl, Node.js' original creator, created Deno, building it in Rust.
+
+## Background of Deno
 
 ![Dino from Deno logo in a raining city (by Dimitrij Agal)](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/deno_city)
 
-In Ryan Dahl's talk [Ten things I regret about Node](https://www.youtube.com/watch?v=M3BM9TB-8yA), he talked about many problems with Node. This includes things like Node's failure to embrace web standards, security, Node's way of compiling native modules (GYP), and NPM. Then, he revealed Deno. Deno was a new project that fixed many of the problems Ryan Dahl had earlier mentioned, along with extra advantages like built-in TypeScript support. Ryan Dahl initially built Deno in Go but later switched to Rust.
+In Ryan Dahl's talk [Ten things I regret about Node](https://www.youtube.com/watch?v=M3BM9TB-8yA), he talked about many problems with Node. These issues include Node's failure to embrace web standards, security, Node's way of compiling native modules (GYP), and NPM. Then, he revealed Deno. Deno was a new project that fixed many problems Ryan Dahl had earlier mentioned, along with extra advantages like built-in TypeScript support. Ryan Dahl initially built Deno in Go but later switched to Rust.
 
-Since Deno was first announced, it has made significant progress. 1.0 was released in August 2020, and companies like Slack have adopted Deno. In addition, Deno has also released their own edge serverless function platform, [Deno Deploy](https://deno.com/deploy).
+Since Ryan Dahl first announced Deno, it has made significant progress. 1.0 was released in August 2020, and companies like Slack, Netlify, and GitHub have adopted Deno. In addition, The Deno Company has also released its own edge serverless function platform, [Deno Deploy](https://deno.com/deploy).
 
-# Why Deno is significant
+## Why Deno is significant
 
-## Security
+### Security
 
 ![Phone with lock](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/phone_security)
 
 V8 is a sandboxed language that makes it impossible for code to do something outside of its boundaries. However, Node.js allows access to things like networking and the filesystem inside the sandbox, which removes the security benefits of V8. Even for trusted programs, this can be hurtful because insecure code or malicious dependencies could deal significant damage and steal information.
 
-Deno solves with a system of [permissions](https://deno.land/manual@v1.17.1/getting_started/permissions). These permissions make you define precisely what the program can do outside of the sandbox, like filesystem access and environment variables. For example, if you wanted to allow for reading files within the local `assets` directory, you would run Deno with a command like:
+Deno solves with a system of [permissions](https://deno.land/manual/getting_started/permissions). These permissions make you define precisely what the program can do outside of the sandbox, like filesystem access and environment variables. For example, if you wanted to allow for reading files within the local `assets` directory, you would run Deno with a command like:
 
 ```
 deno run --allow-read=./assets
 ```
+
 Because of these capabilities, you can ensure that your code does not reach outside of its boundaries, increasing security.
 
-## Standardized APIs
+### Standardized APIs
 
-Because the Node.js and web platforms evolved in parallel, they have many differences. There are many examples of this, like the module system and HTTP requests.
+Because the Node.js and web platforms evolved in parallel and many web APIs came after Node.js versions of them, they have many differences. There are many examples of this, like the module system and HTTP requests.
 
-### ECMAScript Modules and CommonJS
+#### ECMAScript Modules and CommonJS
 
-When Node.js was first created, JavaScript could not use other modules beyond embedding them in `<script>` tags and using them from the global window scope. Since HTML and the window were unavailable on the server, Node.js needed a module format. Nodejs decided to adopt a form of CommonJS, which was a popular, simple, synchronous module format. However, CommonJS was not native to browsers (you would have to use a library like [Browserify](https://browserify.org/)), and there were differences between implementations of CommonJS.
+When Node.js was first created, JavaScript could not use other modules beyond embedding them in `<script>` tags and using them from the global window scope. Since HTML and the window were unavailable on the server, Node.js needed a module format. Node.js decided to adopt a form of CommonJS, which was a popular, simple, synchronous module format. However, CommonJS was not native to browsers (you would have to use a library like [Browserify](https://browserify.org/)), and there were differences between implementations of CommonJS.
 
 Years later, in 2016, a new module specification called ECMAScript Modules (ESM) was finalized in ES6. This module specification would work without any libraries in browsers. Additionally, it would solve many problems with CommonJS, like asynchronous module loading and tree shaking. However, it took a while for Node.js to add ESM support, and even after that, ESM adoption in Node.js was not very high, with the majority of NPM packages still only include CommonJS versions. Additionally, Node.js does not have an entirely standards-compliant ESM implementation and differs in things like including `.js` file extensions.
 
-In contrast, Deno only works with entirely standards-compliant ESM. This makes using Deno a lot simpler for both users and library authors. Speaking from experience, using one module format is a lot simpler than including both ESM and CommonJS. Deno also is more straightforward in that it sticks to the standards, so you know that your module code works correctly in browsers.
+In contrast, Deno only works with entirely standards-compliant ESM. Using one module format makes using Deno a lot simpler for both users and library authors. Speaking from experience, using just ESM is much simpler than including both ESM and CommonJS. Deno also is more straightforward in that it sticks to the standards, so you know that your module code works correctly in browsers.
 
-### HTTP Fetching
+#### HTTP Fetching
 
-Sending HTTP requests is another area of incompatibility which Deno solves. Node.js allows for HTTP requests through the `http` and `https` standard library functions. However, the modern way of running HTTP requests on the web is through the `fetch()` API, which is standardized and is simpler than `http`. Node.js does not support `fetch()`, and so people have had to turn to using packages like [node-fetch](https://www.npmjs.com/package/node-fetch) for the simplicity of `fetch()` or [cross-fetch](https://www.npmjs.com/package/cross-fetch) for full cross-platform compatibility. This is problematic because it is another dependency needed, and it is not immediately available without importing. However, Deno supports the `fetch()` API by default, which solves these problems.
+Sending HTTP requests is another area of incompatibility which Deno solves. Node.js allows for HTTP requests through the `http` and `https` standard library functions. However, the modern way of running HTTP requests on the web is through the `fetch()` API, which is standardized and simpler than `http`. The most recent versions of Node supports `fetch()`. However, Node's `fetch()` support is limited to very recent versions, so many people have had to turn to using packages like [node-fetch](https://www.npmjs.com/package/node-fetch) for the simplicity of `fetch()` or [cross-fetch](https://www.npmjs.com/package/cross-fetch) for full cross-platform compatibility. This is problematic because it is another dependency needed, and it is not immediately available without importing. However, all versions of Deno support the `fetch()` API by default, which solves these problems.
 
-## Decentralized Module Hosting
+### Decentralized Module Hosting
 
 No, just because it is decentralized does not mean it uses blockchain 😉 ([although there is a Deno package hosting service that is backed by blockchain](https://nest.land/)). Instead, Deno's decentralized module hosting allows you to request modules by URL instead of from a centralized package database like NPM. Doing this allows for more freedom in module hosting. Deno does offer a module hosting service itself at [deno.land/x](https://deno.land/x), but there are many others you can use, and you can even link to any ESM CDN or something else that serves a JavaScript file. Many people worry about the remote code changing because it is not necessarily controlled, but most Deno module hosting services are immutable, and Deno caches the remote file, so it only changes if you explicitly reload the cache.
 
-## Built-in TypeScript support
+### Built-in TypeScript support
 
 Deno allows you to directly run a TypeScript file like JavaScript without passing it through a compiler. Deno even optimizes this process by caching the resulting JavaScript and using [SWC](https://swc.rs/), a fast Rust-based compiler, if type checking is not required. Built-in TypeScript support increases efficiency because you don't need to set up a build step if you are building an application with TypeScript. There are ways to do automatic TypeScript compiling in Node.js, like through [ts-node](https://www.npmjs.com/package/ts-node), but they are not as feature-rich and are not installed by default.
 
-# The State of Deno
+## The State of Deno
 
 ![Planet with the Deno dinosaur (By Hashrock)](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/deno_planet)
 
-## Ecosystem
+### Ecosystem
 
-Currently, this is the biggest problem with Deno and is a big reason why most Node.js developers are not migrating to Deno (this is a nasty problem because if Node.js developers don't migrate, the ecosystem grows more slowly). There are 3,501 modules on [deno.land/x](https://deno.land/x), compared to 1.3 million on NPM. However, many people use other package hosting services (see "Decentralised Module Hosting" above), and most modern web packages should work on Deno. The biggest blockers to Node compatibility are CommonJS and the Node API. Deno provides a [Node.js compatibility mode](https://deno.land/manual@v1.17.2/npm_nodejs/compatibility_mode), but it is experimental.
+Currently, this is the biggest problem with Deno and is a big reason why most Node.js developers are not migrating to Deno (this is a nasty problem because if Node.js developers don't migrate, the ecosystem grows more slowly). There are 5,068 modules on [deno.land/x](https://deno.land/x), compared to 2 million on NPM. However, many people use other package hosting services (see "Decentralised Module Hosting" above), and most modern web packages should work on Deno. The biggest blockers to Node compatibility are CommonJS and the Node API. Deno provides a [Node.js compatibility mode](https://deno.land/manual/node/compatibility_mode), but it is experimental.
 
-## Development
+### Development
 
 Deno is very actively developed, with monthly releases and new features in each release. Deno is even backed by a [official company](https://deno.com/blog/the-deno-company), which can be both good or bad depending on how you look at it. There are more than 600 contributors to Deno, which is growing. Basically, Deno is a very actively maintained project
 
-## Deployment
+### Deployment
 
 Deno can be deployed pretty widely, although not as widely as Node.js.
 
-### Containers &  Managed VMs
+#### Containers & Managed VMs
 
 Deno has ok support for various container services. Deno.land provides an [official Docker image](https://hub.docker.com/r/denoland/deno) for services that support Docker. However, while most popular container services support Deno, the support is often unofficial and not always maintained. Here is a list of tools and resources for running Deno on container services:
 
@@ -85,15 +86,15 @@ Deno has ok support for various container services. Deno.land provides an [offic
 - [Heroku](https://github.com/chibat/heroku-buildpack-deno)
 - [Azure App Service](https://docs.microsoft.com/en-us/azure/developer/javascript/tutorial/deploy-deno-app-azure-app-service-azure-cli)
 
-### Serverless Functions
+#### Serverless Functions
 
 Serverless is where the Deno company comes in. Their primary commercial offering is [Deno Deploy](https://deno.com/deploy), a serverless edge function runner for Deno scripts. It is conceptually similar to Cloudflare Workers in that it uses V8 Isolates for ultra-fast startup times. The advantage of Deno Deploy is that it includes the Deno API and all of the other features that make Deno so helpful. However, Deno Deploy is still in beta, so you might want to look elsewhere right now. Here is a list of tools and resources to run Deno on various serverless function providers:
 
 - [AWS Lambda](https://github.com/hayd/deno-lambda)
-- [Vercel](https://github.com/lucacasonato/now-deno)
+- [Vercel](https://github.com/vercel-community/deno)
 - [Begin](https://blog.begin.com/posts/2019-12-20-deno-runtime-support-for-architect)
 - [Azure Functions](https://github.com/anthonychu/azure-functions-deno-worker)
 
-# Conclusion
+## Conclusion
 
-Deno is an up-and-coming technology and might someday replace Node as the primary way to run JavaScript. Join the mailing list below if you want to learn more about emerging technologies in web development weekly. I hope you learned something from this, and thank you for reading.
+Deno is an up-and-coming technology and might someday replace Node as the primary way to run JavaScript. While Node.js is fixing some of the problems that Deno solves, legacy support is holding it back, which gives Deno an advantage. Join the mailing list below if you want to learn more about emerging technologies in web development weekly. I hope you learned something from this, and thank you for reading.

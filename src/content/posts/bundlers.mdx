@@ -10,96 +10,101 @@ image:
     url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/State_of_the_Web_Bundlers,
     alt: Logos of various bundlers,
   }
-layout: $layouts/PostLayout.astro
-setup: |
-  import Callout from '$lib/components/callout.svelte'
 ---
+
+import Callout from "$lib/components/callout.svelte";
 
 Ever since Browserify, bundlers have been extremely important in the web ecosystem. They provide the ability to automatically process code, which opens up opportunities for performance optimization and non-native languages. This article looks at the background of bundlers, why they are essential, and their current state.
 
-# Background of Bundlers
+## Background of Bundlers
 
-## The Web Before Bundlers
+### The Web Before Bundlers
 
 For a large part of the web, bundlers did not exist. To include scripts, most people just linked to the library on a CDN like [CDNJS](https://cdnjs.com/) or [Google Hosted Libraries](https://developers.google.com/speed/libraries). This would begin to change in 2009 when Node.js was released. Instead of using CDNs, Node.js came with its package manager, npm. npm was easy to use because every library was just one `npm install` away, and updating was effortless. Because of the ease of use, many people wanted to use npm on the web. However, this was impossible until [Browserify](https://browserify.org/) came along.
 
-## Browserify
+### Browserify
 
 Browserify's tagline describes itself pretty well.
 
-<Callout type="quote">Browserify lets you `require('modules')` in the browser by bundling up all of your dependencies.</Callout>
+<Callout type="quote">
+	Browserify lets you `require('modules')` in the browser by bundling up all of
+	your dependencies.
+</Callout>
 
 Browserify was the first JavaScript "bundler." If you do not know what a bundler is, it is a tool that bundles multiple scripts together into one script and often performs transformations on the scripts it bundles. This means that you can bundle different scripts from NPM with your code by parsing `require()` statements in your code. Bundling also meant that your site was often faster because there were not as many HTTP requests being sent out, which reduced overhead (this is less the case in modern browsers because HTTP/2 adds the ability to download multiple resources on a single connection). Browserify quickly gained adoption because of these advantages. It is also important to note other ways of using modules on the web, like Require.js, which used AMD instead of CommonJS, and Bower, which fully replaced NPM for the browser.
 
-## Grunt & Gulp
+### Grunt & Gulp
 
 While Browserify was great at bundling scripts together, it was not quite as good at transforming code. Let's say you wanted to compile your CoffeeScript code to JavaScript. You can do this with plain Browserify. However, it is unwieldy and relatively inflexible. To fix this, a new group of tools for the web where born, which focused on running code transforms. These are usually called task runners, and the most popular ones are [Grunt](https://gruntjs.com/) and [Gulp](https://gulpjs.com/). Grunt was the first task manager, first released in January of 2012. It allowed for more flexible code transforms when using bundlers like Browserify or without a bundler. However, there were still problems with Grunt, which were solved by Gulp. Gulp is faster, as it uses Node streams instead of temporary files and runs tasks in parallel, as well as allowing for people to use a script instead of a JSON configuration file. This was still not perfect, though, because it was annoying to use two separate tools. This was fixed by Webpack
 
-## Webpack
+### Webpack
 
 [Webpack](https://webpack.js.org/) combines both bundling and compiling, making it easier than the previous standard of Gulp + Browserify. Webpack first started becoming popular in 2016, and it is still popular to this day. There are also some other advantages of Webpack. First, it supports bundling and transforming non-JavaScript assets, like HTML, CSS, and images. Second, the API is often easier to use (although it is still complicated relative to the newest bundlers). Many tools, like Create-React-App, Next.js, and Vuepress, use Webpack.
 
-# Why Bundlers/Build tools are Significant
+## Why Bundlers/Build tools are Significant
 
-<Callout type="info">If you already know why bundlers are used, you can skip this section</Callout>
+<Callout type="info">
+	If you already know why bundlers are used, you can skip this section
+</Callout>
 
-## Optimization
+### Optimization
 
 In general, most people do not write their code like this:
 
 ```js
-let l="hello";l+=" world!",l=l.repeat(5),console.log(l);
+let l = "hello";
+(l += " world!"), (l = l.repeat(5)), console.log(l);
 ```
 
 Instead, to make things readable, they would probably write something like this:
 
 ```js
-let text = "hello"
-text +=" world! "
-text = text.repeat(5)
-console.log(text)
+let text = "hello";
+text += " world! ";
+text = text.repeat(5);
+console.log(text);
 ```
 
 However, the first example is smaller and therefore transferred faster. Now, you might think you have to sacrifice size for readability, but there is a solution, minifiers. Minifiers automatically transform your source code into a smaller form. In fact, the first code example was generated by [Terser](https://terser.org/), which is one of the best minifiers. Bundlers make using minifiers easy through plugins. Additionally, bundlers help perform other optimizations, like tree shaking, which removes unused code. Finally, bundling scripts itself can improve performance by reducing HTTP requests needed.
 
-## Non-web Native Languages
+### Non-web Native Languages
 
 Often, it is more efficient to use a language like [Sass](https://sass-lang.com/) or [Stylus](https://stylus-lang.com/) instead of plain CSS. Or, perhaps you are trying to use [TypeScript](https://www.typescriptlang.org/) to enforce static typing in your code. Whatever the case, it is often better to use languages that the web does not natively support. Bundlers can help with this. Instead of running a bunch of different commands yourself to compile everything, you can often just add plugins to your bundler config file and run the bundler.
 
-## Development Features
+### Development Features
 
 Most modern bundlers have features that enable faster iteration, like Hot Module Reload (HMR). HMR automatically reloads specific modules that have changed rather than the whole page, making reloading faster. Additionally, if you are using a framework like React, React state can be preserved, which means that the page data does not reset every time.
 
-## Easy Inclusion of Modules
+### Easy Inclusion of Modules
 
 Bundling modules together is the original reason why bundlers were made. Even though there are many other features now, this is still important. Even with the native support of ESM, it is still helpful to be able to `import` or `require` modules without having to write full import paths (although [import maps](https://github.com/WICG/import-maps) could help with this).
 
-# The State of Build Tools
+## The State of Build Tools
 
-## Adoption
+### Adoption
 
 Nowadays, almost every web developer uses one bundler or another. Webpack is by far the most popular, with [Rollup](https://rollupjs.org/) and [Vite](https://vitejs.dev/) in second and third, respectively. Currently, Vite is the fastest-growing major bundler, which has been adopted by frameworks like Vitepress, SvelteKit, Astro, and more.
 
-## ECMAScript Modules (ESM)
+### ECMAScript Modules (ESM)
 
 ESM is supported in most modern bundlers. While tools like Browserify do not support ESM, most tools as new or newer than Webpack support ESM. Additionally, ESM is often the recommended way to do things for supported bundlers because it is more future-oriented than CommonJS or AMD, and it is easier to statically analyze imports for tree shaking. ESM also opens up the opportunity for unbundled development, which we cover below.
 
-## Unbundled Development
+### Unbundled Development
 
 Unbundled development utilizes native ESM support in browsers to offer an ultra-fast development experience. Unlike a traditional bundler which bundles everything in development, unbundled development transforms the code and rewrites import paths to the ESM compliant file path without bundling your code. Additionally, most bundlers that do this pre-bundle dependencies because that decreases the number of imports needed, and dependencies are unlikely to change often. The two most prominent bundlers that utilize unbundled development are [Vite](https://vitejs.dev/) and [Snowpack](https://www.snowpack.dev/). Snowpack, created in 2019, was the first bundler to have an unbundled development experience. However, while Snowpack was popular for some time, this did not last forever. In 2020, the team behind Vue created Vite. Vite has many advantages over Snowpack, like the ease of use, speed, better optimization, and more. Additionally, popular projects like SvelteKit adopted Vite instead of Snowpack. All of this helped Vite pass Snowpack in downloads, and it now has [more than 10x downloads](https://www.npmtrends.com/snowpack-vs-vite) compared to Snowpack. In fact, even [Astro](https://astro.build/), a project created by the team behind Snowpack (be on the lookout for an article about Astro), is now using Vite. Overall, if you want fast, unbundled development, I recommend Vite.
 
-## Faster Languages
+### Faster Languages
 
 Another way that many people are trying to speed up bundling and code transformation is through using more optimized languages like Go or Rust. Currently, the two most notable tools that do this are [esbuild](https://esbuild.github.io/) and [SWC](https://swc.rs/). esbuild was created by Evan Wallace in 2016 using Go. esbuild performed the role of Babel in transforming modern JavaScript, the TypeScript compiler, Terser, and basic bundling all in one package that was significantly faster than any other tools at that time. SWC was created in 2017 by kdy1 using Rust. SWC is even faster than esbuild, although only marginally. esbuild is currently more popular than SWC and is used by projects like Vite, although [Deno](/posts/deno) and Next.js have adopted SWC.
 
-## Low to Zero Config
+### Low to Zero Config
 
 Webpack has an infamously complex plugin system. While it is very powerful, it can be scary for beginners. Luckily, there are newer bundlers that focus on this. [Parcel](https://parceljs.org/) was created in 2017 by Devon Govett to allow for easy, zero-config bundling. Parcel supports many of the features Webpack plugins provide, like Sass, TypeScript, and JSX, without requiring you to do anything. Additionally, due to caching and the increasing use of Rust, Parcel v2 can be faster than Webpack. Vite is another low-config bundler, although it does not do as much out of the box.
 
-## What About Webpack?
+### What About Webpack?
 
 Webpack is still the most popular bundler. While it has not been taking advantage of the ability for massive speed improvements specified above, it still has added new features in the most recent version, Webpack 5. The biggest thing added in Webpack 5 is [module federation](https://webpack.js.org/concepts/module-federation/), or micro-frontends. Module federation separates different elements of a website and makes it easier to share pieces of code like component libraries. Another big thing Webpack added in version 5 is better caching, which can improve reload times in development. Overall, Webpack is still advancing, although it is falling behind some bundlers in certain features.
 
-# Conclusion
+## Conclusion
 
 The world of web bundlers is advancing quickly. Hopefully, this article gave you an overview of what is currently happening for bundlers. If you liked this article, sign up for the ByteofDev mailing list below (or don't, but I hope you do 🙃), and thank you for reading.

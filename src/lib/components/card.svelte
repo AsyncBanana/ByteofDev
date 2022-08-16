@@ -1,17 +1,31 @@
-<script>
-	export let item;
+<script lang="ts">
+	import getPostUrl from "$lib/modules/getPostUrl";
+	export let item: Post;
+	import type { Post } from "$lib/modules/types";
 	import dayjs from "dayjs";
 </script>
 
-<a class="rounded-md bg-base-100 p-4 shadow-md" href={item.url + "/"}>
+<a
+	class="rounded-md flex flex-col bg-base-100 shadow-md p-4"
+	href={getPostUrl(item)}
+>
 	<img
-		src={item.image.url}
+		src={item.frontmatter.image.url}
 		alt="Article header"
-		class="rounded-md w-full aspect-video bg-base-300"
+		class="rounded-md bg-base-300 w-full aspect-video"
 		loading="lazy"
 	/>
-	<h2 class="font-bold text-xl">{item.title}</h2>
-	<p>{item.description}</p>
-	<p>By {item.author}</p>
-	<p>{dayjs(item.published).format("MMMM D, YYYY")}</p>
+	<h2 class="font-bold text-xl">{item.frontmatter.title}</h2>
+	<p>{item.frontmatter.description}</p>
+	<br />
+	<div style="margin-block-start: auto;">
+		<p class="font-normal">By {item.frontmatter.author}</p>
+		<p class="font-medium">
+			{dayjs(item.frontmatter.published).format("MMMM D, YYYY")}{item
+				.frontmatter.updated >
+			item.frontmatter.published + 86400000 // filter out tiny post-launch updates
+				? ` (Updated ${dayjs(item.frontmatter.updated).format("MMMM D, YYYY")})`
+				: ``}
+		</p>
+	</div>
 </a>

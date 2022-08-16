@@ -1,35 +1,50 @@
 ---
 import BaseLayout from "$layouts/BaseLayout.astro";
 import "$lib/stylesheets/postTheme.css";
+import StoryCard from "$lib/components/card.svelte";
 import Icon from "svelte-fa";
+import type { Post } from "$lib/modules/types";
 import { faEnvelope, faGlobe } from "@fortawesome/free-solid-svg-icons";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 const { name, image, website, email, github } = Astro.props.content;
+const authorURL = Astro.url.pathname.split("/").pop().toLowerCase()
+// @ts-ignore
+let posts: Array<Post> = [
+	...await Astro.glob("/src/content/tips/*.mdx"),
+	...await Astro.glob("/src/content/posts/*.mdx"),
+];
+posts = posts.filter((value) =>
+	value.frontmatter.author.toLowerCase() === authorURL
+);
+
+posts.sort((a, b) => b.frontmatter.published - a.frontmatter.published);
+
+posts = posts.slice(0, 20);
 ---
 
 <BaseLayout SEO={{ title: `About ${name}` }}>
-	<div class="w-3/5 m-auto">
+	<div class="m-auto grid p-4 gap-5 md:p-0 md:w-3/4">
 		<div class="flex">
-			<img src={image} alt={`Profile picture of ${name}`} class="rounded-full"
-			/>
-			<h1 class="text-4xl font-bold self-center">{name}</h1>
+			<img src={image} alt={`Profile picture of ${name}`} class="rounded-full" />
+			<h1 class="font-bold text-4xl self-center">{name}</h1>
 		</div>
 		<article>
 			<slot />
 		</article>
 		<div class="flex justify-evenly">
-			<a href={website} class="btn btn-outline" target="_blank" rel="noopener"
-				><Icon icon={faGlobe} class="m-1" />Visit website</a
-			>
-			<a
-				href={`mailto:${email.name}@${email.host}`}
-				class="btn btn-outline"
-				target="_blank"
-				rel="noopener"><Icon icon={faEnvelope} class="m-1" />Email</a
-			>
-			<a href={github} class="btn btn-outline" target="_blank" rel="noopener"
-				><Icon icon={faGithub} class="m-1" />GitHub</a
-			>
+			<a href={website} class="btn btn-outline" target="_blank" rel="noopener">
+				<Icon icon={faGlobe} class="m-1" />Visit website
+			</a>
+			<a href={`mailto:${email.name}@${email.host}`} class="btn btn-outline" target="_blank" rel="noopener">
+				<Icon icon={faEnvelope} class="m-1" />Email
+			</a>
+			<a href={github} class="btn btn-outline" target="_blank" rel="noopener">
+				<Icon icon={faGithub} class="m-1" />GitHub
+			</a>
 		</div>
+		<main class="m-auto grid gap-5 md:grid-cols-3 lg:grid-cols">
+			{posts.map((post) =>
+			<StoryCard item={post} />)}
+		</main>
 	</div>
 </BaseLayout>

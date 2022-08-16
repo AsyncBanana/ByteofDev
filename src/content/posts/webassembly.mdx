@@ -10,24 +10,23 @@ image:
     url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/State_of_the_Web_WebAssembly,
     alt: WebAssembly logo,
   }
-layout: $layouts/PostLayout.astro
 ---
 
 [WebAssembly](https://webassembly.org/) (WASM) is a new assembly-like language on the web that aims to allow developers to write fast, portable code in the language of their choice. It is currently usable in [all modern browsers](https://caniuse.com/wasm) and Node.js, and some WebAssembly only runtimes.
 
-# Background of WebAssembly
+## Background of WebAssembly
 
 A coalition of browsers created WebAssembly in 2015 as a successor to asm.js and Google Native Client. Later, in 2017, it was released on all modern browsers, and in 2018 a formal spec was released. WebAssembly is a binary format that allows for cross-platform execution of sandboxed code without using JavaScript. It is also designed to be compact and be parsed and executed significantly faster than JavaScript. It can be used on the web and servers to allow secure and portable sandboxed code execution.
 
-# Why WebAssembly is significant
+## Why WebAssembly is significant
 
-## Security
+### Security
 
 ![Phone with security symbol](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/phone_security)
 
 WebAssembly is a sandboxed language, and because of that, it is secure. Tools like [Wasmer](https://wasmer.io) allow running WASM outside of the web with limited system calls and metering CPU cycles. WebAssembly's security has made lightweight serverless function environments like [Cloudflare Workers](https://workers.cloudflare.com), [Fastly Compute@Edge](https://www.fastly.com/products/edge-compute/serverless), and [WasmEdge](https://wasmedge.org/) increasingly adopt WebAssembly. WebAssembly can even be more secure than JavaScript on the web because of the simplicity of the compiler. Unlike JavaScript, which has a complicated three-tiered JIT compiler/runtime, [which can be very buggy](https://microsoftedge.github.io/edgevr/posts/Super-Duper-Secure-Mode/). In contrast, because WebAssembly is strongly typed and closer to machine code, the compilers for WebAssembly can be more straightforward and, therefore, more secure. [Firefox even uses WebAssembly for font shaping](https://hacks.mozilla.org/2020/02/securing-firefox-with-webassembly/) because of its sandboxing capabilities.
 
-## Speed
+### Speed
 
 ![Road with light streaks post processing](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/speed_road)
 
@@ -37,15 +36,15 @@ WebAssembly is very fast to both parse and execute. Even though it is relatively
 
 Another performance problem with WebAssembly is the high overhead for calling web APIs from WebAssembly. [Mozilla has optimized this](https://hacks.mozilla.org/2018/10/calls-between-javascript-and-webassembly-are-finally-fast-%f0%9f%8e%89/), but Chrome and Node.js still have this problem. However, WebAssembly performance is improving, and eventually, it might even be possible to get native performance with WebAssembly.
 
-## Flexibility
+### Flexibility
 
 WebAssembly is designed for multi-language support. It has a text format (WAT), but it is tough to use. Currently, you can compile many languages to WebAssembly, like [a form of TypeScript](https://www.assemblyscript.org/), Go, Rust, and C. This makes it so you are not constrained to JavaScript and can instead use another language for reasons like ecosystem, syntax, or code sharing between platforms.
 
-# The Current State of WebAssembly
+## The Current State of WebAssembly
 
 Widespread WebAssembly adoption is still far away, but it is making progress. Now we will look at the state of WebAssembly in web browsers, on servers, and the best languages to use.
 
-## Web support
+### Web support
 
 WebAssembly on the web is in its early stages, although you can already build full websites without touching JavaScript. The browser support for WebAssembly is pretty good, with all modern browsers supporting it.
 
@@ -53,7 +52,7 @@ WebAssembly on the web is in its early stages, although you can already build fu
 
 If you are trying to create a complete web application using WebAssembly, the easiest way to do that as of now is using Rust and a framework such as [Yew](https://yew.rs/) with [Trunk](https://github.com/thedodd/trunk/). However, because of the small ecosystem, WebAssembly is currently best for small performance focused parts of an application rather than whole applications.
 
-## Server support
+### Server support
 
 WebAssembly on the server is quickly growing. WebAssembly offers ultralight isolation, which makes it great for serverless functions because serverless functions need to start rapidly and have a low footprint. For an example of how this works, let's look at how one of the most popular serverless function services, [Cloudflare Workers](https://workers.cloudflare.com/), operates.
 
@@ -64,11 +63,11 @@ Cloudflare Workers executes serverless functions using V8 isolates rather than c
 However, because isolates are only for the V8 engine, only JavaScript and WebAssembly are supported. Because not everyone wants to use JavaScript, WebAssembly is a popular choice for Cloudflare Workers. In fact, Cloudflare Workers has excellent support for using Rust with WebAssembly, with an officially maintained Rust API.
 As you can see, WebAssembly is an excellent choice for servers due to how it can execute in a lightweight, secure environment. If you want to look at benchmarks including Cloudflare Workers to show the speed improvements of isolates, [here](https://blog.cloudflare.com/serverless-performance-comparison-workers-lambda/) are some.
 
-## Language Support
+### Language Support
 
 Currently, if you want to use WebAssembly, the best languages to use are [Rust](https://www.rust-lang.org/) or [AssemblyScript](https://www.assemblyscript.org/). Rust has the most extensive ecosystem for WebAssembly, with tools like [WASM-Bindgen](https://rustwasm.github.io/docs/wasm-bindgen/) for binding to JavaScript, [WASM-Pack](https://github.com/rustwasm/wasm-pack) for generating WASM packages, and more. However, even though AssemblyScript has a significantly smaller ecosystem, it can be a good choice for small WebAssembly modules. AssemblyScript is TypeScript with more advanced types, so it is easy to learn if you have previous JavaScript experience. Additionally, AssemblyScript can often be almost as fast as Rust or C WebAssembly, while delivering significantly smaller binaries.
 
-# Conclusion
+## Conclusion
 
 WebAssembly is still new to the world of the web. However, it is already finding a place in lightweight serverless function execution. I hope you have learned something from this, and this wraps up the first article in State of the Web. Thanks for reading!
 

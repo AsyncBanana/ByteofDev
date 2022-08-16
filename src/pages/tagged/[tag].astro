@@ -1,13 +1,14 @@
 ---
 import StoryCard from "$lib/components/card.svelte";
 import BaseLayout from "$layouts/BaseLayout.astro";
-export function getStaticPaths() {
+import type { Post } from "$lib/modules/types";
+export async function getStaticPaths() {
 	let tagObj = {};
 	[
-		...Astro.fetchContent("/src/pages/tips/*.md"),
-		...Astro.fetchContent("/src/pages/posts/*.md"),
+		...await Astro.glob("/src/content/tips/*.mdx"),
+		...await Astro.glob("/src/content/posts/*.mdx"),
 	].forEach((post) => {
-		post.tags.forEach((tag) => {
+		post.frontmatter.tags.forEach((tag) => {
 			tag = tag.toLowerCase();
 			if (!tagObj[tag]) {
 				tagObj[tag] = true;
@@ -23,28 +24,28 @@ export function getStaticPaths() {
 	});
 	return paths;
 }
-let posts = [
-	...Astro.fetchContent("/src/pages/tips/*.md"),
-	...Astro.fetchContent("/src/pages/posts/*.md"),
+// @ts-ignore
+let posts: Array<Post> = [
+	...await Astro.glob("/src/content/tips/*.mdx"),
+	...await Astro.glob("/src/content/posts/*.mdx"),
 ];
 
 const { tag } = Astro.props;
 posts = posts.filter((value) =>
-	value.tags.find((val) => val.toLowerCase() === tag.toLowerCase())
+	value.frontmatter.tags.find((val) => val.toLowerCase() === tag.toLowerCase())
 );
 
-posts.sort((a, b) => b.published - a.published);
+posts.sort((a, b) => b.frontmatter.published - a.frontmatter.published);
 
 posts = posts.slice(0, 20);
 ---
 
-<BaseLayout SEO={{ title: `Stories tagged ${tag} - Byteofdev` }}>
-	<h1 class="font-sans font-bold text-center text-4xl md:text-6xl mb-6">
+<BaseLayout SEO={{ title: `Articles tagged ${tag} - Byteofdev` }}>
+	<h1 class="font-sans font-bold text-center mb-6 text-4xl md:text-6xl">
 		{tag}
 	</h1>
-	<main
-		class="m-auto grid md:w-3/4 gap-5 md:grid-cols-3 lg:grid-cols md:p-0 p-4"
-	>
-		{posts.map((post) => <StoryCard item={post} />)}
+	<main class="m-auto grid p-4 gap-5 md:p-0 md:w-3/4 md:grid-cols-3 lg:grid-cols">
+		{posts.map((post) =>
+		<StoryCard item={post} />)}
 	</main>
 </BaseLayout>

@@ -11,7 +11,7 @@ const {
 	updated,
 	author,
 } = Astro.props.SEO;
-const canonicalURL = Astro.request.canonicalURL;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 ---
 
 <meta charset="UTF-8" />
@@ -28,9 +28,11 @@ const canonicalURL = Astro.request.canonicalURL;
 <meta name="description" property="og:description" content={description} />
 <meta name="twitter:card" content="summary_large_image" />
 {published ? (
-	<meta property="article:published_time" content={published} />
+<meta property="article:published_time" content={published} />
 ) : (
-	""
+""
 )}
-{updated ? <meta property="article:modified_time" content={updated} /> : ""}
-{author ? <meta property="article:author" content={author} /> : ""}
+{updated ?
+<meta property="article:modified_time" content={updated} /> : ""}
+{author ?
+<meta property="article:author" content={author} /> : ""}

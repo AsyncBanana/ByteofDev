@@ -3,12 +3,8 @@ import EmailPrompt from "$lib/components/emailPrompt.svelte";
 import BaseLayout from "$layouts/BaseLayout.astro";
 ---
 
-<BaseLayout
-	SEO={{
-		title: "About ByteofDev",
-		description: "About ByteofDev and its origins, its tech stack, and credits",
-	}}
->
+<BaseLayout SEO={{ title: "About ByteofDev" ,
+	description: "About ByteofDev and its origins, its tech stack, and credits" , }}>
 	<div class="m-auto md:w-3/4 lg:w-1/2">
 		<h1 class="font-bold text-center mb-6 text-5xl">About</h1>
 		<h2>Blog origins</h2>
@@ -38,7 +34,7 @@ import BaseLayout from "$layouts/BaseLayout.astro";
 	</div>
 
 	<style lang="postcss">
-		h2 {
+		div h2 {
 			@apply font-bold border-b-gray-400 border-b-2 border-opacity-25 mb-2 p-1 text-4xl;
 		}
 	</style>

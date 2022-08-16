@@ -10,12 +10,11 @@ image:
     url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/State_of_the_Web_Serverless_Functions,
     alt: Logos of various serverless function providers with text saying \"Serverless Functions"\,
   }
-layout: $layouts/PostLayout.astro
 ---
 
 Serverless functions (also known as Function as a Service) execute code statelessly on the Cloud. This means that they can do things like scale infinitely and run anywhere. There are many different serverless function providers, like [AWS Lambda](https://aws.amazon.com/lambda/), [Cloudflare Workers](https://workers.cloudflare.com/), and [Vercel](https://vercel.com/).
 
-# Background of Serverless Functions
+## Background of Serverless Functions
 
 Google created the first serverless model in their [Google App Engine](https://cloud.google.com/appengine/) product, which offered auto-scaling stateless code execution. App Engine was different from most more recent serverless function providers, but it was the first product to try this idea. However, while it was used by companies like Snapchat, it did not catch on with the overall developer community.
 
@@ -25,34 +24,34 @@ However, that is not the end of the story. Since then, many services have improv
 
 The second major innovation in serverless functions was edge computing with lightweight isolates. This was pioneered by [Cloudflare Workers](https://workers.cloudflare.com/), a serverless product released in September 2017. It promised to allow your code to run on any of the many Points of Presence Cloudflare has worldwide, and it used [V8 Isolates](https://developers.cloudflare.com/workers/learning/how-workers-works#isolates) to reduce the startup time to a few milliseconds, and later, even zero.
 
-# Why Serverless Functions are Significant
+## Why Serverless Functions are Significant
 
-## Performance
+### Performance
 
 Many serverless function providers offer high-speed services. As talked about in the background, edge computing has revolutionized serverless functions. Because serverless functions are stateless, they do not need to always run in the same place. This means they can work like CDNs and automatically deliver content from data centers close to users (the "edge") rather than one centralized location. Serving from the edge can be a huge difference in latency for large networks like Cloudflare's. Not all serverless function providers support this, but a growing number do, like [Netlify](https://www.netlify.com/products/edge/edge-handlers/), [Cloudflare Workers](https://workers.cloudflare.com/), [Vercel](https://vercel.com/features/edge-functions), [AWS Lambda@Edge](https://aws.amazon.com/lambda/edge/), and more.
 
-## Scalability
+### Scalability
 
 Unlike virtual machines, serverless functions can usually scale from zero to infinity. This means that you never get overloaded by requests, and you don't have to waste money on computing power that you are not using. Whenever users request the HTTP endpoint, most serverless function providers automatically determine whether there are already running functions that can process the request. If there are not, a new function is created. Additionally, if function instances are not processing anything, they are automatically stopped. Some virtual machine and container services also offer autoscaling, but because it takes longer to start a virtual machine/container, it is much less granular.
 
-## Ease of Setup
+### Ease of Setup
 
 Serverless functions abstract over the hardware usually (hence the serverless). Instead of worrying about setting up servers and operating systems, the provider takes care of everything. This is not necessarily unique to serverless functions, as containers and virtual machines usually do this too, but with serverless functions, you don't even need to worry about the operating system or software running your code. The advantage of not managing your hardware and operating system is that you can get started a lot faster and not have to worry about as much.
 
-# The State of Serverless Functions
+## The State of Serverless Functions
 
-## Language support
+### Language support
 
 You can use almost any language with serverless functions. Whether you are using JavaScript, Go, or C, most serverless function providers support them. However, if you use a V8-based serverless function setup (most edge serverless function setups do this), language support might be more limited. Since V8 is primarily a JavaScript engine, the best-supported language is JavaScript. However, sometimes you want to use languages that do not support compiling to JavaScript. The solution is often WebAssembly, a portable assembly-like language that most modern languages support as a compilation target. WebAssembly also has other advantages, like how it can often perform faster. For more information on WebAssembly, [you can look at our article on WebAssembly](/posts/webassembly/).
 
-## Production readiness
+### Production readiness
 
 Serverless functions are used by many different companies and are supported by some of the biggest names in web hosting like AWS and Cloudflare. While serverless functions are somewhat new, they are still very production-ready.
 
-## Running on the Edge
+### Running on the Edge
 
 Edge serverless functions are still experimental for the most part. However, some services are battle-tested, namely [AWS Lambda@Edge](https://aws.amazon.com/lambda/edge/) and [Cloudflare Workers](https://workers.cloudflare.com/). These services have existed for multiple years and are used by companies like NPM and Amazon. There are also other more recent services offered by companies like Vercel, Netlify, and Fastly.
 
-# Conclusion
+## Conclusion
 
 That is it! Hopefully, now you understand serverless functions, why they are helpful, and what state they are currently in. If you liked this article, be sure to sign up for the mailing list below. I hope you learned something, and thanks for reading.

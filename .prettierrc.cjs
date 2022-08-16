@@ -8,10 +8,6 @@ module.exports = {
 
 	overrides: [
 		{
-			files: "**/*.svx",
-			options: { parser: "markdown" },
-		},
-		{
 			files: "**/*.ts",
 			options: { parser: "typescript" },
 		},

@@ -1,0 +1,208 @@
+---
+title: "What is Bun, and does it live up to the hype?"
+description: Bun is a new JavaScript runtime that claims to offer more features and performance compared to Node.js and Deno. But is it as good as it is hyped up to be?
+author: AsyncBanana
+tags: [State of the Web, StateofJS]
+published: 1660676129038
+updated: 1660676129038
+image:
+  {
+    url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/Bun_qSHgo7f6l.js,
+    alt: Bun logo,
+  }
+---
+
+import Callout from "$lib/components/callout.svelte";
+
+When you think of a bun, you probably think of bread. However, now, there is another Bun. [Bun](https://bun.sh) is a new JavaScript runtime that claims to offer more features and performance than Node.js and [Deno](https://byteofdev.com/posts/deno/). It was created by Jarred Sumner and only was released publicly a little more than a month ago.
+Since then, it has quickly managed to gain 30,000 stars. In this article, we will investigate what bun is and whether Bun lives up to its hype.
+
+<Callout type="warning">
+	Bun is very experimental. Many features do not work. For information on
+	unfinished features, check out [Bun's
+	Roadmap](https://github.com/oven-sh/bun/issues/159)
+</Callout>
+
+## Why is Bun supposed to be better than Node.js or Deno.
+
+![Bunch of buns](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/bun_sgTvWFIaT "Have a bun stock photo; Photo by Gil Ndjouwou on Unsplash")
+
+Bun is a runtime designed around a few central principles:
+
+First, Bun is designed to start and run faster than Node.js and Deno. It claims that it is significantly faster than both server-side JavaScript runtimes through its use of JavaScriptCore rather than V8, its use of Zig for API writing, and lots of tuning and benchmarking.
+
+<Callout>
+	Quick guide to JavaScript engines: V8 is the engine created by Google for
+	Chrome and JavaScriptCore is the engine created by Apple for Safari. Node.js
+	and Deno both use V8, whereas Bun uses JavaScriptCore
+</Callout>
+
+According to benchmarks done by the creators of Bun, Bun can be over 2x the speed of Node.js and Deno in I/O intensive operations like HTTP servers and SQL. These claims might sound ludicrous. After all, it is all JavaScript, and V8 is pretty optimized. However, notice I said **I/O intensive**. That means most of the execution time is spent in the runtime's API rather than the actual JavaScript engine. Since Bun _theoretically_ has a much faster I/O implementation than Node.js or Deno, Bun could be much faster in these cases. Later on, we will run our own benchmarks to see how much more performant the I/O implementation and JavaScript engine is.
+
+Second, Bun is "batteries included." I sort of lied when I said Bun was a JavaScript runtime. It is much more than just that. Similar to Deno, it includes a bundler, TypeScript transpiler, and even a test runner. Additionally, Bun includes a CSS-in-JS tool, template builder, environment variable loader, and more. This feature is very interesting, as performance-optimized and expansive usually do not go together in developer tools. However, Bun managed to do this because they do not have the same code weight constraint as web libraries do. Theoretically, while another feature built into Bun increases the installation size, it should not impact performance. Additionally, the tools built into Bun are designed to run quicker than most alternatives. Of course, you still might prefer the choice. Ultimately, it is just your preference (of course, you can still use other tools).
+
+Finally, Bun is designed to be Node-compatible. Bun includes full support for CommonJS (`require()` is transformed into `import.meta.require()` in Node.js modules), Node-API, and some Node.js modules. This feature is extremely helpful, as it allows you to access the vast ecosystems of Node.js. However, there are still many things not implemented, as Bun is still early software and Node's API is extensive, so we will see how well it actually works later on.
+
+Now, we see how Bun is supposed to improve over existing server-side JavaScript runtimes. Let's look at how it stacks up in its current form.
+
+## Is Bun Fulfilling its promises?
+
+![Cinnamon bun](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/bun_LwO522f5Z "Another tasty-looking bun; Photo by Jonathan Ocampo on Unsplash")
+
+### Performance
+
+On the website, Bun lists some benchmark results. Now, we will check out the benchmark code and run it ourselves. We will be running the FFI, Log, gzip, Async, and SQLite benchmarks.
+
+#### Benchmark Explanation
+
+First, let's look at the FFI benchmark. The FFI benchmark is pretty simple. The Bun, Node, and Deno program all call a Rust program through FFI, which exposes a few functions: An empty function, a long string, and a hash.
+
+Next, there is the Log benchmark. As the name implies, the log benchmark focuses on the performance of `console.log()`. First, the programs log `"hello"`, and then they log `{ hello: "object"}`. The code across all of the runtimes is identical.
+
+Now, let's check out the gzip benchmark. The gzip benchmark benchmarks roundtrip, compressing, and decompressing `"Hello World!"` repeated 1,000 times. The Node.js implementation used its built-in zlib module, Deno used the web standard CompressionStream API, and Bun used its own built-in gzip compression. This test is good because it shows the differences in each implementation of gzip compression/decompression, rather than using the same library for each.
+
+Now, let's take a look at the async benchmark. The code in this test is identical across runtimes. They benchmark a synchronous empty function, an asynchronous empty function, and an asynchronous function running `await 1`. It seems odd that they do not do more, but it still seems ok.
+
+Finally, we have the SQLite benchmark. The benchmark performs a few queries on the [Northwind SQLite database](https://github.com/jpwhite3/northwind-SQLite3/) (which is the standard "Hello World" for SQL). Node uses better-sqlite3, Deno uses deno-sqlite, and Bun uses its built-in SQLite implementation. This benchmark seems like it is just trying to show that Bun's Zig SQLite implementation is fast, although it is a little unfair to Deno as deno-sqlite uses [WASM](https://byteofdev.com/posts/webassembly/), which often brings a performance disadvantage and therefore means that there can be faster Deno SQLite implementations.
+
+Whew! That was a lot. Now we can get on to the interesting part: the actual results. For context, I am running Linux 5.18 on a Ryzen 6900HS with 16 Gigabytes of DDR5 memory, and the speed is measured by average time per run.
+
+#### Benchmark Results
+
+##### FFI
+
+| Test   | Bun       | Node.js     | Deno        |
+| ------ | --------- | ----------- | ----------- |
+| Noop   | 4.93 ns   | 11.51 ns    | 3.91 ns 🏆  |
+| Hash   | 66.93 ns  | 177.48 ns   | 59.89 ns 🏆 |
+| String | 190.93 ns | 51.97 ns 🏆 | 127.01 ns   |
+
+In this test, Bun was a bit of a mixed bag. It did about as well as Node but generally worse than Deno. The results were not bad, but they were not such a great start for something claiming significant performance advantages. However, part of it might be because I am testing this on a completely different CPU and architecture than the creator of Bun, and therefore what I am using might not be optimized yet.
+
+##### Log
+
+| Test                              | Bun          | Node.js  | Deno     |
+| --------------------------------- | ------------ | -------- | -------- |
+| console.log('hello')              | 642.26 ns 🏆 | 1,610 ns | 3,960 ns |
+| console.log(\{ hello: 'object'\}) | 893.41 ns 🏆 | 2,700 ns | 6,750 ns |
+
+Now we are seeing some speed! Bun won both tests by a large margin. I assume this is because of Bun's static optimization, which is great to see.
+
+###### gzip
+
+| Test                                     | Bun          | Node.js   | Deno      |
+| ---------------------------------------- | ------------ | --------- | --------- |
+| roundtrip - "Hello World!".repeat(9999)) | 260.85 µs 🏆 | 478.23 µs | 476.81 µs |
+| gzipSync("Hello World!".repeat(9999)))   | 201.1 µs 🏆  | 397.02 µs | 281.01 µs |
+| gunzipSync("Hello World!".repeat(9999))) | 62.85 µs 🏆  | 70.33 µs  | 152.52 µs |
+
+Once again, Bun wins all benchmarks. I suspect this is because Bun's gzip implementation is optimized and written in Zig.
+
+##### Async
+
+| Test    | Bun       | Node.js      | Deno         |
+| ------- | --------- | ------------ | ------------ |
+| Sync    | 225.34 ps | 222.76 ps 🏆 | 228.55 ps    |
+| Async   | 162.28 ns | 58.62 ns 🏆  | 59.4 ns      |
+| Await 1 | 274.72 ns | 110.44 ns    | 101.38 ns 🏆 |
+
+Bun did not do so well on this benchmark and got last in two of the three benchmarks by a large margin, probably because of some element of JavaScriptCore.
+
+##### SQLite
+
+| Test                         | Bun          | Node.js   | Deno      |
+| ---------------------------- | ------------ | --------- | --------- |
+| SELECT \* FROM "Order"       | 18.74 ms 🏆  | 52.49 ms  | 135.07 ms |
+| SELECT \* FROM "Product"     | 46.85 µs 🏆  | 160.91 µs | 232.57 µs |
+| SELECT \* FROM "OrderDetail" | 213.36 ms 🏆 | 1.05 s    | 663.34 ms |
+
+This was an excellent final benchmark for Bun. Bun beat both Node and Deno by a large margin on every benchmark, showing just how fast Bun's Zig SQLite implementation is.
+
+#### Summary
+
+Overall, I was somewhat disappointed by these results. Given the benchmarks Bun shows on its website, I would have expected it to be significantly faster than Node.js and Deno in most or all benchmarks. But, of course, the creators of Bun would focus on the most positive benchmarks rather than showing them indiscriminately. Nonetheless, Bun performed pretty well, especially given it is still in a very early stage and more optimizations are planned in the future.
+
+### Extra Features
+
+One of Bun's main selling points is the extra features. We will review some of the most significant additional features and see how well they work.
+
+#### Task Runner
+
+Bun's task runner is like the task runner included in Node, except it is noticeably faster. In fact, it is even possible to use Bun's task manager in a Node project and take advantage of how fast it is. While a task runner is an expected essential tool (both Node/NPM and Deno include one by default), I decided to include it here because it is so much faster than the ones in NPM and Deno. Additionally, Bun's task manager can run almost any script without using the run subcommand, whereas npm can only do that for a few select script names.
+
+#### Package Manager
+
+Once again, a package manager is expected, but Bun's package manager exceeds expectations because of its performance. In fact, Bun should be even faster than PNPM or Yarn. There are three reasons for that. First, Bun uses symlinks. That means that packages for each project are linked to a central location, so modules used in another project do not need to be redownloaded. Second, Bun uses a binary lockfile. Binary files are usually serialized and deserialized faster, which decreases the overall time used by the package manager. Finally, Bun's package manager is written in Zig. As we have already discussed, Zig is a fast language, much faster than JavaScript, which most other JavaScript package managers use.
+
+#### Transpiler
+
+Bun's transpiler is a great feature, which transpiles TypeScript, JSX, and even vanilla JavaScript. You might have been suprised to hear the last part. After all, why would you need to transpile plain JavaScript? Here is where one of Bun's performance-improving features comes in. Bun automatically optimizes JavaScript ahead of time. Most of this feature is still in development, but the developers plan to add an optimized binary format for JavaScript in the future. These optimizations would have very interesting implications for edge apps and other short-lived processes. However, we can't talk about it much yet because most of it is still in development.
+
+The other transpilers are pretty good. The TypeScript transpiler is fast, although it does not have type checking currently, instead just stripping types (you are expected to use your text editor/IDE to type check). The JSX transpiler also works pretty well, although for many cases, it would not work well due to the lack of [@jsxpragma support](https://babeljs.io/docs/en/babel-preset-typescript#jsxpragma), meaning you can only use React, not Preact or any other JSX library/framework. I was able to set up a react app by simply running `bun create react`, which was pretty nice (no `react-scripts` used!). This also shows the CSS importing, as one of the JSX files imports CSS, which works seamlessly.
+
+#### File loaders
+
+A helpful feature of Bun is how it supports many filetypes by default. For example, you can load a YAML or TOML file by simply importing it. In my testing, this functioned quite well, although `bun-types` did not seem to signal to TypeScript that `.toml` files were supported, which made my editor flag the `.toml` import. You could likely fix this with a quick type declaration file, and `bun-types` should eventually fix this.
+
+Additionally, environment variables from .env files automatically. Creating a `.env` file in the project directory will automatically load the variables into `process.env` and `Bun.env`. In my testing, Bun successfully found the `.env` file and loaded the variables in `process.env`.
+
+#### Summary
+
+Bun has a very good feature set. There are some rough edges and unfinished features, but it can still be very helpful for quickly creating a project.
+
+### Node.js compatibility
+
+Now let's see how well Bun can work with Node.js modules currently. Out of all of them, I expect this element to be the most unfinished, but it will still be interesting to see how Bun fares.
+
+#### Next.js
+
+This one is an easy one to find out, because Bun supports Next.js by default. However, the support currently has some issues. First, you need to rerun `bun --use-next` whenever you import a new module. This issue could become annoying, although the developers of Bun are working to create an automatic solution for this. Second, Bun does not currently support features like `getStaticPaths`, API routes, and React Server Components. This is probably the biggest issue, as these features are quite important. Additionally, locales and all of `next.config.js` are unsupported. Basically, Next.js works on Bun, but it is not near feature complete yet.
+
+#### Vite
+
+Vite is a popular bundler, used by frameworks like SvelteKit and Astro. Unfortunately, Bun does not support Vite at all, as many Node modules used in Vite are not part of Bun yet (`https`,`child_process`, `perf_hooks`, etc). Luckily, [Bun is working on Vite support](https://github.com/oven-sh/bun/issues/250), so hopefully we will see Vite working on Bun soon.
+
+#### Express
+
+Express works, but only to a minimal extent. Even basic examples are malfunctioning and, once again, modules like `https` are missing. Luckily, [Bun is working on it](https://github.com/oven-sh/bun/issues/496).
+
+#### Summary
+
+Overall, it seems like Node.js compatibility is nowhere near where it needs to be, but that is an ongoing focus of development, so I expect this to change as development progresses.
+
+## Comparison with Node and Deno
+
+Now we will see how Bun compares to Node.js and Deno in general:
+
+| Element              | Bun            | Node       | Deno                |
+| -------------------- | -------------- | ---------- | ------------------- |
+| Created              | 2021           | 2009       | 2018                |
+| Created By           | Jarred Sumner  | Ryan Dahl  | Ryan Dahl           |
+| Language Written in  | Zig            | C++        | Rust                |
+| JavaScript Engine    | JavaScriptCore | V8         | V8                  |
+| Ecosystem            | Very small     | Very large | Small               |
+| Benchmarks in First  | 8              | 3          | 3                   |
+| Benchmarks in Last   | 3              | 5          | 6                   |
+| Package Manager      | bun install    | npm        | URL-based packaging |
+| TypeScript Support   | 🟢             | 🔴         | 🟢                  |
+| JSX Support          | 🟢             | 🔴         | 🟢                  |
+| WebAssembly Support  | 🟢             | 🟢         | 🟢                  |
+| Permissions System\* | 🔴             | 🔴         | 🟢                  |
+| Testing Framework    | 🟢             | 🔴         | 🟢                  |
+| Web Compatibility    | 🟡             | 🟡         | 🟢                  |
+| Node Compatibility   | 🟡             | 🟢         | 🟡                  |
+| MacOS Support        | 🟢             | 🟢         | 🟢                  |
+| Linux Support        | 🟢             | 🟢         | 🟢                  |
+| Windows Support      | 🟡\*           | 🟢         | 🟢                  |
+
+\* Windows supported through WSL. Native support in progress
+
+## Conclusion
+
+![Group of buns in a basket](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/bun_ExONxYgu4 "I am hungry now; Photo by Photo by César Guel on Unsplash")
+
+Bun is a very promising project. Initially, I was skeptical of Bun, especially of its use of JavaScriptCore rather than V8, but after this, I am now convinced that Bun has a lot of potential. Currently, the ecosystem and uneven Node support is stopping me from using Bun that much, but the development of Bun is moving along very quickly, so I expect Node compatibility to improve a lot over the next few months/year. Additionally, the Bun ecosystem should grow quickly.
+
+**TL;DR** Bun's Node.js support and ecosystem currently limit it, but it is very promising for the future.
+
+I hope you learned something from this, and thanks for reading.

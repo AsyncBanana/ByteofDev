@@ -1,0 +1,10 @@
+{(()=>{
+if (Astro.props.title) {
+return (<figure>
+    <img src={Astro.props.src} alt={Astro.props.alt} title={Astro.props.title} />
+    <figcaption>{Astro.props.title}</figcaption>
+</figure>)
+} else {
+return <img src={Astro.props.src} alt={Astro.props.alt} />
+}
+})()}
