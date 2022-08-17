@@ -8,62 +8,74 @@ const navUrls = [
 ---
 
 <html lang="en-US">
+	<head>
+		<HeadSEO SEO={Astro.props.SEO || {}} />
+		<meta http-equiv="Accept-CH" content="DPR, Width" />
+		<link rel="icon" href="/favicon.svg" />
+		<style is:global>
+			@import "../lib/stylesheets/theme.css";
+		</style>
+		<link
+			rel="alternate"
+			type="application/rss+xml"
+			href="https://byteofdev.com/rss.xml"
+			title="ByteofDev RSS"
+		/>
+		<script>import "../lib/modules/pageview.ts";</script>
+	</head>
 
-<head>
-	<HeadSEO SEO={Astro.props.SEO || {}} />
-	<meta http-equiv="Accept-CH" content="DPR, Width">
-	<link rel="icon" href="/favicon.svg" />
-	<style is:global>
-		@import "../lib/stylesheets/theme.css";
-	</style>
-	<link rel="alternate" type="application/rss+xml" href="https://byteofdev.com/rss.xml" title="ByteofDev RSS" />
-	<script>import "../lib/modules/pageview.ts"</script>
-</head>
+	<body class="bg-base-200">
+		<div class="flex flex-col min-h-screen" style="scroll-behavior: smooth;">
+			<header class="flex-wrap bg-base-100 shadow-md mb-6 top-0 z-30 navbar">
+				<div class="mx-2 px-2">
+					<a class="flex flex-row font-extrabold text-xl align-middle" href="/"
+						><img src="/favicon.svg" alt="Logo" height="32" width="32" /><span
+							class="ml-2 inline">ByteofDev</span
+						></a
+					>
+				</div>
+				<nav class="flex-auto mr-3 w-full block overflow-x-auto md:!w-auto">
+					{navUrls.map((item) => (
+						<a href={item.url} class="mr-3 btn btn-ghost btn-md">
+							{item.text}
+						</a>
+					))}
+				</nav>
+			</header>
+			<main id="page" class="mb-6">
+				<slot />
+			</main>
+			<footer class="bg-neutral text-neutral-content p-10 footer">
+				<div>
+					<img src="/favicon.svg" alt="Logo" height="96" width="96" />
+				</div>
+				<div>
+					<span class="footer-title">ByteofDev</span>
 
-<body class="bg-base-200">
-	<div class="flex flex-col min-h-screen" style="scroll-behavior: smooth;">
-		<header class="flex-wrap bg-base-100 shadow-md mb-6 top-0 z-30 navbar">
-			<div class="mx-2 px-2">
-				<a class="flex flex-row font-extrabold text-xl align-middle" href="/"><img src="/favicon.svg" alt="Logo"
-						height="32" width="32" /><span class="ml-2 inline">ByteofDev</span></a>
-			</div>
-			<nav class="flex-auto mr-3 w-full block overflow-x-auto md:!w-auto">
-				{navUrls.map((item) => (
-				<a href={item.url} class="mr-3 btn btn-ghost btn-md">
-					{item.text}
-				</a>
-				))}
-			</nav>
-		</header>
-		<main id="page" class="mb-6">
-			<slot />
-		</main>
-		<footer class="bg-neutral text-neutral-content p-10 footer">
-			<div>
-				<img src="/favicon.svg" alt="Logo" height="96" width="96" />
-			</div>
-			<div>
-				<span class="footer-title">ByteofDev</span>
-				{navUrls.map((item) => (
-				<a href={item.url} class="p-1 link link-hover">
-					{item.text}
-				</a>
-				))}
-				<a class="p-1 link link-hover" href="https://github.com/AsyncBanana/Byteofdev" target="_blank"
-					rel="noopener">GitHub</a>
-				<a href="/signup/" class="p-1 link-hover">Sign up</a>
-			</div>
-		</footer>
-	</div>
-	<style>
-		a {
-			@apply rounded-btn;
-		}
+					{navUrls.map((item) => (
+						<a href={item.url} class="p-1 link link-hover">
+							{item.text}
+						</a>
+					))}
+					<a
+						class="p-1 link link-hover"
+						href="https://github.com/AsyncBanana/Byteofdev"
+						target="_blank"
+						rel="noopener">GitHub</a
+					>
+					<a href="/signup/" class="p-1 link-hover">Sign up</a>
+					<span class="font-semibold">© 2022 Jacob Jackson</span>
+				</div>
+			</footer>
+		</div>
+		<style>
+			a {
+				@apply rounded-btn;
+			}
 
-		:is(h1, h2, h3, h4, h5, h6) {
-			font-family: "Inter", Verdana, Geneva, Tahoma, sans-serif;
-		}
-	</style>
-</body>
-
+			:is(h1, h2, h3, h4, h5, h6) {
+				font-family: "Inter", Verdana, Geneva, Tahoma, sans-serif;
+			}
+		</style>
+	</body>
 </html>

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import getPostUrl from "$lib/modules/getPostUrl";
 	export let item: Post;
+	export let lazy = true;
 	import type { Post } from "$lib/modules/types";
 	import dayjs from "dayjs";
 </script>
@@ -13,7 +14,7 @@
 		src={item.frontmatter.image.url}
 		alt="Article header"
 		class="rounded-md bg-base-300 w-full aspect-video"
-		loading="lazy"
+		loading={lazy?"lazy":"eager"}
 	/>
 	<h2 class="font-bold text-xl">{item.frontmatter.title}</h2>
 	<p>{item.frontmatter.description}</p>
