@@ -1,4 +1,3 @@
 User-agent: *
 Allow: /
-Disallow: /posts
 Sitemap: https://byteofdev.com/sitemap-index.xml
