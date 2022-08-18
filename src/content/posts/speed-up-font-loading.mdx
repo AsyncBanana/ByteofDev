@@ -4,7 +4,7 @@ description: Font loading can hurt performance a lot. This article shows you how
 author: AsyncBanana
 tags: [Web fonts, performance]
 published: 1644541426307
-updated: 1644541426307
+updated: 1660863369637
 image:
   {
     url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/Web_Font_Optimization,
@@ -12,11 +12,11 @@ image:
   }
 ---
 
-Fonts are popular tools on the web nowadays. Most modern websites use custom fonts, usually from Google Fonts, because it adds a custom touch to the interface and allows for more options. However, there are many performance implications with fonts on the web. Fonts are often hundreds of kilobytes and are on another domain, slowing down the website. Luckily, you can solve these problems. Here are ten tips to improve font loading performance on a website.
+Fonts are popular tools on the web nowadays. Most modern websites use custom fonts, usually from Google Fonts, because they add a custom touch to the interface and allow for more options. However, there are many performance implications with fonts on the web. Fonts are often hundreds of kilobytes and are hosted on another domain, slowing down the website. Luckily, you can solve these problems. Here are ten tips to improve font loading performance on a website.
 
-## The list
+## How to make web fonts load faster
 
-### 1. Self your fonts
+### 1. Self host your fonts
 
 When you go on a website, you often see something like this:
 
@@ -51,7 +51,7 @@ The size reduction is beneficial for performance, but you can do even better if 
 
 ### 4. Use font-display
 
-By default, text will not show up in many browsers until the correct font is loading. That behavior is called Flash of Invisible Text, or FOIT. Some other browsers display text using the fallback font while it is loading, which makes sure text is not invisible but can cause a [layout shift](https://web.dev/optimize-cls/#web-fonts-causing-foutfoit).
+By default, text will not appear in many browsers until the correct font is loading. That behavior is called Flash of Invisible Text, or FOIT. Some other browsers display text using the fallback font while it is loading, ensuring text is not invisible but can cause a [layout shift](https://web.dev/optimize-cls/#web-fonts-causing-foutfoit).
 
 Luckily, you can customize font loading through the `font-display` option in your `@font-face` declaration. The two recommended values for `font-display` are `swap` and `optional`. `swap` uses a fallback font and then switches to the custom font once it is loaded, and `optional` blocks page load for a maximum of 100ms to let the font load, and if it does not, it uses a fallback font.
 
@@ -70,15 +70,15 @@ Luckily, you can customize font loading through the `font-display` option in you
 
 ### 5. Match your fallback font with your custom font
 
-Fonts are usually spaced and sized differently. For example, Merriweather is larger than Georgia, even if the CSS font size is the same. These inconsistencies can cause a layout shift if you use `font-display: swap` and make fonts less consistent if you use `font-display: optional`. Luckily, you can configure your fallback font to look a lot more like the web font you are using. Matching both fonts can be done by customizing spacing and font size to remove the inconsistencies. A helpful tool for this is [Font Style Matcher](https://meowni.ca/font-style-matcher/), which allows you to look at two different fonts, configure various spacing properties, and see a demo of the layout shift.
+Fonts are usually spaced and sized differently. For example, Merriweather is larger than Georgia, even if the CSS font size is the same. These inconsistencies can cause a layout shift if you use `font-display: swap` and make fonts less consistent if you use `font-display: optional`. Luckily, you can configure your fallback font to look much more like the web font you are using. Matching both fonts can be done by customizing spacing and font size to remove the inconsistencies. A helpful tool for this is [Font Style Matcher](https://meowni.ca/font-style-matcher/), which allows you to look at two different fonts, configure various spacing properties, and see a demo of the layout shift.
 
 ### 6. Use a CDN
 
-CDNs are great for speeding up static content delivery. They deliver content closer to your users and often offer other ways of speeding up delivery. It is a good idea to host your fonts on a CDN, along with all of your other static assets. Using a CDN also has the advantage of reducing server costs, as CDNs are generally cheaper compared to serving the request from your source server.
+CDNs are great for speeding up static content delivery. They deliver content closer to your users and often offer other ways of speeding up delivery. Hosting your fonts on a CDN with all your other static assets is a good idea. Using a CDN also reduces server costs, as CDNs are generally cheaper compared to serving the request from your source server.
 
 ### 7. Preload your fonts
 
-Preloading is often a good idea for various resources, as it makes the browser know it needs to download a resource sooner and increases that resource's priority. It is the same idea for fonts. However, you do not always want to preload your fonts because it might make a font load unnecessarily. That is because the browser automatically detects whether the website uses a font on the page before downloading it, even if the `@font-face` is present. Now, you might know that you always use the fonts you include with `@font-face`. There is one other potential problem. If your font is low priority, it might make other resources take longer to load. However, if both of these things are not true, preloading can be a great way to speed up your font loading.
+Preloading is often a good idea for various resources, as it makes the browser know it needs to download a resource sooner and increases that resource's priority. It is the same idea for fonts. However, you do not always want to preload your fonts because it might make a font load unnecessarily. That is because the browser automatically detects whether the website uses a font on the page before downloading it, even if the `@font-face` is present. Now, you might know that you always use the fonts you include with `@font-face`. There is one other potential problem. If your font is not immediately needed, the drawbacks of making other things load slower might outweigh the benefits. However, if both of these things are false, preloading can be a great way to speed up your font loading.
 
 ### 8. Use local()
 
@@ -94,7 +94,7 @@ Depending on the font, users can often have the font you are using locally insta
 }
 ```
 
-This `@font-face` checks if the user has the font locally, and if they do not, downloads it remotely. That means that users with the font get a free performance boost while adding little complexity to the code and no disadvantage to users who do not have the font locally.
+This `@font-face` checks if the user has the font locally, and if they do not, downloads it remotely. That means that users with the font get a free performance boost while adding little complexity to the code and no disadvantage to users who do not have the font locally. If you want to focus on fonts that computers usually have, you can check out [Windows 11's font list](https://docs.microsoft.com/en-us/typography/fonts/windows_11_font_list) and [macOS Catalina's font list](https://developer.apple.com/fonts/system-fonts/).
 
 ### 9. Implement Caching
 
@@ -107,4 +107,4 @@ You can implement system UI fonts through the system font stacks linked above or
 
 ## Conclusion
 
-That is all! I hope you enjoyed learning how to optimize your web fonts, and I hope this has helped you optimize fonts on your websites. If you enjoyed reading this, be sure to sign up for the mailing list below and subscribe to RSS. Thanks for reading!
+That is all! I hope you enjoyed learning how to optimize your web fonts, and I hope this has helped you optimize fonts on your websites. If you enjoyed reading this, sign up for the mailing list below and subscribe to RSS. Thanks for reading!
