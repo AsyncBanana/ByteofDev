@@ -5,7 +5,6 @@ import mdx from "@astrojs/mdx";
 import tailwind from "@astrojs/tailwind";
 import remarkPrism from "remark-prism";
 import remarkEmoji from "@fec/remark-a11y-emoji";
-import rehypeSlug from "rehype-slug";
 // https://astro.build/config
 export default defineConfig({
 	integrations: [
@@ -17,7 +16,7 @@ export default defineConfig({
 			remarkPlugins: {
 				extends: [remarkPrism, remarkEmoji],
 			},
-			rehypePlugins: [rehypeSlug],
+			rehypePlugins: [],
 		}),
 		tailwind(),
 	],

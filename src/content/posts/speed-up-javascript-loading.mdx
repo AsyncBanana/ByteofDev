@@ -1,0 +1,104 @@
+---
+title: "10 ways to speed up JavaScript loading"
+description: JavaScript is one of the biggest contributors to long website loading times. This article will show you how to speed up your JavaScript loading.
+author: AsyncBanana
+tags: [Bundlers, performance]
+published: 1660783520580
+updated: 1660783520580
+image:
+  {
+    url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/JavaScript_Performance_rwut_Ou18,
+    alt: Illustration showing your JavaScript going from a snail to a lightning bolt,
+  }
+---
+
+In many modern websites, there is a lot of JavaScript. In fact, according to the HTTP Archive, the average desktop page had over 500 kilobytes of JavaScript. The problem is that JavaScript takes time both to download and parse, which makes websites load much slower and therefore affects retention, as users will leave if a website takes too long to load. Luckily, there are easy ways to reduce the amount of JavaScript you are loading on your website and make the JavaScript you are loading load faster, which we will go over today.
+
+## How to make your JavaScript load faster
+
+### 1. Lazy loading
+
+Not all JavaScript requires instant loading when a user first visits a website. For example, you could have an email signup prompt at the bottom of a page. Unless the user scrolls down to there, it is not necessary to load. Because of this, many web developers use a technique called lazy loading. Instead of loading all of the JavaScript at once, lazy loading offloads some JavaScript. There are multiple different forms of lazy loading. For example, for elements that do not need to be immediately active but still should be active fairly quickly, you could wait until the page is idle using `requestIdleCallback()`. Or, as we have already talked about, if there is an interactive element further down the page, you could wait until the user scrolls down to that element using `intersectionObserver`. Now, the question remains: How do you actually load the code later on? One of the best ways to do this is dynamic `import()` which is part of [ECMAScript Modules (ESM)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules). Dynamic importing helps you load a script at any time by running an `import()` function. For example, this would load a script once the browser was idle:
+
+```js
+// Note: This must be run in an ESM script. You can use <script type="module"> instead of <script> to make this ESM
+requestIdleCallback(() => {
+	import("/script.mjs");
+});
+```
+
+Another option is simply using the `async` or `defer` attribute on scripts. This technique is much less flexible, but it is an easy way to make a script wait until the DOM is assembled.
+
+### 2. Minification
+
+Minification is an easy way to improve performance a lot. It is usually done using automated minfiers like [Terser](https://terser.org/) or [ESBuild](https://esbuild.github.io/). These tools essentially shrink your code by removing spacing, long variable names, and other things that are helpful in development but increase script size in production. For example, let's say I minified this code with Terser:
+
+```js
+window.addEventListener("DOMContentLoaded", (event) => {
+	const images = document.getElementsByTagName("img");
+	for (const image of images) {
+		image.width = 50;
+		image.height = 50;
+	}
+});
+```
+
+The output would be:
+
+```js
+window.addEventListener("DOMContentLoaded", (e) => {
+	const t = document.getElementsByTagName("img");
+	for (const e of t) (e.width = 50), (e.height = 50);
+});
+```
+
+That is a 67-byte reduction, from 203 to 136 bytes! That little would not make a noticeable difference, but for larger scripts, minification can make quite an impact.
+
+### 3. Bundling
+
+Script size is not the only thing that matters. The request count does too, as each request adds overhead. Basically, you want to keep the number of scripts you have to a minimum. However, splitting code is generally a code practice for keeping code clean. Luckily, like minifiers, there are automated tools to solve this. These are called bundlers. Bundlers analyze your code, look at what scripts are importing each other, and figure out how to combine them. The most well-known bundlers are [Webpack](https://webpack.js.org/), [Rollup](https://www.rollupjs.org/guide/en/), and [Vite](https://vitejs.dev/).
+
+Another advantage of using a bundler is that most bundlers also function as build tools, making it easy to do things like minification and TypeScript compilation. For more information on bundlers, check out [my article on them](https://byteofdev.com/posts/bundlers/).
+
+### 4. Code Splitting
+
+You might be surprised that this is right after bundling. "I bundle my code just to split it back up?" Not necessarily. In fact, this is a feature of bundlers. While reducing request count is great, you do not want the user to have to load all of the code on your website at once. You could solve this by creating a new full bundle for each page, but this would negate some of the benefits of caching (which we will talk about later). To solve this, we have code splitting. Code splitting combines the advantages of bundling and lazy loading while ensuring that any unnecessary code for the page is not loaded. Bundlers perform code splitting by analyzing a map of imports and figuring out what scripts are required to be in their own bundle. Most bundlers do this automatically, although it can be helpful to write code that is more easily analyzed (e.g. using static imports where possible).
+
+### 5. Tree Shaking
+
+Another common feature of bundlers is tree shaking. You might import a part of a library but not need the rest. However, if you do this without tree shaking, end users will end up loading the whole library, which can add a lot of JavaScript. Tree shaking solves this; Bundlers that support tree shaking automatically remove unused parts of libraries, heavily reducing the code you import. For example, take a look at Lodash (lodash-es to be specific), a large JavaScript utility library. The entire module is almost 100 kilobytes minified, but if you just used the `intersect()` function, you would only import 2.7 kilobytes of code. Now, in Lodash's case, there are packages that only contain individual functions, but these can be more annoying to use if you are using a lot of functions, and many libraries do not do this.
+
+### 6. ECMAScript Modules
+
+For lots of the previously mentioned features to work, ECMAScript Modules (ESM) is very helpful or even essential. ESM is a module spec developed to standardize how to share code between different files. Before ESM, there were conflicting standards like CommonJS and UMD, which were not even natively supported by browsers. ESM unified these standards and offered syntax that helped with features like tree shaking (notice how I said to use lodash-es over standard lodash in the previous). Additionally, because ESM is natively supported in browsers, you do not need a heavy polyfill to be able to use ESM.
+
+```js
+// ESM
+import { something } from "test";
+export const something = "test";
+// CJS
+const something = require("test").something;
+module.exports.something = "test";
+```
+
+### 7. CDN
+
+Hosting static files on your own server is pointless. Using a full server for actual server-side computation increases your cost, development complexity, and website loading time. Instead, CDNs are better solutions. A CDN (Content Delivery Network) is a network of servers designed for serving static files quickly and cheaply. Instead of serving from just one server, you can serve files from tens or hundreds of servers (depending on the CDN), which reduces latency as the servers are closer to users. Additionally, CDNs often configure things like caching and compression for you, saving time. Some popular examples of CDNs are [Cloudflare CDN](https://www.cloudflare.com/cdn/) and Amazon [CloudFront](https://aws.amazon.com/cloudfront/).
+
+### 8. Caching
+
+While first load experience is essential, you also need to think about performance for repeat visitors of your website. One way to make repeat visits significantly faster is through caching. Browser caching works by saving a copy of website resources and using that copy instead of downloading it again. This means that repeat visits feel almost instantaneous. To set up caching, you need to set the [Cache-Control](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control) header in the response for the resource you are caching. If you are using a CDN, this is likely automatically configured for you. If you are not, it is simple enough to set up.
+
+### 9. Compression
+
+I am sure you have come across `.zip` or `.tag.gz` files. You might also know that along with transforming a directory into a file, they also reduce the size of the files. The size reduction is done using compression. Compression works by running an algorithm to find ways to make a file smaller by shrinking repeated statements and doing some other things depending on the algorithm used. There are many popular compression algorithms, like deflate, lz4, Brotli, and Zstandard. The compression that zip and gzipped files use is deflate.
+
+Implementing compression can be a little hard to do, but there are simple ways to do it. The simplest way is to use a CDN that automatically compresses files, as we talked about at #7. Another simple way to implement compression is to run a file server that supports compression. However, if you cannot do either of those, there are some other solutions. Lots of build tools/bundlers have plugins that automatically generate compressed forms of files, which you can serve to have the browser automatically decompress it. The browser tells you what compression algorithms it supports using the `Accept-Encoding` header, and your server tells the browser what compression algorithm is used in the response using the `Content-Encoding` header. For more information, check out [MDN's article on HTTP Compression](https://developer.mozilla.org/en-US/docs/Web/HTTP/Compression).
+
+### 10. Lighthouse & Automated Performance Auditing
+
+[Lighthouse](https://developer.chrome.com/docs/devtools/speed/get-started/) is a tool that helps you automatically audit your website's performance, along with a few other categories like SEO and Accessibility. It can be extremely helpful for finding performance issues and providing an easy path to solving them. If you have Chrome or another Chromium-based browser, Lighthouse should be available by default. If you are using another browser, you could download the extension or use [PageSpeed Insights](https://pagespeed.web.dev/). PageSpeed Insights also offers data from real users, which can be helpful if you want to see what users are actually experiencing.
+
+## Conclusion
+
+With these tips, you should achieve large performance gains in your website, translating to more retention and conversion. If you got something out of these, sign up to the mailing list below or subscribe via RSS to stay up to date with the newest articles and insights here. Thanks for reading!

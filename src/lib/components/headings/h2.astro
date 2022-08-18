@@ -1,0 +1,12 @@
+---
+const id = (await Astro.slots.render("default"))
+	.toLocaleLowerCase()
+	.replaceAll(" ", "-");
+---
+
+<h2 {id}>
+	<slot />
+	<a tabindex="-1" href={"#" + id}
+		><span class="headerLink" aria-hidden></span></a
+	>
+</h2>
