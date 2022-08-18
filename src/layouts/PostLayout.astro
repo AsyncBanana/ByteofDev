@@ -11,39 +11,82 @@ import {
 	faFacebookSquare,
 	faLinkedin,
 } from "@fortawesome/free-brands-svg-icons";
-import CopyLink from "$lib/components/copyLink.svelte"
-const { title, description, published: publishedRAW, updated: updatedRAW, image, author, tags } =
-	Astro.props.content;
+import CopyLink from "$lib/components/copyLink.svelte";
+const {
+	title,
+	description,
+	published: publishedRAW,
+	updated: updatedRAW,
+	image,
+	author,
+	tags,
+} = Astro.props.content;
 const published = dayjs(publishedRAW).toISOString();
 const updated = dayjs(updatedRAW).toISOString();
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 ---
 
-<BaseLayout SEO={{ title, description, updated, published, author, image, type: "article" , }}>
+<BaseLayout
+	SEO={{
+		title,
+		description,
+		updated,
+		published,
+		author,
+		image,
+		type: "article",
+	}}
+>
 	<div class="mt-1/2 p-6 top-1/3 sticky float-left hidden lg:w-1/4 lg:!block">
-		<h2 class="font-bold border-b-gray-400  border-b-2 border-opacity-25 text-lg mb-2">
+		<h2
+			class="font-bold border-b-gray-400  border-b-2 border-opacity-25 text-lg mb-2"
+		>
 			{title}
 		</h2>
 		<div class="grid grid-cols-5">
-			<a class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
-				href={`https://twitter.com/intent/tweet?text=${encodeURIComponent( title
-				)}&url=${encodeURIComponent(canonicalURL.toString())}`} target="_blank" aria-label="Share to Twitter"
-				rel="noopener" data-balloon-pos="down">
+			<a
+				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
+				href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+					title
+				)}&url=${encodeURIComponent(canonicalURL.toString())}`}
+				target="_blank"
+				aria-label="Share to Twitter"
+				rel="noopener"
+				data-balloon-pos="down"
+			>
 				<Icon icon={faTwitterSquare} size="2x" />
 			</a>
-			<a class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
-				href={`https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent( title
-				)}&u=${encodeURIComponent(canonicalURL.toString())}`} target="_blank" rel="noopener"
-				aria-label="Share to Facebook" data-balloon-pos="down">
+			<a
+				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
+				href={`https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(
+					title
+				)}&u=${encodeURIComponent(canonicalURL.toString())}`}
+				target="_blank"
+				rel="noopener"
+				aria-label="Share to Facebook"
+				data-balloon-pos="down"
+			>
 				<Icon icon={faFacebookSquare} size="2x" />
 			</a>
-			<a class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
-				href={`https://www.linkedin.com/sharing/share-offsite?url=${encodeURIComponent( canonicalURL.toString()
-				)}`} target="_blank" rel="noopener" aria-label="Share to LinkedIn" data-balloon-pos="down">
+			<a
+				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
+				href={`https://www.linkedin.com/sharing/share-offsite?url=${encodeURIComponent(
+					canonicalURL.toString()
+				)}`}
+				target="_blank"
+				rel="noopener"
+				aria-label="Share to LinkedIn"
+				data-balloon-pos="down"
+			>
 				<Icon icon={faLinkedin} size="2x" />
 			</a>
-			<a class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
-				href={`/rss.xml`} target="_blank" aria-label="Subscribe to RSS" data-balloon-pos="down">
+			<a
+				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
+				href={`/rss.xml`}
+				target="_blank"
+				aria-label="Subscribe to RSS"
+				data-balloon-pos="down"
+			>
 				<Icon icon={faRssSquare} size="2x" />
 			</a>
 			<CopyLink url={canonicalURL.toString()} client:visible />
@@ -51,25 +94,36 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 		<EmailPrompt primary={false} client:idle />
 	</div>
 	<article class="m-auto p-4 md:w-3/4 lg:w-1/2">
-		<img src={image.url} alt="Story heading" class="rounded m-auto bg-base-300 w-full max-h-70vh aspect-video" />
+		<img
+			src={image.url}
+			alt="Story heading"
+			class="rounded m-auto bg-base-300 w-full max-h-70vh aspect-video"
+		/>
 		<div class="flex flex-wrap">
 			{tags.map((tag) => (
-			<a style="color: hsla(var(--p))"
-				class="font-sans font-bold mr-3 text-xl uppercase no-underline decoration-purple-500 hover:underline"
-				href={`/tagged/${tag.replaceAll(" ", " -")}/`.toLowerCase()}>
-				{tag}
-			</a>
+				<a
+					style="color: hsla(var(--p))"
+					class="font-sans font-bold mr-3 text-xl uppercase no-underline decoration-purple-500 hover:underline"
+					href={`/tagged/${tag.replaceAll(" ", "-")}/`.toLowerCase()}
+				>
+					{tag}
+				</a>
 			))}
 		</div>
-		<h1 class="font-bold text-shadow-md shadow-warm-gray-600 text-4xl md:text-6xl">
+		<h1
+			class="font-bold text-shadow-md shadow-warm-gray-600 text-4xl md:text-6xl"
+		>
 			{title}
 		</h1>
 		<h2 class="font-normal text-xl">
-			&emsp;By <a href={"/author/" + author.replace(" ", " -")} rel="author">{author}</a> on
+			&emsp;By <a
+				href={"/author/" + author.replace(" ", " -") + "/"}
+				rel="author">{author}</a
+			> on
 			{dayjs(publishedRAW).format("MMMM D, YYYY")}{updatedRAW >
 			publishedRAW + 86400000 // filter out tiny post-launch updates
-			? ` (Updated ${dayjs(updatedRAW).format("MMMM D, YYYY")})`
-			: ``}
+				? ` (Updated ${dayjs(updatedRAW).format("MMMM D, YYYY")})`
+				: ``}
 		</h2>
 		<br />
 
@@ -78,29 +132,55 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 		</span>
 	</article>
 	<div class="m-auto md:w-3/4 lg:w-1/2">
-		<h2 class="font-bold border-b-gray-400  border-b-2 border-opacity-25 mb-2 text-2xl">
+		<h2
+			class="font-bold border-b-gray-400  border-b-2 border-opacity-25 mb-2 text-2xl"
+		>
 			Share
 		</h2>
 		<div class="grid grid-flow-col grid-cols-5 md:w-1/4">
-			<a class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
-				href={`https://twitter.com/intent/tweet?text=${encodeURIComponent( title
-				)}&url=${encodeURIComponent(canonicalURL.toString())}`} target="_blank" aria-label="Share to Twitter"
-				rel="noopener" data-balloon-pos="down">
+			<a
+				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
+				href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+					title
+				)}&url=${encodeURIComponent(canonicalURL.toString())}`}
+				target="_blank"
+				aria-label="Share to Twitter"
+				rel="noopener"
+				data-balloon-pos="down"
+			>
 				<Icon icon={faTwitterSquare} size="2x" />
 			</a>
-			<a class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
-				href={`https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent( title
-				)}&u=${encodeURIComponent(canonicalURL.toString())}`} target="_blank" rel="noopener"
-				aria-label="Share to Facebook" data-balloon-pos="down">
+			<a
+				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
+				href={`https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(
+					title
+				)}&u=${encodeURIComponent(canonicalURL.toString())}`}
+				target="_blank"
+				rel="noopener"
+				aria-label="Share to Facebook"
+				data-balloon-pos="down"
+			>
 				<Icon icon={faFacebookSquare} size="2x" />
 			</a>
-			<a class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
-				href={`https://www.linkedin.com/sharing/share-offsite?url=${encodeURIComponent( canonicalURL.toString()
-				)}`} target="_blank" rel="noopener" aria-label="Share to LinkedIn" data-balloon-pos="down">
+			<a
+				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
+				href={`https://www.linkedin.com/sharing/share-offsite?url=${encodeURIComponent(
+					canonicalURL.toString()
+				)}`}
+				target="_blank"
+				rel="noopener"
+				aria-label="Share to LinkedIn"
+				data-balloon-pos="down"
+			>
 				<Icon icon={faLinkedin} size="2x" />
 			</a>
-			<a class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
-				href={`/rss.xml`} target="_blank" aria-label="Subscribe to RSS" data-balloon-pos="down">
+			<a
+				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
+				href={`/rss.xml`}
+				target="_blank"
+				aria-label="Subscribe to RSS"
+				data-balloon-pos="down"
+			>
 				<Icon icon={faRssSquare} size="2x" />
 			</a>
 			<CopyLink client:visible url={canonicalURL.toString()} />
