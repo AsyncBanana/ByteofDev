@@ -1,4 +1,5 @@
 import rss from "@astrojs/rss";
+import getPostUrl from "$lib/modules/getPostUrl";
 import type { Post } from "$lib/modules/types";
 const allPosts: Array<Post> = Object.values(
 	import.meta.glob("/src/content/posts/*.mdx", { eager: true })
@@ -11,10 +12,11 @@ export const get = () =>
 		customData: `<language>en-us</language>`,
 
 		items: allPosts.map((item) => {
+			console.log(item.url);
 			return {
 				title: item.frontmatter.title,
 				description: item.frontmatter.description,
-				link: item.url,
+				link: getPostUrl(item),
 				pubDate: new Date(item.frontmatter.published),
 			};
 		}),
