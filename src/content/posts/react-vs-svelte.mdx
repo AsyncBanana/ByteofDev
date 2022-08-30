@@ -1,0 +1,181 @@
+---
+title: "React vs Svelte: Which is better in 2022?"
+description: React and Svelte are both prevalent libraries for creating user interfaces. In this article we will figure out which one is the better choice for new projects.
+author: AsyncBanana
+tags: [React, Svelte]
+published: 1661899056812
+updated: 1661899056812
+image:
+  {
+    url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/ReactvsSvelte_hXcoskb_7,
+    alt: Illustration showing React compared to Svelte,
+  }
+---
+
+Imagine you are [doomscrolling](https://en.wikipedia.org/wiki/Doomscrolling) through Facebook, checking out the news on the New York Times' website, or listening to music on Spotify. As it turns out, all of these websites use either React or Svelte, along with many other popular websites. As you can see, React and Svelte are both very prevalent libraries (or frameworks, depending on how you define each). For many developers trying to plan their next website, they have to ask: "What should I use to build my app's interface?" This article aims to answer that question for React and Svelte. With that, let's get started on the comparison.
+
+## Learning Curve
+
+### React
+
+Let's start with React. React can take some time to adjust to, although it is usually not very hard to learn. The hardest part of React to learn is how it uses a declarative paradigm, unlike JavaScript, which is generally imperative. The difference is essentially this: with imperative JavaScript, you manipulate the DOM to represent the data using your own code, whereas with React, you simply update the data and tell React what part of the data goes where, and React will automatically update the DOM. Another more general way to explain this is with imperative coding you specify how to update the data whereas with declarative coding you only specify the data.
+
+There are some other things that take getting used to, but they are generally easy to learn. First, instead of HTML, you have to use JSX. JSX is like JavaScript and HTML combined, and it is what allows you to represent your data using declarative markup. For example, this would create a heading that contains whatever the JavaScript string `date` is set to:
+
+```jsx
+<h1>{date}</h1>
+```
+
+As you can see, it is HTML enhanced using JavaScript.
+
+Finally, you will have to take some time to learn all of React's hooks (`useState()`, `useEffect()`, etc). However, this should not take long.
+
+### Svelte
+
+Svelte can take a little longer to learn. First, you still have to get used to writing declarative code. Svelte is very similar to React in that way, as they both are declarative (most other modern UI libraries also do this, including Vue and Angular). However, there are some differences in syntax that can make Svelte harder to learn than React. Unlike React, which uses JSX, Svelte has its own syntax for components. Instead of being defined inside functions (or classes), Svelte each have their own `.svelte` file. This component design is known as SFC, or single file components. Using SFC has the advantage of allowing for more syntax flexibility, which Svelte uses. The syntax flexibility helps Svelte in some other areas, but it also makes learning Svelte harder. To show you, here is a sample Svelte component:
+
+```html
+<script>
+	const example = "123";
+</script>
+<h1>{test}</h1>
+```
+
+As you can see, the `<script>` tag holds all of the component's JavaScript. That includes data, imports, and all of the logic. However, you still do need things like conditionals inside the markup. Unlike JSX, where you just embed a JavaScript function, Svelte has its own syntax for conditionals and loops. That is where things can get a little harder to learn. For example, if you are trying to conditionally add markup, you will have to use `#{if boolean}`.
+
+```html
+{#if boolean}
+<h1>boolean is true</h1>
+{/if}
+```
+
+You need to do something similar for loops. Additionally, Svelte is more feature-rich, which is helpful but increases the time necessary to learn all of the features. For example, Svelte includes support for tweening values. One place where Svelte is better in terms of learning its state, as Svelte does not require you to use `usestate()`. Instead, you can just reassign a variable in the component script and the component will automatically update with the new variable value.
+
+### Summary
+
+Both libraries require you to learn how to write declarative code, but React takes first here because of how it utilizes native JavaScript more.
+
+**Winner: React**
+
+## Syntax Brevity
+
+### React
+
+React's syntax is not super verbose, but it is not concise either. If you are using class components, it will be a lot more verbose. However, we will focus on using hooks and function components here. The biggest elements that contribute to its code size beyond the basic HTML is the state management (you need to use `useState()` and `setState()`) as well as how conditionals and loops work. However, React is still less verbose than some frameworks, as it cuts out most unnecessary boilerplate. For example, here we have a simple to-do list component. This component includes adding to-do items using a text input with the enter key or a button and then removing to-do items using the X button next to them.
+
+```js
+function TodoList() {
+	const [todos, setTodos] = useState([]);
+	const [newTodo, setNewTodo] = useState("");
+	return (
+		<div>
+			<ol>
+				{todos.map((todo) => (
+					<li key={todo}>
+						{todo}
+						<button onClick={() => setTodos(todos.filter((td) => td !== todo))}>
+							X
+						</button>
+					</li>
+				))}
+			</ol>
+			<form
+				onSubmit={(e) => {
+					setTodos(todos.concat([newTodo]));
+					setNewTodo("");
+					e.preventDefault();
+				}}
+			>
+				<input
+					type="text"
+					value={newTodo}
+					onChange={(e) => {
+						setNewTodo(e.target.value);
+					}}
+				/>
+				<button type="submit">Add Todo</button>
+			</form>
+		</div>
+	);
+}
+```
+
+As you can see, it is 34 lines long. We will create a functionally identical to-do list example in Svelte to compare.
+
+### Svelte
+
+Many of the same reasons Svelte lost the learning curve section give it an advantage here. The conditionals and loops are much more concise, and the state management is much simpler. Additionally, Svelte supports two-way bindings, meaning that the input value can be bound to `newTodo` more simply. Because of these features, Svelte takes the lead for its to-do list component at only 25 lines.
+
+```js
+<script>
+	let todos = ["test","test2"];
+	let newTodo = ""
+</script>
+
+<ol>
+	{#each todos as todo,index}
+		<li>
+			{todo}
+			<button on:click={()=>todos = todos.filter((td)=> td !== todo)}>
+				X
+			</button>
+		</li>
+	{/each}
+</ol>
+<form on:submit={(e)=>{
+			todos.push(newTodo)
+			todos = todos
+			newTodo = ""
+			e.preventDefault()
+		}}>
+	<input type="text" bind:value={newTodo}/>
+	<button type="submit">
+		Add Todo
+	</button>
+</form>
+```
+
+Obviously, this is not a huge difference, but it can add up when you are building a large app.
+
+### Summary
+
+r
+Svelte's unique features, like using `{#if}` for conditionals allow it to take the lead here. React is concise, but it still constrained by having to be implemented in plain JavaScript (aside from compiling JSX). The Svelte to-do list component was only 25 lines, compared to 34 lines for the same component implemented in React.
+
+**Winner: Svelte**
+
+## Performance
+
+### React
+
+React is not the most optimized library for building interfaces. It is extremely heavy, at 42kb minified and gzipped, and can be slow when rendering. However, there are some solutions to this. The primary solution is [Preact](https://preactjs.com/), which is a React-compatible library that is only 4kb minified and gzipped. Preact also includes features like the ability to use native HTML attributes in JSX instead of the JSX version. There are also libraries like [Solid](https://www.solidjs.com/) and [Inferno](https://www.infernojs.org/) which vary in terms of React compatibility and performance but are good alternatives to consider.
+
+### Svelte
+
+Svelte is very unique in that instead of providing a runtime API that you directly interface with, it runs your Svelte code through a compiler. While React technically also does this, all React does is transform JSX tags into JSX function calls. In contrast, Svelte code is completely transformed in the compilation process. This means that your website is usually light and fast since it avoids the overhead of high-level functions in a runtime library. However, with large apps, your compiled code can grow larger, although with code splitting this is usually not a big problem.
+
+### Summary
+
+While you can make React apps faster by using a tool like Preact, that is not built-in, so Svelte wins this category. Svelte's use of an optimizing compiler that removes the need for a large runtime makes Svelte extremely fast.
+
+**Winner: Svelte**
+
+## Ecosystem
+
+### React
+
+React has the largest ecosystem out of any UI library. In fact, when you search for react on NPM, there are more than 200k packages that come up. This includes everything from [component libraries](https://mui.com/) to [state containers](https://redux.js.org/). Additionally, Meta created and has developed its own ecosystem around React.
+
+### Svelte
+
+Svelte has a much smaller but quickly growing ecosystem. Currently, searching Svelte brings up about 5,000 packages. However, one thing to note is that Svelte includes tools like state management, so many ecosystem tools are unnecessary.
+
+### Summary
+
+Ultimately, React wins by a large margin in this category. While Svelte's ecosystem is growing quickly, it is still nowhere near React.
+
+**Winner: React**
+
+## Conclusion
+
+As you can see, it is tied 2-2, so you could choose either. If you are more of a beginner and want something that is easier to learn and has a larger ecosystem, choose React. Otherwise, if you want something that is fast to build with and runs fast, choose Svelte. Both are great choices. Thanks for reading, and make sure to sign up for the mailing list or RSS below.
