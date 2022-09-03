@@ -1,0 +1,166 @@
+---
+title: "How to use ESM on the web and in Node.js"
+description: ESM (ECMAScript Modules) is a modern module format with many advantages over previous formats like CommonJS. How do you switch to it?
+author: AsyncBanana
+tags: [ESM, Node]
+published: 1662221036776
+updated: 1662221036776
+image:
+  {
+    url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/UseESM_4JsCW1Rux,
+    alt: Illustration of JavaScript logo-like ESM logo Node logo and HTML5 logo,
+  }
+---
+
+import Callout from "$lib/components/callout.svelte";
+
+ESM (or ECMAScript Modules) is a modern module format with many advantages over previous formats like CommonJS. It is supported natively in most web browsers, is very fast, and opens up new opportunities for tree shaking, among other features. However, it is a major shift from CommonJS/AMD/UMD, and it can be hard to use if you are used to one of those module formats.
+
+## What is ESM?
+
+ECMAScript Modules is a module format created as part of the ECMAScript (read: JavaScript) standard. It was standardized in the ES6 ECMAScript version, which you might know for adding many syntax features. ES Modules aims to solve a significant problem in JavaScript: There is no built-in way to share code between scripts. You might be familiar with importing things using `require()`. That is using CommonJS, which is only supported in some bundlers and Node.js. Additionally, there are some problems with CommonJS, like its synchronous nature. ESM aims to solve all of these issues while making one module format universal. Today, Chrome, Safari, and Firefox fully support ESM, so you should not have any problem running it in modern browsers. Additionally, Node v12+ supports ESM, although you have to tell it you are using ESM rather than CommonJS. We will talk more about how to how to do this later on.
+
+## ESM Syntax
+
+The syntax used to import and export modules is a little more complicated than in other module systems like CommonJS, but it still is fairly easy to pick up. The most basic example is this:
+
+```js
+// script.js
+import { example } from "./library.js";
+example();
+
+// library.js
+export const example = function () {
+	console.log("hello world");
+};
+```
+
+Here we import a function called `example` from `library.js`. Notice the brackets around `example`. That shows that we are only importing `example`. So if we wanted to import multiple things we could do this:
+
+```js
+import { example, example2 } from "./library.js";
+```
+
+As you can see, we put both `example` and `example2` in between the brackets to import both of the exported variables. Now, what if there was only one thing exported? Using `export default`, we can remove the brackets.
+
+```js
+// script.js
+import defaultExample from "./library.js";
+defaultExample();
+
+// library.js
+export default function () {
+	console.log("hello world");
+}
+```
+
+Default exports also allow us to name the imported value whatever we want. We can also do this with named exports, but it is a little more complicated:
+
+```js
+import { example as newExampleName } from "./library.js";
+newExampleName();
+```
+
+Another thing you might want to do is dynamically import something. Dynamic imports work a lot like `require()` in CommonJS, except that they run asynchronously:
+
+```js
+import("./library.js").then((library) => {
+	library.example();
+});
+```
+
+Finally, you might want to import all functions in a module, which you can do using `import * as`:
+
+```js
+// script.js
+import * as library from "./library.js";
+library.example();
+library.example2();
+
+// library.js
+export const example = function () {
+	console.log("hello world");
+};
+export const example2 = function () {
+	console.log("hello world again");
+};
+```
+
+## Using ESM with Node
+
+<Callout type="warning">Make sure you are using Node v12 or higher</Callout>
+
+### Per-file
+
+The simplest way to use ESM in Node.js is to just replace `.js` with `.mjs` as the file extension for the script in which you want to use ESM. The new file extension tells Node that it should treat the file as ESM rather than CJS. This also works the other way. You can use `.cjs` to designate a file as CommonJS if the default is ESM (more on that in the next section).
+
+### Package-wide
+
+Often you want a whole package to be ESM by default. To do this, you must add `"type": "module"` to your `package.json`. Adding `"type": "module"` means files will be treated as ESM files unless they have a `.cjs` extension. However, dependencies can still use CommonJS.
+
+### Importing CJS Modules From ESM
+
+To ease the transition to ESM, Node offers the ability to load CommonJS modules from ESM. You can retrieve the `module.exports` object by importing it as a default export. For example:
+
+```js
+// script.mjs
+import example from "example-package";
+example.helloworld();
+
+// example-package index.cjs
+module.exports = {
+	helloworld: function () {
+		console.log("hello world");
+	},
+};
+```
+
+This feature is very helpful as it allows you to use NPM packages built with CommonJS.
+
+### Importing ES Modules from CJS
+
+Unfortunately, Node does not support importing ES Modules from CommonJS modules. Luckily, many compilers allow you to convert ESM to CommonJS, allowing you to write a library that offers a great experience for both groups. TypeScript is the most notable in this category. You can write code using ES Modules and target both ESM and CJS.
+
+### Migrating from CJS To ESM
+
+There are tools to help make migrating code from CommonJS to ES Modules easy. One of the most popular tools is [cjstoesm](https://github.com/wessberg/cjstoesm), a command line tool that automatically transforms CommonJS code in Node to its ESM equivalent. Almost all CommonJS code is transformed. However, there are some things that are not transformed. The most notable is the `__dirname`. `__dirname` is not part of Node.js, but it is one thing that Node does not suppport in "ESM mode". Luckily, there are replacements. A simple way to polyfill `__dirname` is to do this:
+
+```js
+const __dirname = new URL(".", import.meta.url).pathname;
+```
+
+This snippet uses `import.meta.url`, which is available in all ESM contexts.
+
+Another thing that is harder to migrate is conditional imports. You can use dynamic importing to replace running `require()` dynamically, but problems arise with that due to how `import()` is asynchronous and `require()` is not. Luckily, there is a simple solution to this. If you are using Node.js v14.8 or later, you can use [top-level await](https://v8.dev/features/top-level-await) to make `import()` synchronous. For example,
+
+```js
+// CommonJS
+const module = boolean ? require("module1") : require("module2");
+
+// ES Modules
+const module = await (boolean ? import("module1") : import("module2"));
+```
+
+With these tips, you should not have much trouble at all converting CommonJS code to ES Modules.
+
+## Using ESM on the Web
+
+### Native ESM
+
+The simplest way to use ESM on the web is by utilizing the native support for it. For about over 95% of users ([Caniuse](https://caniuse.com/es6-module)), ESM is supported without polyfills. To load a script with ESM, you need to add `type="module"` in the script tag.
+
+```js
+<script src="./esmscript.js" type="module">
+```
+
+Then, all modules you import from that script will also load as ES modules.
+
+To create a backup script for browsers that do not support ES Modules, you can use the `nomodule` attribute. `nomodule` tells any browser that supports ES Modules not to load the script, so only browsers without ESM support will load it.
+
+### Bundlers
+
+While just using the browser's native ESM support is simple to start with, you will be missing out on a lot of features and optimizations, like tree shaking, support for CommonJS dependencies or automatic fallback generation. Luckily, many bundlers support ESM by default. The most notable modern ESM bundlers for the web is [Vite](https://vitejs.dev/). Vite is a bundler created by the Vue team that is extremely fast and feature-rich. By default, Vite minifies and optimizes your code, and you can do a lot more with Vite/Rollup plugins. To create a Vite project, you have to run `npm create vite@latest`. This will help you set up a project with Vite using ES Modules. If you want legacy browser support using `nomodule`, you can use the plugin [@vitejs/plugin-legacy](https://github.com/vitejs/vite/tree/main/packages/plugin-legacy). Another feature that Vite, along with most other bundlers, has is support for dependencies that use CommonJS. Obviously, CommonJS requires transformation and therefore can add some code weight, but it is better than nothing, and you can still use ESM along with it.
+
+## Conclusion
+
+Now you are familiar with ES Modules' syntax and how to implement it on the web and in Node.js. Make sure to sign up for the newsletter or RSS below. I hope this article has been helpful for you, and thanks for reading.
