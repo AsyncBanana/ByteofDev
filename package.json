@@ -17,7 +17,7 @@
     "@astrojs/tailwind": "^0.2.5",
     "@cloudflare/workers-types": "^3.14.1",
     "@fec/remark-a11y-emoji": "^3.1.0",
-    "astro": "1.0.0",
+    "astro": "1.1.5",
     "critical": "^4.0.1",
     "image-size": "^1.0.2",
     "prettier": "^2.7.1",
