@@ -6,6 +6,7 @@ import "balloon-css/balloon.css";
 import EmailPrompt from "$lib/components/emailPrompt.svelte";
 import { faRssSquare } from "@fortawesome/free-solid-svg-icons";
 import BaseLayout from "$layouts/BaseLayout.astro";
+import Popup from "$lib/components/popup.svelte";
 import {
 	faTwitterSquare,
 	faFacebookSquare,
@@ -190,4 +191,5 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 	<style is:global>
 		@import "../lib/stylesheets/postTheme.css";
 	</style>
+	<Popup client:idle />
 </BaseLayout>

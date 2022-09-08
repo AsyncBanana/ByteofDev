@@ -32,12 +32,12 @@
   },
   "type": "module",
   "dependencies": {
-    "@fortawesome/free-brands-svg-icons": "^5.15.4",
-    "@fortawesome/free-solid-svg-icons": "^5.15.4",
+    "@fortawesome/free-brands-svg-icons": "^6.2.0",
+    "@fortawesome/free-solid-svg-icons": "^6.2.0",
     "balloon-css": "^1.2.0",
     "daisyui": "1.13.0",
     "dayjs": "^1.11.4",
-    "svelte-fa": "^2.4.0",
+    "svelte-fa": "^3.0.3",
     "svelte-media": "^0.1.5"
   }
 }
