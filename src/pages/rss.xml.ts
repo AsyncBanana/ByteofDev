@@ -17,7 +17,6 @@ export const get = () =>
 		customData: `<language>en-us</language>`,
 
 		items: allPosts.map((item) => {
-			console.log(item.url);
 			return {
 				title: item.frontmatter.title,
 				description: item.frontmatter.description,
