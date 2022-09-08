@@ -40,7 +40,7 @@ React can be very large. Just by adding React to your app, you add more than 121
 
 That 121 kilobytes can mean the difference between a snappy website and a slow-loading one. Slow websites can make your users more likely to leave the website. Many other frameworks like Vue, Preact, and Svelte have a much smaller bundle size and can be integrated without creating a much slower website.
 
-Additionally, all of your JavaScript needs to download before your website can even be rendered if you use approaches like Create React App. This is because Create React App and other Single Page App approaches require React to build the HTML using the JavaScript downloaded, instead of serving a pre-built HTML file. This can hurt SEO by making it harder for search engines to understand your content and can make the content load slower for your users. However, there are solutions to this that render the HTML on the server like Next.js. Although even if you do that, it still can take some time for the page to become interactive.
+Additionally, all of your JavaScript needs to download before your website can even be rendered if you use approaches like Create React App. This is because Create React App and other Single Page App approaches require React to build the HTML dynamically using JavaScript, instead of serving a pre-built HTML file. This can hurt SEO by making it harder for search engines to understand your content and can make the content load slower for your users. However, there are solutions to this that render the HTML on the server, like Next.js. Although even if you do that, it still can take some time for the page to become interactive.
 
 ### When you need fast rendering
 
@@ -53,7 +53,7 @@ function render(data) {
 render("Lorem ipsum colour");
 ```
 
-In the example above, even though there is only a small string that is used, the whole document is rerendered. This can be very slow, as it takes time for the HTML to be parsed and rendered again. To solve this problem, React uses a VDOM. VDOMs keep the structure of the document in memory and then use that to figure out what has changed by checking to see what is different when you update the VDOM, making it possible to have tiny changes in HTML. However, managing the Virtual DOM has overhead and it is faster to just make optimized JavaScript in the first place. An example of this would be:
+In the example above, even though there is only a small string that is used, the whole document is rerendered. This can be very slow, as it takes time for the HTML to be parsed and rendered again. To solve this problem, React uses a VDOM. VDOMs keep the structure of the document in memory and then use that to figure out what has changed by checking to see what is different when you update the VDOM, making it possible to have tiny changes in HTML. However, managing the Virtual DOM has overhead, and therefore it is faster to just make optimized JavaScript in the first place. An example of this would be:
 
 ```js
 function render(data) {
@@ -66,8 +66,26 @@ That example changes a lot less HTML, which makes it faster, and it does not hav
 
 ### When you want a more powerful markup language
 
-JSX is nice, but sometimes it can be verbose due to it basically being HTML with JavaScript mixed in. While it is easy to learn JSX due to it being so related to HTML, some markup languages, like Svelte, can be much less verbose. Svelte offers more abstractions, like built-in conditional blocks and reactive variables. for example, when you want to trigger an update, with React you need to use where in Svelte you can just set the variable. This can create more concise code and less development work once you learn the new syntax.
+JSX is nice, but sometimes it can be verbose because it is basically HTML mixed with JavaScript. While it is easy to learn JSX due to it being so related to HTML, some markup languages, like Svelte, can be much less verbose. Svelte offers more abstractions, like built-in conditional blocks and reactive variables. for example, when you want to trigger an update, with React you need to use where in Svelte you can just set the variable. Because of the additional abstractions, Svelte can help you create more concise code and less development work once you learn the new syntax.
+
+## Alternatives to React
+
+### Vue
+
+[Vue](https://vuejs.org/) is one of the most well-known alternatives to React. It has both a smaller bundle size (95.5kb) and a faster runtime speed. It also has a different API, which some people prefer but others do not. In fact, it gives you a choice between two APIs, the options API, which is more like React class components, and the composition API, which works more like function components with hooks.
+
+### Svelte
+
+[Svelte](https://svelte.dev/) is another alternative that solves both the markup language and performance problems by implementing a more advanced compiler. Its selling point is that it compiles to native JavaScript rather than shipping with a huge runtime.
+
+### Preact
+
+[Preact](https://preactjs.com/) is essentially React but only 10.3kb. Using `preact/compat`, you can immediately replace React with Preact, no need to change any code. Additionally, Preact runs faster than React.
+
+### Solid
+
+[Solid](https://www.solidjs.com/) is another tool that tries to be somewhat like React. However, unlike Preact, it aims less to be completely compatible and more to be even faster while being related to React. Solid combines JSX with hooks and a Svelte-style compiler to be what is likely the fastest framework there is.
 
 ## Conclusion
 
-React is a great tool for building websites quickly. However, it is not for everything or everyone. It is not great for performance in general, and JSX could be more concise. There are also many great alternatives, like Vue, Svelte, and native JS. However, this might be somewhat biased, as I am a Svelte user. Anyway, I hoped you learned something from this, and thanks for reading.
+React is an excellent tool for building websites quickly. However, it is not for everything or everyone. It is not great for performance in general, and JSX could be more concise. Luckily, there are many alternatives, like Vue, Svelte, Preact, and Solid. However, this might be somewhat biased, as I am a Svelte user. Anyway, I hope you learned something from this, and thanks for reading.
