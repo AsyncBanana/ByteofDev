@@ -11,7 +11,8 @@ const navUrls = [
 	<head>
 		<HeadSEO SEO={Astro.props.SEO || {}} />
 		<meta http-equiv="Accept-CH" content="DPR, Width" />
-		<link rel="icon" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" sizes="any" />
+		<link rel="icon" type="image/svg+xml" sizes="any" href="/favicon.svg" />
 		<style is:global>
 			@import "../lib/stylesheets/theme.css";
 		</style>
