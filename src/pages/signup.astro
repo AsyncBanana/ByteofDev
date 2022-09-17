@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "$layouts/BaseLayout.astro";
+import SignupPageForm from "$lib/components/signupPageForm.svelte";
 ---
 
 <BaseLayout
@@ -16,14 +17,6 @@ import BaseLayout from "$layouts/BaseLayout.astro";
 		<h2 class="text-center italic">
 			Get programming news delivered to your mailbox
 		</h2>
-		<form
-			method="POST"
-			action="/api/addcontact"
-			class="form-control m-auto w-3/5 mb-6"
-		>
-			<label for="email">Enter email here</label>
-			<input type="email" class="shadow input text-base-content" name="email" />
-			<input type="submit" class="mt-4 w-min btn btn-md btn-primary" />
-		</form>
+		<SignupPageForm client:idle />
 	</div>
 </BaseLayout>

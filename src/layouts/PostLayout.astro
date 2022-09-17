@@ -92,7 +92,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 			</a>
 			<CopyLink url={canonicalURL.toString()} client:visible />
 		</div>
-		<EmailPrompt primary={false} client:idle />
+		<EmailPrompt primary={false} method="Article Sidebar" client:idle />
 	</div>
 	<article class="m-auto p-4 md:w-3/4 lg:w-1/2">
 		<img
@@ -186,7 +186,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 			</a>
 			<CopyLink client:visible url={canonicalURL.toString()} />
 		</div>
-		<EmailPrompt client:visible />
+		<EmailPrompt method="Article Bottom" client:visible />
 	</div>
 	<style is:global>
 		@import "../lib/stylesheets/postTheme.css";

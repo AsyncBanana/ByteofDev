@@ -1,6 +1,7 @@
 <script>
 	import { trackEvent } from "$lib/modules/events";
 	export let primary = true;
+	export let method;
 </script>
 
 <div class={`bg-base-300 rounded-md p-4 m-2 shadow-xl`}>
@@ -10,7 +11,7 @@
 		action="/api/addcontact"
 		class="form-control"
 		on:submit={() => {
-			trackEvent("Newsletter signup");
+			trackEvent("Newsletter signup", { method: method });
 		}}
 	>
 		<p>
@@ -22,7 +23,7 @@
 		>
 		<input
 			type="email"
-			class="shadow input text-base-content"
+			class="shadow text-base-content input"
 			name="email"
 			id={`email${primary ? "-primary" : ""}`}
 			placeholder="smart@cookie.com"

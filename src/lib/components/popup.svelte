@@ -34,7 +34,7 @@
 			action="/api/addcontact"
 			class="form-control"
 			on:submit={() => {
-				trackEvent("Newsletter signup");
+				trackEvent("Newsletter signup", { method: "Popup" });
 				visible = false;
 			}}
 		>

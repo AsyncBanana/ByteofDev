@@ -1,0 +1,147 @@
+---
+title: Top 5 Alternatives to React in 2022
+description: "Currently, React is extremely popular, and for good reasons. It is simple and concise. However, looking at some alternatives is a good idea too."
+author: AsyncBanana
+image:
+  {
+    url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/How_I_Built_Microdiff,
+    alt: Microdiff Logo,
+  }
+tags: [Microdiff, Performance]
+published: 1662920875847
+updated: 1662920875847
+---
+
+import Callout from "$lib/components/callout.svelte";
+
+Currently, React is extremely popular, and for good reasons. It is simple and concise. However, looking at some alternatives is a good idea too (check out this article on [when to use React](https://byteofdev.com/posts/when-you-should-and-should-not-use-react/)). In this article, we will check out various alternatives to React that range from a performance-optimized version to something with an entirely different API.
+
+## Top Alternatives To React
+
+### [Solid.js](https://www.solidjs.com/)
+
+Solid.js is an up-and-coming framework that is significantly faster than React. In fact, Solid is one of the fastest frameworks available. Additionally, it provides an API that is very similar to React. Solid uses the same JSX as React does, and it has very similar hooks. However, there are some differences. For example, to optimize your code, Solid requires that when you try to get the value of state, you have to call the state as a function rather than just taking the value directly.
+
+#### Code Example
+
+```js
+import { render } from "solid-js/web";
+import { createSignal } from "solid-js";
+
+function Counter() {
+	const [count, setCount] = createSignal(0);
+	const increment = () => setCount(count() + 1);
+
+	return (
+		<>
+			<h1>{count()}</h1>
+			<button type="button" onClick={increment}>
+				Increment
+			</button>
+		</>
+	);
+}
+
+render(() => <Counter />, document.body);
+```
+
+### [Preact](https://preactjs.com/)
+
+Preact is one of the best alternatives to React, as it is significantly faster, smaller (10kB minified), and offers React compatibility. Unlike most other libraries, Preact offers perfect React compatibility using `preact/compat`, which means that you can often transform a React app into a Preact app with minimal changes to your code. The simplest way to migrate from React to Preact is to [alias React to preact/compat](https://preactjs.com/guide/v10/getting-started#aliasing-react-to-preact) using a bundler or other build tool. What aliasing does is it redirects requests for React to `preact/compat`, meaning you can keep all of your React imports.
+
+#### Code Example
+
+```js
+/** @jsx h */
+/** @jsxFrag Fragment */
+import { h, Fragment, render } from "preact";
+import { useState } from "preact/hooks";
+
+const rootElement = document.getElementById("root");
+
+export default function Counter() {
+	const [count, setCount] = useState(0);
+	const increment = () => setCount(count + 1);
+	return (
+		<>
+			<h1>{count}</h1>
+			<button onClick={increment}>Increment</button>
+		</>
+	);
+}
+render(<Counter />, document.body);
+```
+
+### [Svelte](https://svelte.dev/)
+
+Svelte is another well-known alternative that is popular due to not just its performance but also its concise syntax. Unlike the first three alternatives, Svelte has an entirely different syntax that will take some time to learn but is very enjoyable once you get the hang of it. Svelte achieves its performance and brevity using an advanced compiler that turns your Svelte code into native JavaScript. Svelte's compiler enables you to ship tiny JavaScript bundles, as you don't have to send any large libraries to the client.
+
+Svelte code differs from React code in many important ways. First of all, Svelte components are Single File Components, which you might be familiar with if you have ever used Vue. Unlike React, where components are just functions or classes in a JavaScript/JSX file, Svelte components are more like HTML files in that there is no JavaScript shell around the markup. Instead, you must put JavaScript inside custom `<script>` tags. Another major difference is that you manage state using plain JavaScript syntax, rather than `useState()` and `setX()`. You can create a variable and use it within the markup, and the markup will automatically update. Finally, Svelte has its own syntax for control flow inside markup, relying on syntax like `{#if condition}{/if}` instead of nested functions.
+
+If you want to learn more about Svelte as an alternative to React, check out [React VS Svelte](https://byteofdev.com/posts/when-you-should-and-should-not-use-react/)
+
+#### Code Example
+
+```html
+<script>
+	let count = 0;
+
+	function handleClick() {
+		count++;
+	}
+</script>
+<h1>{count}</h1>
+<button on:click="{handleClick}">Increment</button>
+```
+
+### [Hyperapp](https://github.com/jorgebucaran/hyperapp)
+
+Hyperapp is a very minimal and fast library for building reactive interfaces. Unlike the rest of the options on this list, Hyperapp makes you write your markup using HyperScript, which utilizes raw functions rather than something like HTML. HyperScript is like using raw `React.createElement()`, and comes with the advantage of not requiring a compiler. Hyperapp also has a minimal API for state and lifecycle events. All of this minimalism allows Hyperapp to be extremely small, at 4kB minified.
+
+#### Code Example
+
+```js
+import { h, text, app } from "hyperapp";
+
+const increment = (state) => ({
+	...state,
+	count: state.count + 1,
+});
+
+app({
+	init: { count: 0 },
+	view: ({ count }) =>
+		h("main", {}, [
+			h("h1", {}, text(count)),
+			h("button", { onclick: increment }, text("Increment")),
+		]),
+	node: document.body,
+});
+```
+
+### [Mithril](https://mithril.js.org/)
+
+Mithril is the final option on our list, and it is also a very good one, as it manages to strike a balance between React's abstraction and Hyperapp's minimalism. First, it supports both JSX and raw function calls. The primary way of constructing markup using Mithril is with raw functions, but it is compatible with Babel's JSX compiler, so you cna do either. Second, Mithril has a more minimal automatic update system. The markup will only update after event handlers, HTTP requests using `m.request()`, and route changes. Otherwise, you can manually call `m.redraw()` to have Mithril update the markup. Otherwise, Mithril is a lot like Hyperapp with more features.
+
+#### Code Example
+
+```js
+import m from "https://esm.run/mithril";
+function counter() {
+	let count = 0;
+	function increment() {
+		count++;
+	}
+	return {
+		view: () => [
+			m("h1", count),
+			m("button", { onclick: increment }, "Increment"),
+		],
+	};
+}
+m.mount(document.body, counter);
+```
+
+## Conclusion
+
+That's it! I hope you found a least one library here that you will try out. React is great for a lot of things, but not for everything. Personally, my favorites on this list are Svelte and Solid. Also, if you liked reading this, join the mailing list or subscribe to RSS below! Thanks for reading!
