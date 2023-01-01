@@ -1,0 +1,104 @@
+---
+title: "The 6 JavaScript Projects to watch in 2023"
+description: We look over some of the JavaScript projects to watch in 2023.
+author: AsyncBanana
+tags: [State of the Web, Astro, Bun]
+published: 1672593319838
+updated: 1672593319838
+image:
+  {
+    url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/ProjectsToWatch2023_m-ZaUQpLf,
+    alt: Logos of projects with question mark in center,
+  }
+---
+
+As 2022 ends, we will start looking forward to 2023. The JavaScript world is evolving quickly, and there are lots of growing projects, some of which deserve your attention, and some that do not. In this article, we will look at six JavaScript projects to watch in 2023.
+
+## 6. Turborepo
+
+[Turborepo](https://turbo.build/repo) is a build system by Vercel. It uses caching, which simplifies building by only having to build what changes.
+
+Turborepo's caching system is very interesting. Whenever you run a command, it utilizes a hashing algorithm that takes in the input command, environment variables, and more and outputs a hash. Then, Turborepo saves the hash and the output of the command run. The next time you run it, it will check whether the hashed value of the input matches the hash in the cache. If so, it will avoid rerunning the command and just return the output of the cached command, saving you time and power.
+
+![Turborepo cache hit graph](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/turborepo_cache_hit_dvtROQRRv)
+_Turborepo's system for cache hits_
+
+If you have multiple people working on the same project, you might want to take advantage of Turborepo's coolest feature: remote caching. Remote caching allows you to access your Turborepo cache on a separate server, allowing multiple machines to access the same cache. You can use the built in integration with Vercel servers or set up a custom cache server. If you are looking for a new build system, Turborepo would definitely be something to watch.
+
+## 5. Tauri
+
+If you work on creating desktop apps with web technologies, you must have certainly heard about Electron's massive memory usage. If you haven't, here is a quick explanation. Electron is one of the most popular frameworks for building desktop apps using JavaScript. However, it is somewhat bloated due to the fact that it embeds Chromium and Node.js into every app. This basically means that every app has its own version of a browser and server runtime built in, increasing the size of the app and decreasing performance. Luckily, Tauri is here to fix that.
+
+[Tauri](https://tauri.app/) is a desktop app framework that utilizes webview to allow you to write desktop apps using web technologies without having to embed a browser. Additionally, Tauri's backend is written in Rust rather than JS, which means you do not need to embed Node.js either.
+
+Tauri can also be much easier to use. With Electron, if you want to interface with a native API, you need to implement handling logic in Node.js and call that from the web. On the other hand, Tauri offers a simple API you can call to perform a variety of native tasks like filesystem manipulation, showing notifications, and more.
+
+If you are interested in building desktop apps with JavaScript and are sick of Electron, Tauri is definitely something you should take a look at. Another thing to check out would be PWAs, which can be great for simpler desktop apps.
+
+## 4. Bun
+
+[Bun](https://byteofdev.com/posts/what-is-bun/) is a new JavaScript runtime offering various built-in tools, better web support, and great performance. It aims to replace Node.js and Deno, although it is currently in a very early stage and is missing a lot of features.
+
+![Benchmark of Bun's performance](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/bun_performance_Tj8YtiHTN)
+_Benchmark of Bun's speed relative to Node and Deno when server side rendering React_
+
+Bun is written in Zig and uses JavaScriptCore. These choices are interesting because most other server side JavaScript runtimes use V8, Google Chrome's JavaScript runtime. On the other hand, JavaScriptCore is by Apple for Safari. Bun claims that JavaScriptCore offers better performance and is more lightweight, which is part of how it achieves its performance.
+
+Another reason it is so performant is that it implements more APIs in native code rather than JavaScript. While modern JavaScript engines heavily optimize JavaScript, they will never be able to compete with something written in a lower level language like C, C++, or Rust. As I previously mentioned, Bun uses [Zig](https://ziglang.org/), which has similar performance to the aforementioned languages. Where many other JavaScript runtimes implement certain functionality in JavaScript or leave it to a third party JavaScript library, Bun implements more functionality in Zig, which helps improve the performance of that functionality.
+
+Along with Bun's performance, it offers more features, like a built in bundler (get it? **bun**dler?) and transpiler. This simplifies things significantly. For example, if you have a server program that uses TypeScript and you are using Node, you need to download and use a third party library, and unless you use a CLI tool like [ts-node](https://github.com/TypeStrong/ts-node), you will need to setup a build pipeline to compile your code to something Node understands. On the other hand, with Bun, you can run a TypeScript file as you would a JavaScript file, and Bun will automatically transpile it (similar to Deno). Bun's TypeScript transpiler is also very fast.
+
+Bun also supports loading TOML and CSS files. The TOML loader transpiles TOML into an ES Module containing the data to be consumed by other code. The CSS loader is for the browser target only and will import the CSS file into the page.
+
+Finally, Bun's bundler helps provide an easy solution for bundling on the web (and the server if you really want to). The bundling is pretty standard and does not support some of the more advanced bundling features like tree shaking, but Bun's team is making progress on making it a more feature rich bundler.
+
+Bun still has a long way to go, but it is quickly making progress, fixing bugs, adding support for new APIs, and adding features. Bun's creators are trying to create a version of Bun that utilizes Bun's short startup time and prebundling options to create a highly optimized version designed for [edge serverless functions](https://byteofdev.com/posts/serverless), which would be great given most edge serverless functions are rather limited currently (although Deno Deploy is trying to solve this too). All of this is to say that Bun is quite interesting and will likely grow a lot over 2023.
+
+## 3. Remix
+
+[Remix](https://remix.run/) is a React framework that is trying to change the status quo for frameworks. Built by the creators of React Router, Remix promises to bring better performance, modern web standards, and better routing/loading strategies to web development.
+
+Remix heavily relies on server side rendering, meaning that it is designed for you to perform most rendering, data retrieval, and other operations on the server rather than the client. Doing this reduces the network and CPU load on the client, theoretically improving performance.
+
+Additionally, the reliance on server side rendering combined with Remix forcing you to use HTML standards like forms means that Remix helps your website function well with or without JavaScript. Making your website able to function without JavaScript is referred to as progressive enhancement and is important if you want to reach the widest range of users. For example, some users with bad networks or very slow devices might not have JavaScript enabled because it is too slow, or their browsers might be outdated and not support the features your JavaScript requires.
+
+Finally, Remix provides great support deployment to modern [serverless providers](https://byteofdev.com/posts/serverless/), even the ones that don't support Node.js fully, which is an important feature for many greenfield applications.
+
+## 2. Turbopack
+
+[Turbopack](https://turbo.build/) is a [bundler](https://byteofdev.com/posts/bundlers/) created by Vercel in 2022 to try to replace Webpack (yes, it is related to Turborepo). While it is still at a very early stage, the fact that it is supported by Vercel and is already ready to use in Next.js 13 with the `--turbo` flag gives me confidence that it will develop further.
+
+As with most of the new build tools in the web development world, Turbopack's main selling point over Webpack and other bundlers is speed. Due to an optimized architecture and usage of [Rust](https://www.rust-lang.org/) rather than JavaScript, Turbopack claims to be significantly faster than both Vite and Webpack in both cold starts and file updates.
+
+[Turbopack Performance Graph](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/Turbopack_Performance_LYZ5wwUEu.png)
+_Turbopack's (Next.js 13) performance relative to Vite and previous Next.js versions during cold starts_
+
+Turbopack's architecture is so performance for a few reasons. First, Turbopack extensively uses caching, which allows it to remember the bundle output of files and only recompile the ones that have changed.
+
+Additionally, Turbopack is designed to allow for only specific parts of your app to be compiled. For example, you might start up a dev server and navigate to a specific page. Instead of bundling your entire website, Turbopack can bundle only the assets required for that page and bundle other assets as needed. Finally, Turbopack bundles assets during development, which might seem obvious, but it is surprising knowing the recent bundler trends. Due to the adoption of [ESM](https://byteofdev.com/posts/how-to-use-esm) by browsers, many modern bundlers like Vite avoid bundling during development and send all of the files directly to the browser. However, this puts more load on the browser, which can actually make performance worse if the bundling is optimized enough.
+
+The original creators of Webpack also support Turbopack, which lends it more credence. Because of Turbopack's unique approach to bundling and its support, I think it will be very interesting to watch in 2023.
+
+## 1. Astro
+
+[Astro](https://astro.build/) is a static site generator that focuses on ease of use and performance. It was created to solve the performance problems of frameworks like Next.js by removing unnecessary JavaScript.
+
+If you are using most React, Vue, or other JavaScript based frameworks, the framework will likely render your website twice, once on the server and once on the client. This allows the browser to immediately get static HTML, making it interactive later. However, the client side rendering step (referred to as hydration) requires the browser to receive the code for every component. This process ends up sending a lot of useless code, as components that are not interactive do not need to be hydrated.
+
+Using the [Islands Architecture](https://jasonformat.com/islands-architecture/), Astro allows you to isolate the client hydration code to just the components that will need to be interactive.
+
+```jsx
+<Button client:idle>This component will have JavaScript loaded for it due to the client:idle attribute</Button>
+<p>This does not require JavaScript and, therefore will just be sent as static HTML</p>
+```
+
+In addition to partial hydration, Astro offers other unique features like the support for a variety of JavaScript UI libraries like React, Vue, Svelte, and Solid. This is contrast to most other JavaScript frameworks, which only allow you to use a single UI library.
+
+![Astro Download Trends](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/astro-trends_Kb0WHX93S)
+_Astro's downloads on NPM across 2022_
+
+While Astro was created in 2021, it grew massively in 2022, going from around 8,000 stars to 24,000. A variety of companies like Google, Netlify, and The Guardian have used it. For these reasons, I think it will be a very interesting project to watch in 2023.
+
+## Conclusion
+
+Well, there you have it. All of these projects should continue to grow both in terms of features and popularity, and it will be very interesting to see where they end up. Make sure to subscribe to the mailing list below, and I hope you learned something from this.
