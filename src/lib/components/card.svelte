@@ -14,7 +14,7 @@
 		src={item.frontmatter.image.url}
 		alt="Article header"
 		class="rounded-md bg-base-300 w-full aspect-video"
-		loading={lazy?"lazy":"eager"}
+		loading={lazy ? "lazy" : "eager"}
 	/>
 	<h2 class="font-bold text-xl">{item.frontmatter.title}</h2>
 	<p>{item.frontmatter.description}</p>

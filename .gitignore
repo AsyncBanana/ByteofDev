@@ -22,3 +22,5 @@ pnpm-lock.yaml
 yarn.lock
 
 .vscode
+
+.astro

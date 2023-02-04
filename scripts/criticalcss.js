@@ -1,5 +1,5 @@
 import glob from "tiny-glob";
-import critical from "critical";
+import { generate } from "critical";
 
 // dimensions to test critical css on
 let dimensions = [
@@ -12,7 +12,7 @@ let base = "dist";
 
 const files = await glob("**/*.html", { cwd: base });
 files.forEach((filePath) => {
-	critical.generate({
+	generate({
 		base,
 		// Overwrite files by passing the same path for `src` and `target`.
 		src: filePath,

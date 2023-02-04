@@ -3,8 +3,8 @@ title: "State of the Web: Atomic CSS"
 description: Learn more about the past, present, and future of Atomic CSS and frameworks like Tachyons, Tailwind, and more.
 author: AsyncBanana
 tags: [CSS, Atomic CSS, Tailwind]
-published: 1644160199453
-updated: 1644160199453
+published: 1675477226933
+updated: 1675477226933
 image:
   {
     url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/State_of_the_Web_Atomic_CSS,
@@ -32,32 +32,37 @@ However, ACSS would soon be passed by a slightly newer tool in the Atomic CSS sp
 
 ### Tailwind CSS becomes the most popular Atomic CSS framework
 
-[Tailwind](https://tailwindcss.com/) is an Atomic CSS framework created by Adam Wathan in 2017. Unlike Tachyons, it ran on PostCSS, a plugin-based CSS preprocessor. That allowed Tailwind to integrate with other PostCSS plugins and even made it so you could use Tailwind classes inside of CSS using `@apply . ## ### #### \{ to grid \{class\} Additionally, Tailwind was much more configurable and extendable. Because of these advantages, grew far past both Tachyons ACSS is currently at million weekly downloads. Now, let s look why people
+[Tailwind](https://tailwindcss.com/) is an Atomic CSS framework created by Adam Wathan in 2017. Unlike Tachyons, it ran on PostCSS, a plugin-based CSS preprocessor. That allowed Tailwind to integrate with other PostCSS plugins and even made it so you could use Tailwind classes inside of CSS using `@apply {class}`. Additionally, Tailwind was much more configurable and extendable. Because of these advantages, Tailwind grew far past both Tachyons and ACSS and is currently at ~2 million weekly downloads. Now, let's look at why people use Atomic CSS.
 
-use Atomic CSS. Why People CSS
+## Why People use Atomic CSS
 
-Encapsulation With
+### Encapsulation
 
-CSS, your automatically encapsulated. styling in classes, it only applies specifically the elements that have classes. This encapsulation means you never worry about accidentally breaking something because removed a rule button class certain required. can know which buttons need what they their own classes for particular needs. one main reasons created still helpful this day. Concise Developers are always looking way write least code. Whether Sass, Stylus, or LESS, preprocessors tried decrease code needed. However, even if remove brackets semicolons. significantly smaller rules tool generate frameworks like condense media queries
+With Atomic CSS, your CSS is automatically encapsulated. Because your styling is in your classes, it only applies specifically to the elements that have the classes. This encapsulation means you never have to worry about accidentally breaking something because you removed a rule in your `button` class that a certain button required. With Atomic CSS, you can know which buttons need what because they have their own classes for their particular needs. Encapsulation is one of the main reasons Atomic CSS was created and is still helpful to this day.
 
-into simple two-letter
+### Concise styling
 
-prefix. For example, how would build responsive layout Tailwind. css div display: ~2 ;
-grid-template-columns: repeat(2, minmax(0, 1fr));
+Developers are always looking for a way to write the least code. Whether it is Sass, Stylus, or LESS, preprocessors have tried to decrease the code needed. However, it is still CSS, even if you remove brackets and semicolons. With Atomic CSS, you can use significantly smaller rules and have a tool automatically generate the CSS needed. Atomic CSS frameworks like Tailwind can even condense media queries into a simple two-letter prefix. For example, let's look at how you would build a responsive grid layout in CSS and Tailwind.
+
+#### CSS
+
+```css
+div {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-@media (min-width: 1024px) \{
-div \{
-grid-template-columns: repeat(4, minmax(0, 1fr));
-\}
-\}
-
-````
+@media (min-width: 1024px) {
+	div {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+```
 
 #### Tailwind
 
 ```html
-<div class="grid grid-cols-2 lg:grid-cols-4"></div>
-````
+<div class="grid lg:grid-cols-4 grid-cols-2"></div>
+```
 
 Both sections have the same CSS in the end. However, as you can see, the second is more concise. The brevity of Atomic CSS can add up in terms of time savings, so that is another reason why developers use atomic CSS.
 
@@ -83,9 +88,9 @@ A growing trend, in general, is to [increase build speeds](https://byteofdev.com
 
 #### Windi CSS
 
-Windi is a framework that aims to use JIT compiling to improve performance while maintaining Tailwind-compatible css class generation. Instead of just being offered as a PostCSS plugin, Windi is available primarily as a build tool plugin or CLI. There is a PostCSS plugin too, but it is not recommended. As I mentioned earlier, Windi CSS uses JIT compiling to be faster than Tailwind. You might be confused because I also said Tailwind offers JIT compiling. This reveals a "dark part" of Tailwind's JIT compiling. Tailwind actually copied Windi CSS in the design of the JIT compiler and only gave credit when one of the core contributors to Windi mentioned how Tailwind copied them. So now you might be thinking, "why should I use Windi if Tailwind also has JIT?" Windi is still a good choice because it offers other features that are helpful, too, like [attributify mode](https://windicss.org/features/attributify.html) and [variant groups](https://windicss.org/features/variant-groups.html). Now you know more about Windi CSS, so let's look at UnoCSS.
+Windi is a framework that aims to use JIT compiling to improve performance while maintaining Tailwind-compatible css class generation. Instead of just being offered as a PostCSS plugin, Windi is available primarily as a build tool plugin or CLI. There is a PostCSS plugin too, but it is not recommended. As I mentioned earlier, Windi CSS uses JIT compiling to be faster than Tailwind. You might be confused because I also said Tailwind offers JIT compiling. This reveals a "dark part" of Tailwind's JIT compiling. Tailwind actually copied Windi CSS in the design of the JIT compiler and only gave credit when one of the core contributors to Windi mentioned how Tailwind copied them. So now you might be thinking, "why should I use Windi if Tailwind also has JIT?" Windi is still a good choice because it offers other features that are helpful, too, like [attributify mode](https://windicss.org/features/attributify.html) and [variant groups](https://windicss.org/features/variant-groups.html). Now you know more about Windi CSS, so let's look at UnoCSS
 
-#### UnoCSS
+### UnoCSS
 
 UnoCSS is a project developed by Anthony Fu, a core contributor to Windi CSS and Vue, in late 2021. It aims to be significantly faster and more configurable than Windi. According to its own benchmarks, it is almost 200x faster than Windi and almost 250x faster than Tailwind JIT. It achieves this speed through the simplicity of its parsing and the overall minimalism of the library. Additionally, it is much more extendable. With Windi and Tailwind, you have a set framework. You can extend the theming, but the base set of classes is preset. With UnoCSS, you can choose different presets or even combine them to allow you to use classes that mirror Tailwind's, Tachyon's, or even Bootstrap's. You can also easily add your own classes using RegEx. UnoCSS even has a preset that allows you to use almost any icon as a CSS class.
 

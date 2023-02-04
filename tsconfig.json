@@ -37,5 +37,6 @@
 		"/**/*.astro",
 		"/**/*.js"
 	],
-	"exclude": ["dist/**/*.js", "scripts/**/*.js"]
+	"exclude": ["dist/**/*.js", "scripts/**/*.js"],
+	"extends": "astro/tsconfigs/strict"
 }

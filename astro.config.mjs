@@ -7,17 +7,13 @@ import remarkPrism from "remark-prism";
 import remarkEmoji from "@fec/remark-a11y-emoji";
 // https://astro.build/config
 export default defineConfig({
+	markdown: [remarkPrism, remarkEmoji],
 	integrations: [
 		svelte(),
 		sitemap({
 			filter: (page) => page !== "https://byteofdev.com/posts/",
 		}),
-		mdx({
-			remarkPlugins: {
-				extends: [remarkPrism, remarkEmoji],
-			},
-			rehypePlugins: [],
-		}),
+		mdx(),
 		tailwind(),
 	],
 	vite: {

@@ -1,4 +1,4 @@
-import rss from "@astrojs/rss";
+import rss, { pagesGlobToRssItems } from "@astrojs/rss";
 import getPostUrl from "$lib/modules/getPostUrl";
 import type { Post } from "$lib/modules/types";
 const allPosts: Array<Post> = [
