@@ -22,7 +22,9 @@ const navUrls = [
 			href="https://byteofdev.com/rss.xml"
 			title="ByteofDev RSS"
 		/>
-		<script>import "../lib/modules/pageview.ts";</script>
+		<script>
+			import "../lib/modules/pageview.ts";
+		</script>
 	</head>
 
 	<body class="bg-base-200">
@@ -36,11 +38,13 @@ const navUrls = [
 					>
 				</div>
 				<nav class="flex-auto mr-3 w-full block overflow-x-auto md:!w-auto">
-					{navUrls.map((item) => (
-						<a href={item.url} class="mr-3 btn btn-ghost btn-md">
-							{item.text}
-						</a>
-					))}
+					{
+						navUrls.map((item) => (
+							<a href={item.url} class="mr-3 btn btn-ghost btn-md">
+								{item.text}
+							</a>
+						))
+					}
 				</nav>
 			</header>
 			<main id="page" class="mb-6">
@@ -53,11 +57,13 @@ const navUrls = [
 				<div>
 					<span class="text-xl footer-title">ByteofDev</span>
 
-					{navUrls.map((item) => (
-						<a href={item.url} class="p-1 link link-hover">
-							{item.text}
-						</a>
-					))}
+					{
+						navUrls.map((item) => (
+							<a href={item.url} class="p-1 link link-hover">
+								{item.text}
+							</a>
+						))
+					}
 					<a
 						class="p-1 link link-hover"
 						href="https://github.com/AsyncBanana/Byteofdev"

@@ -45,6 +45,11 @@ article p code {
 		Consolas, Liberation Mono, Courier New, monospace;
 	@apply rounded-sm bg-base-100 py-0.5;
 }
+@media (prefers-color-scheme: light) {
+	article p code {
+		background-color: rgb(200, 207, 215);
+	}
+}
 article li {
 	@apply list-disc;
 }
