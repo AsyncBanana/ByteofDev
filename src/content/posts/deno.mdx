@@ -1,10 +1,10 @@
 ---
 title: "State of the Web: Deno"
 description: What is Deno, why does it matter, and how is it currently used for server-side JavaScript?
-author: AsyncBanana
+author: asyncbanana
 tags: [State of the Web, Deno, TypeScript]
 published: 1641764814162
-updated: 1660676129038
+updated: 1688217470356
 image:
   {
     url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/State_of_the_Web_Deno,
@@ -46,7 +46,7 @@ Because the Node.js and web platforms evolved in parallel and many web APIs came
 
 When Node.js was first created, JavaScript could not use other modules beyond embedding them in `<script>` tags and using them from the global window scope. Since HTML and the window were unavailable on the server, Node.js needed a module format. Node.js decided to adopt a form of CommonJS, which was a popular, simple, synchronous module format. However, CommonJS was not native to browsers (you would have to use a library like [Browserify](https://browserify.org/)), and there were differences between implementations of CommonJS.
 
-Years later, in 2016, a new module specification called ECMAScript Modules (ESM) was finalized in ES6. This module specification would work without any libraries in browsers. Additionally, it would solve many problems with CommonJS, like asynchronous module loading and tree shaking. However, it took a while for Node.js to add ESM support, and even after that, ESM adoption in Node.js was not very high, with the majority of NPM packages still only include CommonJS versions. Additionally, Node.js does not have an entirely standards-compliant ESM implementation and differs in things like including `.js` file extensions.
+Years later, in 2016, a new module specification called [ECMAScript Modules](https://byteofdev.com/posts/how-to-use-esm) (ESM) was finalized in ES6. This module specification would work without any libraries in browsers. Additionally, it would solve many problems with CommonJS, like asynchronous module loading and tree shaking. However, it took a while for Node.js to add ESM support, and even after that, ESM adoption in Node.js was not very high, with the majority of NPM packages still only include CommonJS versions. Additionally, Node.js does not have an entirely standards-compliant ESM implementation and differs in things like including `.js` file extensions.
 
 In contrast, Deno only works with entirely standards-compliant ESM. Using one module format makes using Deno a lot simpler for both users and library authors. Speaking from experience, using just ESM is much simpler than including both ESM and CommonJS. Deno also is more straightforward in that it sticks to the standards, so you know that your module code works correctly in browsers.
 
@@ -68,7 +68,7 @@ Deno allows you to directly run a TypeScript file like JavaScript without passin
 
 ### Ecosystem
 
-Currently, this is the biggest problem with Deno and is a big reason why most Node.js developers are not migrating to Deno (this is a nasty problem because if Node.js developers don't migrate, the ecosystem grows more slowly). There are 5,068 modules on [deno.land/x](https://deno.land/x), compared to 2 million on NPM. However, many people use other package hosting services (see "Decentralised Module Hosting" above), and most modern web packages should work on Deno. The biggest blockers to Node compatibility are CommonJS and the Node API. Deno provides a [Node.js compatibility mode](https://deno.land/manual/node/compatibility_mode), but it is experimental.
+Currently, this is the biggest problem with Deno and is a big reason why most Node.js developers are not migrating to Deno (this is a nasty problem because if Node.js developers don't migrate, the ecosystem grows more slowly). There are 6350 modules on [deno.land/x](https://deno.land/x), compared to 2 million on NPM. However, many people use other package hosting services (see "Decentralised Module Hosting" above), and most modern web packages should work on Deno. Many Node.js packages should work on Deno, as Deno does include polyfills for Node.js APIs and the ability to load npm modules using the `npm:` specifier. However, the polyfills are not perfect, and some Node.js packages might not work.
 
 ### Development
 
@@ -88,7 +88,7 @@ Deno has ok support for various container services. Deno.land provides an [offic
 
 #### Serverless Functions
 
-Serverless is where the Deno company comes in. Their primary commercial offering is [Deno Deploy](https://deno.com/deploy), a serverless edge function runner for Deno scripts. It is conceptually similar to Cloudflare Workers in that it uses V8 Isolates for ultra-fast startup times. The advantage of Deno Deploy is that it includes the Deno API and all of the other features that make Deno so helpful. However, Deno Deploy is still in beta, so you might want to look elsewhere right now. Here is a list of tools and resources to run Deno on various serverless function providers:
+Serverless is where the Deno company comes in. Their primary commercial offering is [Deno Deploy](https://deno.com/deploy), a serverless edge function runner for Deno scripts. It is conceptually similar to Cloudflare Workers in that it uses V8 Isolates for ultra-fast startup times. The advantage of Deno Deploy is that it includes the Deno API and all of the other features that make Deno so helpful. However, there are still other options that might be better. Here is a list of tools and resources to run Deno on various serverless function providers:
 
 - [AWS Lambda](https://github.com/hayd/deno-lambda)
 - [Vercel](https://github.com/vercel-community/deno)
@@ -97,4 +97,4 @@ Serverless is where the Deno company comes in. Their primary commercial offering
 
 ## Conclusion
 
-Deno is an up-and-coming technology and might someday replace Node as the primary way to run JavaScript. While Node.js is fixing some of the problems that Deno solves, legacy support is holding it back, which gives Deno an advantage. Join the mailing list below if you want to learn more about emerging technologies in web development weekly. I hope you learned something from this, and thank you for reading.
+Deno is an up-and-coming technology and might someday replace Node as the primary way to run JavaScript. While Node.js is fixing some of the problems that Deno solves, legacy support is holding it back, which gives Deno an advantage. However, more recently, [Bun](https://byteofdev.com/posts/what-is-bun/) has been released as yet another competitor, so the competition between JavaScript runtimes is definitely heating up. Join the mailing list below if you want to learn more about emerging technologies in web development weekly. I hope you learned something from this, and thank you for reading.

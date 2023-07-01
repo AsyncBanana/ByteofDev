@@ -1,10 +1,10 @@
 ---
 title: "Lerna vs Turborepo vs Rush: Which is better in 2023?"
 description: Monorepos are becoming more and more popular with web development. In this article, we will compare some of the most popular monorepo tools' performance, ease of use, and more.
-author: AsyncBanana
+author: asyncbanana
 tags: [Monorepo, Lerna, Turborepo, Rush]
 published: 1675562057284
-updated: 1675562057284
+updated: 1688217470356
 image:
   {
     url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/Lerna_vs_Turbopack_vs_Rush_kAgtMZwxm,
@@ -18,11 +18,11 @@ Monorepos are becoming very popular within web development, and for good reason.
 
 Created in 2016, Lerna is the most popular tool in the group. It was one of the first tools to allow JavaSript developers to link projects together and control them with central commands. For example, if you had an app with two package dependencies and wanted to build them all, you could simply run `npx lerna run build` and Lerna would build the dependencies and then the app with the updated dependencies.
 
-Nowadays, Lerna is commonly used with Nx, which allows it to cache the results of tasks, meaning Lerna only has to recompile things that changed. You can even put the cache on a central server, meaning multiple machines can access the same cache remotely. Lerna is used by projects like Create React App and Nestjs and is supported by [Nrwl](https://nx.app/company), so it has pretty good backing.
+Nowadays, Lerna is commonly used with Nx, which allows it to cache the results of tasks, meaning Lerna only has to recompile files that changed. You can even put the cache on a central server, meaning multiple machines can access the same cache remotely. Lerna is used by projects like Create React App and Nestjs and is supported by [Nrwl](https://nx.app/company), so it has pretty good backing.
 
 ## Turborepo
 
-Turborepo is a much newer tool, created and aquired by Vercel in 2021. However, it has already overtaken Rush in terms of NPM downloads, and may soon overtake Lerna. Similar to Lerna with Nx, Turborepo allows you to cache packages based on the content of the source files and dependency versions. Turborepo is also tuned to allow for multithreading or parallel build execution, where it splits tasks across different CPU cores to increase performance.
+Turborepo is a much newer tool, created and aquired by Vercel in 2021. However, it has already overtaken Rush in terms of NPM downloads, and it currently has about the same number of weekly downloads as Lerna. Similar to Lerna with Nx, Turborepo allows you to cache packages based on the content of the source files and dependency versions. Turborepo is also tuned to allow for multithreading or parallel build execution, where it splits tasks across different CPU cores to increase performance.
 
 ## Rush
 
@@ -100,11 +100,11 @@ If you are willing to use Nx Cloud, you can get many features that are not avail
 
 #### Turborepo
 
-Turborepo offers many features that are comparable with Lerna's, but it is a bit more limited, likely because of how much newer it is. The most interesting feature is how its remote caching works. Turborepo offers free integration with Vercel's servers, and better yet, if you are worried about putting your code on servers you do not control or otherwise want your own caching server, Vercel supports you building your own remote caching server, and there are [open source implementations](https://github.com/Tapico/tapico-turborepo-remote-cache) of it already. Turborepo doesn't support distributed task execution, but remote caches are still helpful.
+Turborepo offers many features that are comparable with Lerna's, but it is a bit more limited, likely because of how much newer it is. The most interesting feature is how its remote caching works. Turborepo offers free integration with Vercel's servers, and better yet, if you are worried about putting your code on servers you do not control or otherwise want your own caching server, Vercel supports you building your own remote caching server, and there are [open source implementations](https://github.com/ducktors/turborepo-remote-cache) of the caching server already. Turborepo doesn't support distributed task execution, but remote caches are still helpful.
 
 #### Rush
 
-Rush has quite a lot to go through (the number of things you can do can make things somewhat overwhelming). Instead of more innovative caching, a lot of Rush's features focus more on simply managing large monorepos. A great example of this is Rush's policies. Policies allow you to restrict certain things to make collaboration in a monorepo easier. One of the most interesting policies is the `approvedPackagePolicy`, which makes it easier for people to review packages added by forcing them to be added to a central configuration file. Rush also supports plugins, which allow you to share configuration across projects and extend Rush's functionality.
+Rush has a wide variety of feature, to the point where it can be a bit overwhelming. Instead of more innovative caching, a lot of Rush's features focus more on simply managing large monorepos. A great example of this is Rush's policies. Policies allow you to restrict certain things to make collaboration in a monorepo easier. One of the most interesting policies is the `approvedPackagePolicy`, which makes it easier for people to review packages added by forcing them to be added to a central configuration file. Rush also supports plugins, which allow you to share configuration across projects and extend Rush's functionality.
 
 Rush has a large variety of features for large teams and large monorepos, and Lerna and Turborepo cannot replicate many of them.
 
@@ -126,4 +126,4 @@ Rush pulls ahead in this comparison due to the large variety of unique features 
 | Performance | 🥇    | 🥈        | 🥉   |
 | Features    | 🥈    | 🥉        | 🥇   |
 
-Each monorepo tool wins in one category, Lerna in performance, Turborepo in setup, and Rush in features. However, Lerna gets second in two categories, whereas Turborepo gets second in only one and Rush in none. While Lerna wins, Turborepo or Rush might still be better for your needs. If you want the best performance and good ease of use as well as a wide feature set, choose Lerna. If you are using Vercel or want a modern monorepo tool that has a lot of future potential, try Turborepo. Finally, if you want the most features and/or are working in a large team, Rush might be the best choice.
+Each monorepo tool wins in one category, Lerna in performance, Turborepo in setup, and Rush in features. However, Lerna gets second in two categories, whereas Turborepo gets second in only one and Rush in none. While Lerna wins, Turborepo or Rush might still be better for your needs. If you want the best performance while being easy to use and including a wide feature set, choose Lerna. If you are using Vercel or want a modern monorepo tool that has a lot of future potential, try Turborepo. Finally, if you want the most features and/or are working in a large team, Rush might be the best choice.

@@ -3,10 +3,18 @@ module.exports = {
 		"./public/**/*.html",
 		"./src/**/*.{astro,js,jsx,svelte,ts,tsx,vue}",
 	],
-	darkMode: "class",
+	darkMode: "media",
 	plugins: [require("daisyui")],
 	daisyui: {
-		themes: ["light", "dark"],
+		themes: [
+			"light",
+			{
+				dark: {
+					...require("daisyui/src/theming/themes")["[data-theme=dark]"],
+					"base-content": "rgb(230,230,230)",
+				},
+			},
+		],
 		logs: false,
 	},
 	theme: {

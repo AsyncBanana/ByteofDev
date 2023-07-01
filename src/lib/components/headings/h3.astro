@@ -1,12 +1,5 @@
 ---
-const id = (await Astro.slots.render("default"))
-	.toLocaleLowerCase()
-	.replaceAll(" ", "-");
+import BaseHeading from "./baseHeading.astro";
 ---
 
-<h3 {id}>
-	<slot />
-	<a tabindex="-1" href={"#" + id}
-		><span class="headerLink" aria-hidden></span></a
-	>
-</h3>
+<BaseHeading Level="h3"><slot /></BaseHeading>

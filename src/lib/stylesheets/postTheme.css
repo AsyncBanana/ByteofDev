@@ -14,7 +14,7 @@ article a:visited {
 	@apply decoration-purple-600;
 }
 article h2 {
-	@apply border-b-gray-400 border-b-2 border-opacity-25 my-4 p-1 text-3xl;
+	@apply border-b-gray-400 border-b-2 border-opacity-25 my-5 p-1 text-3xl;
 }
 article h3 {
 	@apply text-2xl;
@@ -35,15 +35,13 @@ article,
 article p {
 	font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui,
 		helvetica neue, helvetica, Ubuntu, roboto, noto, arial, sans-serif;
-	@apply my-4 text-xl break-words indent-8;
+	@apply my-5 text-xl break-words;
 }
-article pre {
-	@apply indent-0;
-}
+
 article p code {
 	font-family: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco,
 		Consolas, Liberation Mono, Courier New, monospace;
-	@apply rounded-sm bg-base-100 py-0.5;
+	@apply rounded-sm p-0.5 bg-neutral;
 }
 @media (prefers-color-scheme: light) {
 	article p code {
@@ -61,7 +59,7 @@ article figcaption {
 	@apply text-center italic;
 }
 article table {
-	@apply m-auto w-full table ;
+	@apply m-auto w-full table;
 }
 article table thead tr th {
 	@apply bg-base-300 text-xl;

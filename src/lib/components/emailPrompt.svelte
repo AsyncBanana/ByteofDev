@@ -1,10 +1,10 @@
-<script>
+<script lang="ts">
 	import { trackEvent } from "$lib/modules/events";
 	export let primary = true;
-	export let method;
+	export let method: string;
 </script>
 
-<div class={`bg-base-300 rounded-md p-4 m-2 shadow-xl`}>
+<div class={`dark:bg-neutral rounded-md p-4 m-2 shadow-xl`}>
 	<h2 class="font-bold text-xl">Sign up for updates</h2>
 	<form
 		method="POST"

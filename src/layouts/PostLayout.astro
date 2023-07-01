@@ -7,24 +7,27 @@ import EmailPrompt from "$lib/components/emailPrompt.svelte";
 import { faRssSquare } from "@fortawesome/free-solid-svg-icons";
 import BaseLayout from "$layouts/BaseLayout.astro";
 import Popup from "$lib/components/popup.svelte";
+import mdxComponents from "$lib/modules/mdxComponents";
 import {
 	faTwitterSquare,
 	faFacebookSquare,
 	faLinkedin,
 } from "@fortawesome/free-brands-svg-icons";
 import CopyLink from "$lib/components/copyLink.svelte";
+import { getEntry } from "astro:content";
 const {
 	title,
 	description,
 	published: publishedRAW,
 	updated: updatedRAW,
 	image,
-	author,
 	tags,
-} = Astro.props.content;
+} = Astro.props.content.data;
+const { Content } = await Astro.props.content.render();
 const published = dayjs(publishedRAW).toISOString();
 const updated = dayjs(updatedRAW).toISOString();
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const author = await getEntry("author", Astro.props.content.data.author.slug);
 ---
 
 <BaseLayout
@@ -100,15 +103,17 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 		<img
 			src={image.url}
 			alt="Story heading"
-			class="rounded m-auto bg-base-300 w-full max-h-70vh aspect-video"
+			class="rounded m-auto bg-base-200 w-full max-h-70vh aspect-video"
 		/>
 		<div class="flex flex-wrap">
 			{
-				tags.map((tag) => (
+				tags.map((tag: string) => (
 					<a
-						style="color: hsla(var(--p))"
-						class="font-sans font-bold mr-3 text-xl uppercase no-underline decoration-purple-500 hover:underline"
-						href={`/tagged/${tag.replaceAll(" ", "-")}/`.toLowerCase()}
+						class="font-sans font-bold mx-3 my-1 text-2xl uppercase no-underline decoration-purple-500 hover:underline text-purple-600"
+						href={`/tagged/${tag.replaceAll(
+							" ",
+							"-"
+						)}/`.toLowerCase()}
 					>
 						{tag}
 					</a>
@@ -121,20 +126,18 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 			{title}
 		</h1>
 		<h2 class="font-normal text-xl">
-			&emsp;By <a
-				href={"/author/" + author.replace(" ", " -") + "/"}
-				rel="author">{author}</a
-			> on
+			&emsp;By <a href={`/author/${author?.slug}`} rel="author"
+				>{author?.data.name}</a
+			>
+			on
 			{dayjs(publishedRAW).format("MMMM D, YYYY")}{
 				updatedRAW > publishedRAW + 86400000 // filter out tiny post-launch updates
 					? ` (Updated ${dayjs(updatedRAW).format("MMMM D, YYYY")})`
 					: ``
 			}
 		</h2>
-		<br />
-
 		<span class="m-auto leading-relaxed" id="article-content">
-			<slot />
+			<Content components={mdxComponents} />
 		</span>
 	</article>
 	<div class="m-auto md:w-3/4 lg:w-1/2 xl:w-1/3">

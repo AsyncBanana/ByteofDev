@@ -23,7 +23,7 @@
 </script>
 
 <blockquote
-	class={`rounded-md ${theme[type].colors} border-l-4 flex flex-row items-center bg-base-300 p-4 m-2 my-4`}
+	class={`rounded-md ${theme[type].colors} border-l-4 flex flex-row items-center bg-base-200 p-4 m-2 my-4`}
 >
 	<Icon icon={theme[type].icon} class="mr-4 align-middle" size="2x" />
 	<div class="text-xl inline-block"><slot /></div>

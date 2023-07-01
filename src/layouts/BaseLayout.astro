@@ -27,20 +27,34 @@ const navUrls = [
 		</script>
 	</head>
 
-	<body class="bg-base-200">
-		<div class="flex flex-col min-h-screen" style="scroll-behavior: smooth;">
-			<header class="flex-wrap bg-base-100 shadow-md mb-6 top-0 z-30 navbar">
+	<body class="">
+		<div
+			class="flex flex-col min-h-screen"
+			style="scroll-behavior: smooth;"
+		>
+			<header class="flex-wrap bg-base-100 mb-6 top-0 z-30 navbar">
 				<div class="mx-2 px-2">
-					<a class="flex flex-row font-extrabold text-xl align-middle" href="/"
-						><img src="/favicon.svg" alt="Logo" height="32" width="32" /><span
-							class="ml-2 inline">ByteofDev</span
+					<a
+						class="flex flex-row font-extrabold text-xl content-center items-center"
+						href="/"
+						><img
+							src="/favicon.svg"
+							alt="Logo"
+							height="32"
+							width="32"
+						/><span class="ml-2 block align-middle">ByteofDev</span
 						></a
 					>
 				</div>
-				<nav class="flex-auto mr-3 w-full block overflow-x-auto md:!w-auto">
+				<nav
+					class="flex-auto mr-3 w-full block overflow-x-auto md:!w-auto"
+				>
 					{
 						navUrls.map((item) => (
-							<a href={item.url} class="mr-3 btn btn-ghost btn-md">
+							<a
+								href={item.url}
+								class="mr-3 btn btn-ghost btn-md"
+							>
 								{item.text}
 							</a>
 						))
@@ -50,11 +64,9 @@ const navUrls = [
 			<main id="page" class="mb-6">
 				<slot />
 			</main>
-			<footer class="bg-neutral text-neutral-content p-10 footer">
+			<footer class="text-content p-10 footer">
 				<div>
 					<img src="/favicon.svg" alt="Logo" height="96" width="96" />
-				</div>
-				<div>
 					<span class="text-xl footer-title">ByteofDev</span>
 
 					{

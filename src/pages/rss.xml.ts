@@ -1,15 +1,10 @@
-import rss, { pagesGlobToRssItems } from "@astrojs/rss";
-import getPostUrl from "$lib/modules/getPostUrl";
-import type { Post } from "$lib/modules/types";
-const allPosts: Array<Post> = [
-	...Object.values(
-		import.meta.glob("/src/content/posts/*.mdx", { eager: true })
-	),
-	...Object.values(
-		import.meta.glob("/src/content/tips/*.mdx", { eager: true })
-	),
-] as Array<Post>;
-allPosts.sort((a, b) => b.frontmatter.published - a.frontmatter.published);
+import rss from "@astrojs/rss";
+import { getCollection } from "astro:content";
+const allPosts = [
+	...(await getCollection("posts")),
+	...(await getCollection("tips")),
+];
+allPosts.sort((a, b) => b.data.published - a.data.published);
 export const get = () =>
 	rss({
 		title: "ByteofDev",
@@ -18,10 +13,10 @@ export const get = () =>
 
 		items: allPosts.map((item) => {
 			return {
-				title: item.frontmatter.title,
-				description: item.frontmatter.description,
-				link: getPostUrl(item),
-				pubDate: new Date(item.frontmatter.published),
+				title: item.data.title,
+				description: item.data.description,
+				link: `${item.collection}/${item.slug}`,
+				pubDate: new Date(item.data.published),
 			};
 		}),
 		site: import.meta.env.SITE,

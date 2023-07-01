@@ -1,9 +1,9 @@
 {
 	"compilerOptions": {
 		"moduleResolution": "node",
-		"module": "es2020",
-		"lib": ["ES2021.String", "es2020", "DOM"],
-		"target": "es2019",
+		"module": "ES2022",
+		"lib": ["DOM"],
+		"target": "es2022",
 		/**
 			svelte-preprocess cannot figure out whether you have a value or a type, so tell TypeScript
 			to enforce using \`import type\` instead of \`import\` for Types.
@@ -28,7 +28,9 @@
 			"$layouts": ["src/layouts"],
 			"$layouts/*": ["src/layouts/*"]
 		},
-		"types": ["@cloudflare/workers-types"]
+		"types": ["@cloudflare/workers-types"],
+		"strictNullChecks": true,
+		"jsx": "preserve"
 	},
 	"include": [
 		"/**/*.d.ts",

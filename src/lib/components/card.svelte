@@ -1,31 +1,33 @@
 <script lang="ts">
-	import getPostUrl from "$lib/modules/getPostUrl";
-	export let item: Post;
+	export let item: CollectionEntry<"posts"> | CollectionEntry<"tips">;
+	export let author: CollectionEntry<"author">;
 	export let lazy = true;
 	import type { Post } from "$lib/modules/types";
+	import type { CollectionEntry } from "astro:content";
 	import dayjs from "dayjs";
 </script>
 
 <a
-	class="rounded-md flex flex-col bg-base-100 shadow-md p-4"
-	href={getPostUrl(item)}
+	class="rounded-md flex flex-col shadow-md p-4 dark:bg-neutral"
+	href={"/posts/" + item.slug}
 >
 	<img
-		src={item.frontmatter.image.url}
+		src={item.data.image.url}
 		alt="Article header"
 		class="rounded-md bg-base-300 w-full aspect-video"
 		loading={lazy ? "lazy" : "eager"}
 	/>
-	<h2 class="font-bold text-xl">{item.frontmatter.title}</h2>
-	<p>{item.frontmatter.description}</p>
+	<h2 class="font-bold text-xl">{item.data.title}</h2>
+	<p>{item.data.description}</p>
 	<br />
 	<div style="margin-block-start: auto;">
-		<p class="font-normal">By {item.frontmatter.author}</p>
+		{#await author then authorData}<p class="font-normal">
+				By {authorData?.data.name}
+			</p>{/await}
 		<p class="font-medium">
-			{dayjs(item.frontmatter.published).format("MMMM D, YYYY")}{item
-				.frontmatter.updated >
-			item.frontmatter.published + 86400000 // filter out tiny post-launch updates
-				? ` (Updated ${dayjs(item.frontmatter.updated).format("MMMM D, YYYY")})`
+			{dayjs(item.data.published).format("MMMM D, YYYY")}{item.data.updated >
+			item.data.published + 86400000 // filter out tiny post-launch updates
+				? ` (Updated ${dayjs(item.data.updated).format("MMMM D, YYYY")})`
 				: ``}
 		</p>
 	</div>

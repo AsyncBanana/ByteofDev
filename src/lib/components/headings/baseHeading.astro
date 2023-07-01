@@ -1,0 +1,18 @@
+---
+export interface Props {
+    Level: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+}
+const { Level } = Astro.props;
+const slot = await Astro.slots.render("default");
+const id = slot.toLocaleLowerCase().replaceAll(" ", "-");
+---
+
+<Level {id}>
+    <Fragment set:html={slot} />
+    <a
+        tabindex="-1"
+        href={"#" + id}
+        aria-label={`Link to ${slot} section`}
+        class="p-2"><span class="headerLink" aria-hidden="true"></span></a
+    >
+</Level>

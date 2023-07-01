@@ -1,10 +1,10 @@
 ---
 title: "What is Bun, and does it live up to the hype?"
 description: Bun is a new JavaScript runtime that claims to offer more features and performance compared to Node.js and Deno. But is it as good as it is hyped up to be?
-author: AsyncBanana
+author: asyncbanana
 tags: [Bun, TypeScript, Zig]
 published: 1660676129038
-updated: 1660688233349
+updated: 1688217470356
 image:
   {
     url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/Bun_qSHgo7f6l.js,
@@ -138,7 +138,7 @@ Once again, a package manager is expected, but Bun's package manager exceeds exp
 
 Bun's transpiler is a great feature, which transpiles TypeScript, JSX, and even vanilla JavaScript. You might have been suprised to hear the last part. After all, why would you need to transpile plain JavaScript? Here is where one of Bun's performance-improving features comes in. Bun automatically optimizes JavaScript ahead of time. Most of this feature is still in development, but the developers plan to add an optimized binary format for JavaScript in the future. These optimizations would have very interesting implications for edge apps and other short-lived processes. However, we can't talk about it much yet because most of it is still in development.
 
-The other transpilers are pretty good. The TypeScript transpiler is fast, although it does not have type checking currently, instead just stripping types (you are expected to use your text editor/IDE to type check). The JSX transpiler also works pretty well, although for many cases, it would not work well due to the lack of [@jsxpragma support](https://babeljs.io/docs/en/babel-preset-typescript#jsxpragma), meaning you can only use React, not Preact or any other JSX library/framework. I was able to set up a react app by simply running `bun create react`, which was pretty nice (no `react-scripts` used!). This also shows the CSS importing, as one of the JSX files imports CSS, which works seamlessly.
+The other transpilers are pretty good. The TypeScript transpiler is fast, although it does not have type checking currently, instead just stripping types (you are expected to use your text editor/IDE to type check). The JSX transpiler also works pretty well and includes support for custom pragma configuration, meaning you can use other JSX frameworks like Preact or Solid.js, not just React. I was able to set up a react app by simply running `bun create react`, which was pretty nice (no `react-scripts` used!). This also shows the CSS importing, as one of the JSX files imports CSS, which works seamlessly.
 
 #### File loaders
 
@@ -156,15 +156,15 @@ Now let's see how well Bun can work with Node.js modules currently. Out of all o
 
 #### Next.js
 
-This one is an easy one to find out, because Bun supports Next.js by default. However, the support currently has some issues. First, you need to rerun `bun --use-next` whenever you import a new module. This issue could become annoying, although the developers of Bun are working to create an automatic solution for this. Second, Bun does not currently support features like `getStaticPaths`, API routes, and React Server Components. This is probably the biggest issue, as these features are quite important. Additionally, locales and all of `next.config.js` are unsupported. Basically, Next.js works on Bun, but it is not near feature complete yet.
+Next.js was one of the first frameworks Bun supported, but unfortunately, this integration has not been maintained well. Bun currently only supports older versions of Next.js (v12), and even this only seems to work on older versions of Bun. Hopefully this issue is fixed soon, but it seems the Bun team has other focuses right now. Currently the closest tool to Next.js is the [React SSR](https://github.com/bun-community/create-templates/tree/main/react-ssr) template, which uses Bun's build in transpilation tools as well as the React SSR API to allow you to build a React app with server side rendering, JSX and TypeScript compilation, and filesystem routing.
 
 #### Vite
 
-Vite is a popular bundler, used by frameworks like SvelteKit and Astro. Unfortunately, Bun does not support Vite at all, as many Node modules used in Vite are not part of Bun yet (`https`,`child_process`, `perf_hooks`, etc). Luckily, [Bun is working on Vite support](https://github.com/oven-sh/bun/issues/250), so hopefully we will see Vite working on Bun soon.
+Vite is a popular bundler, used by frameworks like SvelteKit and Astro. Unfortunately, Bun does not support Vite at all due to issues with runtime caching. Luckily, [Bun is working on Vite support](https://github.com/oven-sh/bun/issues/250), and a lot of progress has been made in the past few months, so these final issues should be ironed out soon.
 
 #### Express
 
-Express works, but only to a minimal extent. Even basic examples are malfunctioning and, once again, modules like `https` are missing. Luckily, [Bun is working on it](https://github.com/oven-sh/bun/issues/496).
+Express recently became fully functional on Bun. However, there are other Bun native frameworks that use a similar API such as [Hono](https://github.com/honojs/hono), so Express might not be the best choice for Bun.
 
 #### Summary
 

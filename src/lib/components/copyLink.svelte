@@ -1,5 +1,5 @@
-<script>
-	export let url;
+<script lang="ts">
+	export let url: string;
 	import { faLink } from "@fortawesome/free-solid-svg-icons";
 	import Icon from "svelte-fa";
 </script>

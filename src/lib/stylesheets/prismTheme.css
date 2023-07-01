@@ -101,8 +101,3 @@ pre[class*="language-"] {
 .token.entity {
 	cursor: help;
 }
-
-:not(pre) > code[class*="language-"],
-pre[class*="language-"] {
-	@apply bg-base-100;
-}

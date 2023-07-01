@@ -1,9 +1,9 @@
-<script>
+<script lang="ts">
 	import { trackEvent } from "$lib/modules/events";
 	import { fly } from "svelte/transition";
 	import { onMount } from "svelte";
 	let visible = false;
-	let halfway;
+	let halfway: HTMLElement;
 	onMount(() => {
 		const halfwayObserver = new IntersectionObserver(
 			(entries) => {
@@ -23,7 +23,7 @@
 {#if visible}
 	<div
 		transition:fly={{ y: 250, duration: 1000 }}
-		class="rounded-md mr-auto ml-auto bg-base-300 m-5 p-5 right-0 bottom-5 left-0 w-11/12 fixed l-1/2 r-1/2 md:w-1/2 lg:w-5/12"
+		class="rounded-md mr-auto ml-auto bg-base-200 m-5 p-5 right-0 bottom-5 left-0 w-11/12 fixed l-1/2 r-1/2 md:w-1/2 lg:w-5/12"
 	>
 		<h2 class="font-bold text-xl md:text-3xl">Hey web developer!</h2>
 		<p class="indent-2">

@@ -1,17 +1,25 @@
 ---
-import type { Post } from "$lib/modules/types";
 import StoryCard from "$lib/components/card.svelte";
 import BaseLayout from "$layouts/BaseLayout.astro";
-let posts: Array<Post> = (await Astro.glob("/src/content/posts/*.mdx"));
-posts.sort((a, b) => b.frontmatter.published - a.frontmatter.published);
+import { getCollection, getEntry } from "astro:content";
+let posts = await getCollection("posts");
+posts.sort((a, b) => b.data.published - a.data.published);
 posts = posts.slice(0, 20);
 ---
 
 <BaseLayout>
 	<h1 class="font-bold font-sans text-center text-4xl">ByteofDev</h1>
 	<h2 class="text-center italic">Bite Sized articles for developers</h2>
-	<div class="m-auto grid p-4 gap-5 md:p-0 md:w-3/4 md:grid-cols-2 lg:grid-cols-3">
-		{posts.map((item,index) =>
-		<StoryCard item={item} lazy={index>0} />)}
+	<div
+		class="m-auto grid p-4 gap-5 md:p-0 md:w-3/4 md:grid-cols-2 lg:grid-cols-3"
+	>
+		{
+			posts.map(async (item, index) => {
+				const author = await getEntry("author", item.data.author.slug);
+				return (
+					<StoryCard item={item} lazy={index > 0} author={author} />
+				);
+			})
+		}
 	</div>
 </BaseLayout>
