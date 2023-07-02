@@ -2,14 +2,13 @@
 	export let item: CollectionEntry<"posts"> | CollectionEntry<"tips">;
 	export let author: CollectionEntry<"author">;
 	export let lazy = true;
-	import type { Post } from "$lib/modules/types";
 	import type { CollectionEntry } from "astro:content";
 	import dayjs from "dayjs";
 </script>
 
 <a
 	class="rounded-md flex flex-col shadow-md p-4 dark:bg-neutral"
-	href={"/posts/" + item.slug}
+	href={`/${item.collection}/${item.slug}/`}
 >
 	<img
 		src={item.data.image.url}

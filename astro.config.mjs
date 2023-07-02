@@ -34,4 +34,5 @@ export default defineConfig({
 	redirects: {
 		"/posts/": "/",
 	},
+	trailingSlash: "always",
 });
