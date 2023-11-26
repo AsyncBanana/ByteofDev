@@ -5,7 +5,7 @@ const allPosts = [
 	...(await getCollection("tips")),
 ];
 allPosts.sort((a, b) => b.data.published - a.data.published);
-export const get = () =>
+export const GET = () =>
 	rss({
 		title: "ByteofDev",
 		description: "Bite Sized articles for developers",
