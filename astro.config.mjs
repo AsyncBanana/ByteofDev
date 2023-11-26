@@ -28,9 +28,6 @@ export default defineConfig({
 	markdown: {
 		syntaxHighlight: "prism",
 	},
-	experimental: {
-		redirects: true,
-	},
 	redirects: {
 		"/posts/": "/",
 	},
