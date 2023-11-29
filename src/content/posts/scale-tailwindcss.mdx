@@ -1,0 +1,323 @@
+---
+title: "Tailwind has a scalability problem. How can we solve that?"
+description: While there are many benefits to using Tailwind, it also comes with unique challenges when scaling. Luckily, there are solutions to this.
+author: asyncbanana
+tags: [CSS, Atomic CSS, Tailwind]
+published: 1701224875084
+updated: 1701224875084
+image:
+  {
+    url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/Tailwind_scale_l2d7d7iPh,
+    alt: Stonks meme with Tailwind logo added,
+  }
+---
+import Callout from "$lib/components/callout.svelte";
+
+TailwindCSS helped transform the way I wrote CSS. Back in the Tailwind 1.0 days, when I first found Tailwind, I was barely able to write a somewhat natural looking UI without resorting to heavy libraries like MUI, which I hate with a passion. While building a Drawer component still makes me want to throw my computer out (please save  me, HTML popovers), Tailwind has allowed me to write styles far more easily and concisely. Unfortunately, it has some problems, primarily scalability in common component-based architectures.
+
+While Tailwind wasn't the first tool to implement this, it brought class-based Atomic CSS mainstream, offering an extensive set of default CSS classes to enable expressive and flexible CSS styling. Unfortunately, this class based design does not always match well with the component-based architecture made popular by React, Vue, and other tools. Luckily, there are solutions to this.
+
+<Callout type="info">Many tips in this article also apply to other Atomic CSS tailwind-like frameworks, like UnoCSS and WindiCSS</Callout>
+
+## Why is TailwindCSS hard to scale?
+
+Tailwind was designed from day one to work entirely through classes. When Tailwind was becoming popular, CSS-in-JS tools like styled-components and Emotion were *all the rage*. They offered a styling paradigm that was very well integrated with the component model introduced by React. They also solved the scoping problem that has plagued CSS by automatically generating scoped CSS with unique class names.
+
+However, many of these tools faced significant performance problems, as they were generating CSS dynamically on the client. Server side rendering solved some of these problems, but CSS-in-JS frameworks still sent too much client-side JavaScript for hydration. Additionally, many developers wanted a more concise way of expressing styles, leading to the rise of tools like Tailwind.
+
+Tailwind focused on classes to solve these problems. Using static classes doesn't require any client-side JavaScript and could be written very concisely anywhere. Classes also solved other scalability problems plaguing non-scoped CSS. Unfortunately, Tailwind still has some issues with components. The default way of writing Tailwind in a component while supporting different variants is by using dynamically generated class strings based on props. This got unwieldy quickly. For example, let's look at a class string for a button I wrote a while ago (originally in Svelte but converted into JSX for this article).
+
+```jsx
+<button
+    className={`${className} ${type === 'primary'
+		    ? 'bg-primary-dark text-white hover:shadow-lg hover:bg-primary-ultradark shadow-md'
+		    : ''}${type === 'secondary' ? 'bg-base-focus b-1 b-neutral-1 shadow-md' : ''}${type === 'tertiary'
+		    ? `b-1 b-neutral-1 hover:bg-base-focus${selected ? ' bg-base-focus pointer-events-none' : ''}`
+		    : ''}${type === 'borderless' ? ' hover:bg-base-focus' : ''} ${type === 'link'
+		    ? `hover:underline focus:underline p-2`
+		    : 'ring-primary-medium focus:ring-2 justify-center font-600 p-4'} ${fullWidth
+		    ? `w-full`
+		    : `w-max`} rounded-md transition-all duration-200 flex items-center flex-row focus:outline-none`}>
+    // other attributes excluded for brevity
+</button>
+```
+
+That is a pretty basic button. It has five primary variants (primary, secondary, tertiary, borderless, and link), a `select` style, and a `fullWidth` option. Even with this relative simplicity, the className string is incredibly hard to decipher. Tailwind does not have any tool like [Stiches' Variants API](https://stitches.dev/docs/variants), which is designed to generate CSS based on props passed as variants. With variants and other CSS-in-JS tools, you can structure your styles as an object containing specific styles for one or a combination of props passed. With plain Tailwind, you can only structure your styles by constructing a string with template literals, which can quickly become unmanageable. That is not the only problem impacting scalability
+
+The other major problem with Tailwind scaling is overrides and style conflicts. You often have to override specific CSS properties in a component through a `class`/`className` prop. Tailwind is great for these one-off changes, as it is incredibly simple to add classes. Unfortunately, Tailwind breaks down when the class conflicts with another class in the component. In CSS, the order of classes in the stylesheet defines their priority. Because Tailwind inserts classes with a somewhat unpredictable order, style priority is often tough to determine and control, leading to many classes having to be marked as `!important`, reducing the class sharing efficiency of atomic CSS while hurting maintainability.
+
+For example, in the button component above, what if you created a button row and wanted to make the left side of the button sharp?
+
+![Example of button in button row with corners highlighted](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/tailwind_rounded_corners_rP4A5Ohrr.png "Corners of button marked with yellow; Please excuse my bad drawing")
+
+You could do this by adding yet another prop and some more classes to the long string above. However, if you only do this once, adding another clause to the class string is probably not worthwhile. Instead, you can just override the classes.
+
+```jsx
+<ButtonComponent className={"rounded-l-none"}>
+```
+
+But then you come across inconsistencies, where sometimes the custom classes are overridden by the classes defined inside the component, and you are forced to pull out `!important`. Many CSS-in-JS runtimes solve this by providing a utility to deep merge styles, but Tailwind provides nothing like this by default.
+
+Those two problems, lack of variants and easy overrides, hurt Tailwind's scalability. Luckily, we can solve these problems without ditching Tailwind.
+
+## Solutions
+
+### Class Variance Authority (CVA)
+
+![Time Variance Authority logo from the Loki TV series](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/tailwind_tva_yRlJu_2Rq.webp?updatedAt=1701019478012 "Unfortunately, this is about CSS and not time travel")
+
+[CVA](https://beta.cva.style/) is a tool that introduces a Stiches' or Vanilla-extract-like Variants API. Instead of tying it to a specific framework, it operates entirely using classes, allowing it to be used for Tailwind, solving the long and complex class strings. {'Also, while it does add some JavaScript, it is <1kb gzipped due to it not including anything beyond tools for constructing classes.' /*not sure why this is necessary)*/}
+
+
+<Callout type="info">At the time of this being written, `cva` 1.0 is in beta. This article uses the 1.0 beta and will be updated when it reaches stable.</Callout>
+
+Let's try it out.
+
+First, enter a project with Tailwind and install CVA.
+
+```sh
+npm i cva@beta
+```
+
+The @beta tag is required for now to ensure you get the correct version.
+
+Now that you have installed it, you can immediately start using it. In whatever component you want to use CVA in, just import it.
+
+```js
+import {cva} from "cva"
+```
+
+Then, call the CVA method an object containing your class data like this below:
+
+```js
+const button = cva({
+	variants: {
+		type: {
+            // activated when called with {type: "primary"}
+			primary: 'bg-primary-dark text-white',
+            // activated when called with {type: "secondary"}
+			secondary: 'bg-base-focus b-1 b-neutral-1 shadow-md',
+			tertiary: 'b-1 b-neutral-1',
+			borderless: 'hover:bg-base-focus',
+			link: 'hover:underline focus:underline p-2'
+		},
+		size: {
+			full: 'w-full',
+			max: 'w-max',
+			square: null
+		},
+		state: {
+			default: null,
+			disabled: 'pointer-events-none'
+		}
+	},
+	compoundVariants: [
+        // activated when called with {type: "primary", state: "default"}
+		{ type: 'primary', state: 'default', class: 'hover:shadow-lg hover:bg-primary-ultradark' },
+		{
+			type: 'tertiary',
+			state: 'default',
+			class: 'hover:bg-base-focus'
+		},
+		{
+			type: 'tertiary',
+			state: 'disabled',
+			class: 'bg-base-focus'
+		},
+		{
+			type: ['primary', 'secondary', 'tertiary', 'borderless'],
+			class: 'ring-primary-medium focus:ring-2 justify-center font-600 p-4'
+		},
+		{
+			type: ['primary', 'secondary', 'tertiary', 'borderless'],
+			size: ['full', 'max'],
+			class: 'px-6'
+		},
+		{
+			type: 'link',
+			size: ['full', 'max'],
+			class: 'px-4'
+		}
+	],
+    // defaults if variants not passed
+	defaultVariants: { type: 'primary', size: 'max', state: 'default' },
+    // always included
+	base: 'rounded-md transition-all duration-200 flex items-center flex-row focus:outline-none'
+});
+```
+
+This button is the same button from [before](/#why-is-tailwindcss-hard-to-scale), with a few differences in props.
+
+`variants` contain the core options. Variants specify a value for a passed prop, which will cause certain classes to be added. For example, if you pass `{type: "primary"}`, it will apply the classes specified in `variants.type.primary`, which are `bg-primary-dark text-white`.
+
+If you want certain classes to be added when specific variants are combined, you can create a compound variant. Compound variants donly activate with a combination of variant values. For example, the first compound variant only adds it set of classes when `{type: 'primary', state: 'default'}` is passed. You can also pass an array to allow the variant to be activated if any of the options in the array are true.
+
+Finally, `defaultVariants` specify the defaults in case no variant is specified, and `base` specifies classes that are always included.
+
+To use this, you need to call the resulting variable (`button` in the above case) and pass an object containing the variants, which will typically be props.
+
+For example, if you are using React, you could write something like this
+
+```js
+import {cva} from "cva"
+
+const button = cva({
+	variants: {
+		type: {
+            // activated when called with {type: "primary"}
+			primary: 'bg-primary-dark text-white',
+            // activated when called with {type: "secondary"}
+			secondary: 'bg-base-focus b-1 b-neutral-1 shadow-md',
+			tertiary: 'b-1 b-neutral-1',
+			borderless: 'hover:bg-base-focus',
+			link: 'hover:underline focus:underline p-2'
+		},
+		size: {
+			full: 'w-full',
+			max: 'w-max',
+			square: null
+		},
+		state: {
+			default: null,
+			disabled: 'pointer-events-none'
+		}
+	},
+	compoundVariants: [
+        // activated when called with {type: "primary", state: "default"}
+		{ type: 'primary', state: 'default', class: 'hover:shadow-lg hover:bg-primary-ultradark' },
+		{
+			type: 'tertiary',
+			state: 'default',
+			class: 'hover:bg-base-focus'
+		},
+		{
+			type: 'tertiary',
+			state: 'disabled',
+			class: 'bg-base-focus'
+		},
+		{
+			type: ['primary', 'secondary', 'tertiary', 'borderless'],
+			class: 'ring-primary-medium focus:ring-2 justify-center font-600 p-4'
+		},
+		{
+			type: ['primary', 'secondary', 'tertiary', 'borderless'],
+			size: ['full', 'max'],
+			class: 'px-6'
+		},
+		{
+			type: 'link',
+			size: ['full', 'max'],
+			class: 'px-4'
+		}
+	],
+    // defaults if variants not passed
+	defaultVariants: { type: 'primary', size: 'max', state: 'default' },
+    // always included
+	base: 'rounded-md transition-all duration-200 flex items-center flex-row focus:outline-none'
+});
+
+export function Button({
+  type,
+  state,
+  className,
+  ...props
+}) {
+    return <button className={button({type,state,className})} {...props}/>
+}
+```
+
+Now you can pass props `type` and `state` into `<Button>`
+
+```jsx
+<Button type="primary" state="default" className="custom-class">This is a primary button!</Button>
+```
+
+You can use CVA in a very similar way with other frameworks (I frequently use CVA with Tailwind in Astro JSX and Svelte), as it relies on passing certain props to the styling function. You can also get types for the variants using variant props:
+
+```ts
+import {cva, type InferProps} from "cva"
+
+...cva object
+
+type ButtonVariantProps = InferProps<button>
+
+// includes types for all variants and their possible values
+interface ButtonProps extends ButtonVariantProps {
+	...other props
+}
+```
+
+Another feature is combining components and their variants using the `compose`.
+
+```js
+import { compose } from "cva"
+const combinedComponent = compose(componentOne,componentTwo)
+```
+
+The resulting component will contain variants from both components. However, this will not merge class names in one variant, as that would require knowledge of what each class name does. Luckily, there is another Tailwind-specific tool for doing this, solving the class conflicts problem.
+
+## tailwind-merge
+
+Unlike the previous tool, [tailwind-merge](https://github.com/dcastil/tailwind-merge/tree/main) is tailwind-specific. It is a tool that merges two sets of Tailwind classes, removing class conflicts. For example, if you have a button that by default has `px-6` set for left and right padding, but you override that in a class prop to give it `px-3` instead, tailwind-merge will remove `px-6` entirely in the resulting HTML.
+
+To use tailwind-merge, you must first install it:
+
+```sh
+npm install tailwind-merge
+```
+
+Then, import `twMerge` in a component and call it with the two sets of classes.
+
+```jsx
+import {twMerge} from "tailwind-merge"
+
+export function ExampleComponent({className}) {
+	return <button class={twMerge("px-6 px-3 rounded-md bg-blue-700 text-white",className)}>Example</button>
+}
+```
+
+Any conflicting class passed in `className` will override the previously passed classes. `twMerge` also functions like `clsx`/`className`, adding class strings together.
+
+By default, tailwind-merge is configured for default Tailwind classes. It is pretty good at figuring out what custom classes do. For example, if you have a color named `primary-800` and use `bg-primary-800`, tailwind-merge should be able to determine that it is a conflicting class with `bg-blue-800` or another color. However, tailwind-merge can't infer everything, and if you change this configuration to add classes that do not follow standard Tailwind methods, you might have to change tailwind-merge's config. You can do this by running [extendTailwindMerge](https://github.com/dcastil/tailwind-merge/blob/v2.0.0/docs/configuration.md) with your changes.
+
+You can use tailwind-merge with CVA by passing the class string from CVA to `twMerge`. However, you can also use CVA's `defineConfig` to integrate them automatically:
+
+```js
+import { defineConfig } from "cva";
+import { twMerge } from "tailwind-merge";
+
+export const { cva, cx, compose } = defineConfig({
+  hooks: {
+    onComplete: (className) => twMerge(className),
+  },
+});
+```
+
+Now you can import `cva`, `cx`, and `compose` from that file instead of the package `"cva"`, and it will automatically run `twMerge` on the resulting class string.
+
+### Honorable Mention: Zero-runtime CSS-in-JS
+
+While it is not Tailwind, another method of solving this problem is taking the advantages of Tailwind (performance, brevity, and flexibility) to CSS-in-JS. The most notable of these tools is [vanilla-extract](https://vanilla-extract.style/), which provides a type-safe CSS-in-JS API that compiles to plain stylesheets. vanilla-extract includes its own [variants](https://vanilla-extract.style/) API and offers [sprinkles](https://vanilla-extract.style/documentation/packages/sprinkles/), which allow you to create a custom set of properties to allow for Tailwind-like usage:
+
+```js
+// Custom properties defined in another file
+import { sprinkles } from './sprinkles.css.js';
+
+export const container = sprinkles({
+  display: 'flex',
+  paddingX: 'small',
+
+  // Conditional sprinkles
+  flexDirection: {
+	// Only applies for mobile devices using a custom min-width media query
+    mobile: 'column',
+    desktop: 'row'
+  },
+})
+```
+
+I still prefer Tailwind's class-based system, as it feels much faster, especially for one-off styles, but this is a good option for many.
+
+## Conclusion
+
+Hopefully, now you know more about how to make Tailwind scale. CSS and methods of writing it are constantly evolving, and it seems like whenever someone creates a new tool and becomes popular, people find a major inherent issue and switch to yet another new tool. Luckily, while I'm sure Tailwind will be ancient technology by 2025, these tools should help fix what I see as Tailwind's most significant issue.
