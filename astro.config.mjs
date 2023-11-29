@@ -16,7 +16,6 @@ export default defineConfig({
 			filter: (page) => page !== "https://byteofdev.com/posts/",
 		}),
 		mdx({
-			optimize: true,
 		}),
 		tailwind(),
 		critters(),
