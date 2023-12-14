@@ -4,7 +4,7 @@ description: ESM (ECMAScript Modules) is a modern module format with many advant
 author: asyncbanana
 tags: [ESM, Node]
 published: 1662221036776
-updated: 1662221036776
+updated: 1702597250393
 image:
   {
     url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/UseESM_4JsCW1Rux,
@@ -18,11 +18,13 @@ ESM (or ECMAScript Modules) is a modern module format with many advantages over 
 
 ## What is ESM?
 
-ECMAScript Modules is a module format created as part of the ECMAScript (read: JavaScript) standard. It was standardized in the ES6 ECMAScript version, which you might know for adding many syntax features. ES Modules aims to solve a significant problem in JavaScript: There is no built-in way to share code between scripts. You might be familiar with importing things using `require()`. That is using CommonJS, which is only supported in some bundlers and Node.js. Additionally, there are some problems with CommonJS, like its synchronous nature. ESM aims to solve all of these issues while making one module format universal. Today, Chrome, Safari, and Firefox fully support ESM, so you should not have any problem running it in modern browsers. Additionally, Node v12+ supports ESM, although you have to tell it you are using ESM rather than CommonJS. We will talk more about how to how to do this later on.
+ECMAScript Modules is a module format created as part of the ECMAScript (read: JavaScript) standard. It was standardized in the ES6 ECMAScript version, which you might know for adding many syntax features. ES Modules aims to solve a significant problem in JavaScript: There is no built-in way to share code between scripts. You might be familiar with importing things using `require()`. That is using CommonJS, which is only supported in some bundlers and Node.js. Additionally, there are some problems with CommonJS, like its synchronous nature.
+
+ESM aims to solve all of these issues while making one module format universal. Today, Chrome, Safari, and Firefox fully support ESM, so you should not have any problem running it in modern browsers. Additionally, Node v12+ supports ESM, although you have to tell it you are using ESM rather than CommonJS. We will talk more about how to do this later on.
 
 ## ESM Syntax
 
-The syntax used to import and export modules is a little more complicated than in other module systems like CommonJS, but it still is fairly easy to pick up. The most basic example is this:
+The syntax used to import and export modules is slightly more complicated than in other module systems like CommonJS, but it is still fairly easy to pick up. The most basic example is this:
 
 ```js
 // script.js
@@ -35,13 +37,13 @@ export const example = function () {
 };
 ```
 
-Here we import a function called `example` from `library.js`. Notice the brackets around `example`. That shows that we are only importing `example`. So if we wanted to import multiple things we could do this:
+Here we import a function called `example` from `library.js`. Notice the brackets around `example`. That shows that we are only importing `example`. So, if we wanted to import multiple things, we could do this:
 
 ```js
 import { example, example2 } from "./library.js";
 ```
 
-As you can see, we put both `example` and `example2` in between the brackets to import both of the exported variables. Now, what if there was only one thing exported? Using `export default`, we can remove the brackets.
+As you can see, we put both `example` and `example2` between the brackets to import both exported variables. Now, what if there was only one thing exported? Using `export default`, we can remove the brackets.
 
 ```js
 // script.js
@@ -61,11 +63,12 @@ import { example as newExampleName } from "./library.js";
 newExampleName();
 ```
 
-Another thing you might want to do is dynamically import something. Dynamic imports work a lot like `require()` in CommonJS, except that they run asynchronously:
+Another thing you might want to do is dynamically import something. Dynamic imports allow you to import with a function rather than a statement that must be at the top of the file, which means you can import something conditionally or even import a module with a dynamic URL. In other words, dynamic imports are like asynchronous `require()` calls:
 
 ```js
 import("./library.js").then((library) => {
-	library.example();
+	// handle the promise here
+	library.default();
 });
 ```
 
@@ -92,7 +95,7 @@ export const example2 = function () {
 
 ### Per-file
 
-The simplest way to use ESM in Node.js is to just replace `.js` with `.mjs` as the file extension for the script in which you want to use ESM. The new file extension tells Node that it should treat the file as ESM rather than CJS. This also works the other way. You can use `.cjs` to designate a file as CommonJS if the default is ESM (more on that in the next section).
+The simplest way to use ESM in Node.js is to replace `.js` with `.mjs` as the file extension for the script you want to use ESM in. The new file extension tells Node to treat the file as ESM rather than CJS. This naming scheme also works the other way. You can use `.cjs` to designate a file as CommonJS if the default is ESM (more on that in the next section).
 
 ### Package-wide
 
@@ -100,7 +103,7 @@ Often you want a whole package to be ESM by default. To do this, you must add `"
 
 ### Importing CJS Modules From ESM
 
-To ease the transition to ESM, Node offers the ability to load CommonJS modules from ESM. You can retrieve the `module.exports` object by importing it as a default export. For example:
+To ease the transition to ESM, Node can load CommonJS modules from ESM. You can retrieve the `module.exports` object by importing it as a default export. For example:
 
 ```js
 // script.mjs
@@ -123,7 +126,7 @@ Unfortunately, Node does not support importing ES Modules from CommonJS modules.
 
 ### Migrating from CJS To ESM
 
-There are tools to help make migrating code from CommonJS to ES Modules easy. One of the most popular tools is [cjstoesm](https://github.com/wessberg/cjstoesm), a command line tool that automatically transforms CommonJS code in Node to its ESM equivalent. Almost all CommonJS code is transformed. However, there are some things that are not transformed. The most notable is the `__dirname`. `__dirname` is not part of Node.js, but it is one thing that Node does not suppport in "ESM mode". Luckily, there are replacements. A simple way to polyfill `__dirname` is to do this:
+There are tools to help make migrating code from CommonJS to ES Modules easy. One of the most popular tools is [cjstoesm](https://github.com/wessberg/cjstoesm), a command line tool that automatically transforms almost all CommonJS code in Node to its ESM equivalent. However, some things are not converted. The most notable is the `__dirname`. `__dirname` is not part of Node.js, but it is one thing Node does not support in "ESM mode". Luckily, there are replacements. A simple way to polyfill `__dirname` is to do this:
 
 ```js
 const __dirname = new URL(".", import.meta.url).pathname;
@@ -141,13 +144,13 @@ const module = boolean ? require("module1") : require("module2");
 const module = await (boolean ? import("module1") : import("module2"));
 ```
 
-With these tips, you should not have much trouble at all converting CommonJS code to ES Modules.
+With these tips, you should not have much trouble converting CommonJS code to ES Modules.
 
 ## Using ESM on the Web
 
 ### Native ESM
 
-The simplest way to use ESM on the web is by utilizing the native support for it. For about over 95% of users ([Caniuse](https://caniuse.com/es6-module)), ESM is supported without polyfills. To load a script with ESM, you need to add `type="module"` in the script tag.
+The simplest way to use ESM on the web is by utilizing the native support for it. For about over 95% of users ([Caniuse](https://caniuse.com/es6-module)), ESM is supported without polyfills. To load a script with ESM, add `type="module"` in the script tag.
 
 ```js
 <script src="./esmscript.js" type="module">
@@ -159,8 +162,53 @@ To create a backup script for browsers that do not support ES Modules, you can u
 
 ### Bundlers
 
-While just using the browser's native ESM support is simple to start with, you will be missing out on a lot of features and optimizations, like tree shaking, support for CommonJS dependencies or automatic fallback generation. Luckily, many bundlers support ESM by default. The most notable modern ESM bundlers for the web is [Vite](https://vitejs.dev/). Vite is a bundler created by the Vue team that is extremely fast and feature-rich. By default, Vite minifies and optimizes your code, and you can do a lot more with Vite/Rollup plugins. To create a Vite project, you have to run `npm create vite@latest`. This will help you set up a project with Vite using ES Modules. If you want legacy browser support using `nomodule`, you can use the plugin [@vitejs/plugin-legacy](https://github.com/vitejs/vite/tree/main/packages/plugin-legacy). Another feature that Vite, along with most other bundlers, has is support for dependencies that use CommonJS. Obviously, CommonJS requires transformation and therefore can add some code weight, but it is better than nothing, and you can still use ESM along with it.
+While just using the browser's native ESM support is simple, you will be missing out on many features and optimizations, like tree shaking, support for CommonJS dependencies, and automatic fallback generation. Luckily, many bundlers support ESM by default. The most notable modern ESM bundler for the web is [Vite](https://vitejs.dev/). Vite is a bundler created by the Vue team that is extremely fast and feature-rich. By default, Vite minifies and optimizes your code, and you can do a lot more with Vite/Rollup plugins.
+
+To create a Vite project, run `npm create vite@latest`, which will help you set up a project with Vite using ES Modules. If you want legacy browser support using `nomodule`, you can use the plugin [@vitejs/plugin-legacy](https://github.com/vitejs/vite/tree/main/packages/plugin-legacy). Another feature that Vite, along with most other bundlers, has is support for dependencies that use CommonJS. Obviously, CommonJS requires a compiler step to convert from ESM and can add some code weight, but it is better than nothing, and you can still use ESM along with it.
+
+### Import Maps
+
+While bundlers are great, you might be trying to avoid using them due to the increased complexity of having a build process. However, you might also want to import things using Node-style short package specifiers (e.g. "react" rather than "https://esm.run/react@18.2.0"). Or perhaps you want to use a library that imports via specifiers like these, but don't want to have to modify its code. Luckily, modern browsers have a solution to this problem: import maps.
+
+Import maps are scripts with `type="importmap"` that contain JSON objects routing certain specifiers to URLs. For example, lets say you wanted to be able to import things from `"react"`. You can do this by creating the following import map:
+
+```html
+<script type="importmap">
+	{
+    	"imports": {
+			"react": "https://esm.run/react@18.2.0",
+		}
+	}
+</script>
+```
+
+The above import map essentially turns this import:
+
+```js
+import {useEffect} from "react";
+```
+
+Into this:
+
+```js
+import {useEffect} from "https://esm.run/react@18.2.0"
+```
+
+This will affect all modules on that webpage. You can also map by a prefix:
+
+```html
+<script type="importmap">
+ 	{
+    	"imports": {
+			"scripts/": "https://example.com/scripts/",
+		}
+	}
+</script>
+```
+This will reroute all imports to `scripts/...` to `https://example.com/scripts/...`. For example `scripts/test` would turn into `https://example.com/scripts/test`.
+
+Imports maps are currently [supported by 90%+ of users](https://caniuse.com/import-maps), and this number is continually growing.
 
 ## Conclusion
 
-Now you are familiar with ES Modules' syntax and how to implement it on the web and in Node.js. Make sure to sign up for the newsletter or RSS below. I hope this article has been helpful for you, and thanks for reading.
+Now you are familiar with ES Modules' syntax and how to implement it on the web and in Node.js. Make sure to sign up for the newsletter or RSS below. I hope this article has been helpful, and thanks for reading.

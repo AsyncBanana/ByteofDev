@@ -5,7 +5,7 @@ import StoryCard from "$lib/components/card.svelte";
 import Icon from "svelte-fa";
 import { faEnvelope, faGlobe } from "@fortawesome/free-solid-svg-icons";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
-import { CollectionEntry, getCollection } from "astro:content";
+import { type CollectionEntry, getCollection } from "astro:content";
 import mdxComponents from "$lib/modules/mdxComponents";
 
 // @ts-ignore
@@ -27,45 +27,47 @@ posts = posts.slice(0, 20);
 ---
 
 <BaseLayout SEO={{ title: `About ${name}` }}>
-	<div class="m-auto grid p-4 gap-5 md:p-0 md:w-3/4">
-		<div class="flex">
+	<div class="m-auto grid p-4 md:p-0 md:w-3/4">
+		<div class="flex-col md:flex-row flex gap-3">
 			<img
 				src={image}
 				alt={`Profile picture of ${name}`}
-				class="rounded-full"
+				class="rounded-lg w-min"
 			/>
-			<h1 class="font-bold text-4xl self-center">{name}</h1>
+			<div class="h-full flex flex-col place-content-center">
+			<h1 class="font-bold text-4xl">{name}</h1>
+			<div class="flex gap-3 flex-wrap">
+				<a
+					href={website}
+					class="btn btn-outline"
+					target="_blank"
+					rel="noopener"
+				>
+					<Icon icon={faGlobe} class="m-1" />Visit website
+				</a>
+				<a
+					href={`mailto:${email.name}@${email.host}`}
+					class="btn btn-outline"
+					target="_blank"
+					rel="noopener"
+				>
+					<Icon icon={faEnvelope} class="m-1" />Email
+				</a>
+				<a
+					href={github}
+					class="btn btn-outline"
+					target="_blank"
+					rel="noopener"
+				>
+					<Icon icon={faGithub} class="m-1" />GitHub
+				</a>
+			</div>
+		</div>
 		</div>
 		<article>
 			<Content compoents={mdxComponents} />
 		</article>
-		<div class="flex justify-evenly">
-			<a
-				href={website}
-				class="btn btn-outline"
-				target="_blank"
-				rel="noopener"
-			>
-				<Icon icon={faGlobe} class="m-1" />Visit website
-			</a>
-			<a
-				href={`mailto:${email.name}@${email.host}`}
-				class="btn btn-outline"
-				target="_blank"
-				rel="noopener"
-			>
-				<Icon icon={faEnvelope} class="m-1" />Email
-			</a>
-			<a
-				href={github}
-				class="btn btn-outline"
-				target="_blank"
-				rel="noopener"
-			>
-				<Icon icon={faGithub} class="m-1" />GitHub
-			</a>
-		</div>
-		<main class="m-auto grid gap-5 md:grid-cols-3 lg:grid-cols">
+		<main class="m-auto grid gap-5 md:grid-cols-2 lg:grid-cols-3">
 			{
 				posts.map((post) => (
 					<StoryCard item={post} author={Astro.props.author} />
