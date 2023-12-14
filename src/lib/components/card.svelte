@@ -24,10 +24,9 @@
 				By {authorData?.data.name}
 			</p>{/await}
 		<p class="font-medium">
-			{dayjs(item.data.published).format("MMMM D, YYYY")}{item.data.updated >
-			item.data.published + 86400000 // filter out tiny post-launch updates
-				? ` (Updated ${dayjs(item.data.updated).format("MMMM D, YYYY")})`
-				: ``}
+			{
+				dayjs(item.data.updated).format("MMMM D, YYYY")
+			}
 		</p>
 	</div>
 </a>

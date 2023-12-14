@@ -5,7 +5,7 @@
 </script>
 
 <div class={`dark:bg-neutral rounded-md p-4 m-2 shadow-xl`}>
-	<h2 class="font-bold text-xl">Sign up for updates</h2>
+	<h2 class="font-bold text-xl">Sign up for email updates</h2>
 	<form
 		method="POST"
 		action="/api/addcontact"
@@ -18,13 +18,11 @@
 			Get interesting posts about web development and more programming straight
 			in your inbox!
 		</p>
-		<label for={`email${primary ? "-primary" : ""}`} class="text-md indent-2"
-			>Email</label
-		>
 		<input
 			type="email"
-			class="shadow text-base-content input"
+			class="shadow text-base-content input mt-2"
 			name="email"
+			aria-label="Email"
 			id={`email${primary ? "-primary" : ""}`}
 			placeholder="smart@cookie.com"
 		/>

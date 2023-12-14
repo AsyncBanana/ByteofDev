@@ -38,10 +38,10 @@
 				visible = false;
 			}}
 		>
-			<label for={`email-popup`} class="text-md indent-2">Email</label>
 			<input
 				type="email"
-				class="shadow text-base-content input"
+				class="shadow text-base-content input mt-2"
+				aria-label="email"
 				name="email"
 				id={`email-popup`}
 				placeholder="smart@cookie.com"
