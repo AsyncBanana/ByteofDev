@@ -1,0 +1,28 @@
+---
+interface Image {
+	src: string;
+	alt: string;
+}
+interface Props {
+	images: [Image, Image];
+}
+const { images } = Astro.props;
+const id = images.map((img) => encodeURIComponent(img.src)).join("/");
+---
+
+<script>
+	import { create } from "cocoen";
+	const images = document.getElementsByClassName("cocoen");
+	// @ts-expect-error
+	for (const imageParent of images as HTMLDivElement[]) {
+		// @ts-expect-error
+		for (const image of imageParent.children as HTMLImageElement[]) {
+			// for progressive enhancement; loading without javascript will keep default article image styling
+			image.classList.add("cocoen-img", "max-w-none");
+		}
+		create(imageParent);
+	}
+</script>
+<div {id} class="cocoen">
+	{images.map((image) => <img {...image} />)}
+</div>

@@ -1,9 +1,11 @@
-module.exports = {
+
+/** @type {import("prettier").Config} */
+export default {
 	useTabs: true,
 	tabWidth: 2,
 	plugins: [
-		require("./node_modules/prettier-plugin-svelte"),
-		require("./node_modules/prettier-plugin-astro"),
+		"prettier-plugin-svelte",
+		"prettier-plugin-astro"
 	],
 
 	overrides: [

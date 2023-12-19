@@ -23,7 +23,7 @@ posts = posts.filter((value) => value.data.author.slug === slug);
 
 posts.sort((a, b) => b.data.published - a.data.published);
 
-posts = posts.slice(0, 20);
+posts = posts.slice(0, 30);
 ---
 
 <BaseLayout SEO={{ title: `About ${name}` }}>
@@ -35,34 +35,34 @@ posts = posts.slice(0, 20);
 				class="rounded-lg w-min"
 			/>
 			<div class="h-full flex flex-col place-content-center">
-			<h1 class="font-bold text-4xl">{name}</h1>
-			<div class="flex gap-3 flex-wrap">
-				<a
-					href={website}
-					class="btn btn-outline"
-					target="_blank"
-					rel="noopener"
-				>
-					<Icon icon={faGlobe} class="m-1" />Visit website
-				</a>
-				<a
-					href={`mailto:${email.name}@${email.host}`}
-					class="btn btn-outline"
-					target="_blank"
-					rel="noopener"
-				>
-					<Icon icon={faEnvelope} class="m-1" />Email
-				</a>
-				<a
-					href={github}
-					class="btn btn-outline"
-					target="_blank"
-					rel="noopener"
-				>
-					<Icon icon={faGithub} class="m-1" />GitHub
-				</a>
+				<h1 class="font-bold text-4xl">{name}</h1>
+				<div class="flex gap-3 flex-wrap">
+					<a
+						href={website}
+						class="btn btn-outline"
+						target="_blank"
+						rel="noopener"
+					>
+						<Icon icon={faGlobe} class="m-1" />Visit website
+					</a>
+					<a
+						href={`mailto:${email.name}@${email.host}`}
+						class="btn btn-outline"
+						target="_blank"
+						rel="noopener"
+					>
+						<Icon icon={faEnvelope} class="m-1" />Email
+					</a>
+					<a
+						href={github}
+						class="btn btn-outline"
+						target="_blank"
+						rel="noopener"
+					>
+						<Icon icon={faGithub} class="m-1" />GitHub
+					</a>
+				</div>
 			</div>
-		</div>
 		</div>
 		<article>
 			<Content compoents={mdxComponents} />
