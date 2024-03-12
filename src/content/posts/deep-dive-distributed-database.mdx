@@ -1,0 +1,156 @@
+---
+title: "A deep dive into distributed database architectures"
+description: Learn about different strategies for delivering data from multiple servers
+author: asyncbanana
+tags: [Database]
+published: 1710248845073
+updated: 1710248845073
+image:
+  {
+    url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/Globally%20Distributed%20Database%20Strategies_NhmJ8kz0W.webp,
+    alt: "A globe next to text saying \"Globally distributed database strategies\" ",
+  }
+---
+import Callout from "$lib/components/callout.svelte";
+
+A common adage among business owners is "Location, location location." Location is one of the most important factors of any brick-and-mortar business, as it heavily influences what customers can access the business and costs. This also applies to software, and luckily, just like large chains open multiple outlets, it is becoming more and more common for applications to be designed for many different regions to reach the most customers with the lowest latency and highest availability.
+
+This is only one reason to use a distributed database. Many developers also distribute data to improve availability or allow performant management of much larger amounts of data. Unfortunately, while the methods of [distributing server code](https://byteofdev.com/posts/serverless/) have become quite easy with serverless and edge functions, moving data across regions is quite a bit harder. Due to data requiring replication between different zones, it requires a lot more work to create a reliable yet fast replicated database setup. There are a variety of different approaches, all balancing [consistency, scalability, and latency](https://en.wikipedia.org/wiki/PACELC_theorem) in different ways. In this article, we will go over each approach, its benefits, and its costs.
+
+<Callout type="info">
+  This article is more focused on SQL databases. NoSQL databases have some replication strategies not covered here. However, all of these architectures should be usable on both NoSQL and SQL.
+</Callout>
+
+## Edge Database Architectures
+
+### Global Query Caching
+
+![Diagram of query cache architecture; described below](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/query_cache_architecture_DiPubxlMW.png)
+
+While not technically a database architecture, one of the most popular ways of reducing load on a database server while improving performance for common queries is a query cache. Traditionally, this has been implemented by custom caching layers, using in-memory databases such as Redis or Memcached. Servers in between the web server and database receive the queries before the database and store the result of the query in a cache. Then, if another identical query is sent, the result can be server from the cache instead of sending it to the database. These cache servers can be deployed across the globe without any consistency issues, as they do not handle writes. Additionally, because it is a simple (often in-memory) cache, the query itself is much faster.
+
+Unfortunately, while this has worked well for large tech companies like [Meta](https://engineering.fb.com/2013/06/25/core-infra/tao-the-power-of-the-graph/), it is quite difficult to set up for most people. Luckily, a new group of services has appeared, like [Cloudflare Hyperdrive](https://developers.cloudflare.com/hyperdrive/) and [Prisma Accelerate](https://www.prisma.io/data-platform/accelerate), promising to be able to proxy databases like Postgres, automatically decide what queries are read-only, and cache those that are read-only. These services have made query caching much more accessible.
+
+#### Pros
+
+- For cached queries, very fast responses
+- Consistency for mutating queries
+- No extra load on the main database server
+- Simple usage (for hosted services)
+- Can be deployed widely
+
+#### Cons
+
+- One server handling writes
+- Slow for uncached queries (generally slower than a direct connection to the DB)
+- Cache lifetime means data can be stale
+- Caching only works for identical queries (depends on implementation)
+- Doesn't help much with availability
+
+#### Usecase
+
+If you have a high traffic read-heavy app, query caching will benefit you a lot. For example, blog hosting services would benefit from query caching, as high traffic posts will be cached globally and cache staleness will not be an issue. However, apps with more varying query patterns (like internal management apps) that are more write heavy will not get the same benefits from this.
+
+### Read replicas
+
+![Diagram of read replicas; described below](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/read_replica_vLxbkGRfL.png)
+
+Another common way to globally distribute databases is using read replicas. Read replicas are quite similar to query caching; however, they vary in two important ways. First, instead of being a naive cache, they generally run the same database technology as the main database and locally store a copy of the entire database. Second, the database proactively streams changes to replicas, rather than the cache requesting data from the server after a certain period. Basically, read replicas are secondary databases that only handle reads and have all changes streamed to them from the main database.
+
+This approach has been growing in popularity with databases like Postgres and SQLite. Postgres offers a variety of different streaming mechanisms, such as streaming WAL replication, where changes in the write-ahead log are asynchronously streamed to replicas, or SQL replication middleware, where SQL queries are streamed to read replicas and replayed there. SQLite doesn't offer any streaming mechanism by default, but services like [Turso](https://turso.tech`) (with LibSQL) have implemented read replicas in SQLite. Read replicas also sometimes include a mechanism to automatically promote a replica to a main database, helping improve availability in the case of main failure.
+
+#### Pros
+
+- Fast responses for all queries, cached or uncached
+- Data staleness is less of an issue (preserves consistency)
+- Can improve availability
+- Can be deployed widely
+
+#### Cons
+
+- One server handling writes
+- Requires the main server to proactively sync
+- Requires fully functional databases with full copies of the data in each replica
+- Still requires full execution of the query for all queries
+
+#### Usecase
+
+Read replicas are best for read heavy applications that must be queried in a variety of different ways. One such is example is a sports ranking application, where reads are much more common than writes but reads are spread across many different pieces of data. However, when you have consistent querying patterns, query caching can be more efficient and performant, and for write heavy applications, read replicas will do very little.
+
+### Partions over a network
+
+![Diagram of network partitioned database architecture; described below](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/partitioned_architecture_epgxm8GCg.png)
+
+For larger applications where improving latency isn't as important as ensuring reliability and scalability, partitioning data might be the best approach. This approach splits the data across multiple different servers, with each server handling reads and writes for a specific subset of the data. This means that each server only has to handle a subset of the total reads and writes. Queries are sent to the server with the right set of data by a forwarding server or by the client.
+
+This approach is well established at high scales, and while it is starting to be replaced by multi-master databases, it is still well used in new applications. Many DBaaS services optimized for scale like [Azure CosmosDB](https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview) offer this option, and it, of course, can be implemented in most database technologies.
+
+#### Pros
+
+- Distributes both reads and writes across multiple services
+- Doesn't require a full copy of the database for each server
+- Maintains consistency guarantees
+- Can be deployed widely
+
+#### Cons
+
+- Does not improve latency
+- Potentially requires another step to forward the query
+- Can require queries across multiple servers if requested data requires multiple partitions
+- Doesn't help much with availability
+
+#### Usecase
+
+The primary reason for partitioning data is to reduce load on any one server. Partitions are more cost and space-efficient than most other ways of distributing load, and they work for both reads and writes. Partitioning can also help with data residency regulations like GDPR, as data from users in certain regions can be stored in that region However, these advantages come at the cost of latency and availability. The main use case for this is a write-heavy application that has a significant amount of per-tenant data (meaning cross partition queries will be rare) and where latency is not as important.
+
+### Multi-master replication
+
+![Diagram of multi-master replication; described below](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/multi_master_architecture_U2goKhClh.png)
+
+Multi-master replication is by far the most complex replication method, but perhaps the one that has the most advantages. Where all other databases ensure only one database is writing to any piece of data, this approach allows multiple servers to concurrently write to data, using various synchronization algorithms to reconcile changes. Because of the complexity of it, there are many different forms of multi-master replication.
+
+The primary difference between the various ways of implementing multi-master replication is the synchronization and consensus algorithm. Some of the earliest examples of multi-master replication, like [Google Cloud Spanner](https://cloud.google.com/spanner), rely on synchronized clocks. Google uses atomic clocks to help get precise timing for requests that stay consistent between data centers.
+
+The synchronized time allows Spanner to offer strong consistency similar to a single machine RDBMS, ensuring that reads offer all data up until the time they are requested. The clocks also ensure that writes happen in the correct order, as the ones with the least recent timestamps are always executed first.
+
+However, there is still the issue of resolving conflicts and electing a leader. This is handled through consensus algorithms, the most popular of which are Paxos and Raft. I won't go too in-depth about either of them here, but basically, they manage conflict avoidance and attempt to keep all databases consistent through inter-database communication. Databases like Spanner use Paxos, whereas most newer distributed databases like [TiDB](https://github.com/pingcap/tidb) use Raft due to its simpler implementation.
+
+#### Pros
+
+- Improves availability (able to elect new leaders if the main server fails)
+- Distributes query load for everything
+- Improves response time for reads close by
+
+#### Cons
+
+- Very complex to implement
+- Expensive (requires multiple machines with full capabilities and incurs a lot of overhead)
+- Major tradeoff between consistency and latency
+  - Some databases have less strong consistency guarantees
+  - Others require further synchronous communication for writes, increasing latency
+
+#### Usecase
+
+Overall, this probably isn't necessary unless you have a very high scale app. Multi-master replication can help improve availability significantly, distribute load, and improve read latency. However, availability can be solved more simply with a backup and read latency can be improved more with replicas/query caching, both of which are simpler and less expensive to implement.
+
+### Single database
+
+![Diagram of single database architecture; described below](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/single_database_architecture_b9N1aKCva.png)
+
+Maybe you don't need replication at all. In many cases, the best option is just to run the database off of a single computer, perhaps with an asynchronously replicated backup.
+
+#### Pros
+
+- Simplest to set up
+- Cheap
+- Strong consistency guarantees (except for very specific configurations)
+
+#### Cons
+
+- Latency is not great in areas far from the database
+- Single machine handles all reads and writes
+- No availability improvement without backups
+
+## Conclusion
+
+Hopefully, you have now figured out what type of distributed database works for you. There is still a lot more to learn about these various database technologies that wasn't covered here. There are a variety of subgroupings for each approach, each with their own advantages and disadvantages. Whatever you decide to do, thanks for reading!
