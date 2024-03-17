@@ -110,10 +110,7 @@ const author = await getEntry("author", Astro.props.content.data.author.slug);
 				tags.map((tag: string) => (
 					<a
 						class="font-sans font-bold mx-3 my-1 text-2xl uppercase no-underline decoration-purple-500 hover:underline text-purple-600"
-						href={`/tagged/${tag.replaceAll(
-							" ",
-							"-"
-						)}/`.toLowerCase()}
+						href={`/tagged/${tag.replaceAll(" ", "-")}/`.toLowerCase()}
 					>
 						{tag}
 					</a>
@@ -129,12 +126,11 @@ const author = await getEntry("author", Astro.props.content.data.author.slug);
 			By <a href={`/author/${author?.slug}/`} rel="author"
 				>{author?.data.name}</a
 			>
-
 		</div>
-		<div class="font-normal text-lg border-b-gray-400 border-b-2 border-opacity-25 opacity-80">
-			{
-				dayjs(updatedRAW).format("MMMM D, YYYY")
-			}
+		<div
+			class="font-normal text-lg border-b-gray-400 border-b-2 border-opacity-25 opacity-80"
+		>
+			{dayjs(updatedRAW).format("MMMM D, YYYY")}
 		</div>
 		<span class="m-auto leading-relaxed" id="article-content">
 			<Content components={mdxComponents} />
@@ -195,6 +191,14 @@ const author = await getEntry("author", Astro.props.content.data.author.slug);
 			<CopyLink client:visible url={canonicalURL.toString()} />
 		</div>
 		<EmailPrompt method="Article Bottom" client:visible />
+		<div
+			id="convocomet-widget"
+			data-site="39952225667829"
+			data-page={Astro.url.pathname.slice(1, -1).replace("/", "-")}
+			data-theme="auto"
+		>
+		</div>
+		<script src="https://convocomet.dev/widget.js" async></script>
 	</div>
 	<style is:global>
 		@import "../lib/stylesheets/postTheme.css";
