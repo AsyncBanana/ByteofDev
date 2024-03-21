@@ -1,0 +1,78 @@
+---
+title: Replacing Disqus Commenting
+description: Images are one of the most significant contributors to slow websites. Here is how you can prevent this.
+author: asyncbanana
+tags: [convocomet]
+published: 1711057066147
+updated: 1711057066147
+image:
+  {
+    url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/Replacing_Disqus_3I6xG4Ww5.webp,
+    alt: Meme template "Friendship ended with Mudasir" using Disqus and ConvoComet instead of Mudasir and Salman,
+  }
+---
+
+As all ~~Twitter~~ X users know, one of the most essential parts of the internet is ~~yelling about how everyone else is wrong~~ sharing your opinions and ideas. Siloed web communities (looking at you, Reddit) often fulfill these needs, creating a more isolated, echo chamber-like environment. One of the best ways to prevent this echo chamber and encourage more productive conversation across groups is to talk outside of these communities.
+
+In the case of blogs and articles, this means commenting widgets, which allow users to post their thoughts at the bottom of those articles, no matter which community they come from. Unfortunately, in the past few years, this area has been neglected, with most websites using tools like Wordpress commenting, which are very barebones, or tools like Disqus, which are bloated, proprietary, and privacy-unfriendly.
+
+In this article, I will talk about my journey looking at various commenting systems, and why I created a new commenting system, [ConvoComet](https://convocomet.dev/?utm_source=byteofdev&utm_campaign=replacing_disqus), to replace Disqus in this blog and elsewhere.
+
+## Problems with Disqus
+
+### It's slow
+
+Disqus is infamously slow. It is full of a lot of heavy scripts that slow down the user experience. In fact, here is a comparison of the size of just Disqus's commenting widget versus an [article on this blog](https://byteofdev.com/posts/how-to-use-esm/), measuring both the uncompressed size of the page and the actual size of the resources travelling over the network (compressed). This includes all assets: HTML, CSS, JS, and other data.
+
+![A benchmark of Disqus's widget and a ByteofDev article's page sizes](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/disqus_vs_blog_size_gaHzcwKoM.svg "Smaller is better. Obviously.")
+
+As you can see, adding the Disqus widget would more than quintuple the weight of this page, adding 570kb to be transferred over the network to the original size of 115kb. While it is reasonable for a highly interactive widget to require more resources than a static page, this is far too much. And, as we will see, some of these files sent over the network are not exactly _beneficial_ to the user.
+
+### It tracks you
+
+Here is a screenshot of what my adblocker ([uBlock Origin](https://ublockorigin.com/), if you are curious), when using the Disqus commenting widget.
+
+![Screenshot of uBlock origin showing the trackers blocked on Disqus's widget, with 14 different requests blocked](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/ublock_disqus_blocks_ERU4gx6ZI.png "Nice! Lots of great companies! Remind me, what the heck is AGKN? Seriously, if you know, please tell me")
+
+**14 trackers!** While those are _rookie_ numbers compared to some Google products, they still represent user's data being sent to various companies unnecessarily. Unfortunately, there are worse aspects yet. Disqus doesn't just track users—[they actively advertise on their widget](https://disqus.com/pricing/). Disqus's free tier requires putting ads on the commenting widget. While this can be disabled by paying, as far as I can tell, the tracking related to it (aside from the actual ad-click tracking) remains one way or another. Oh yeah, and you can't tell what is happening beyond what their [opaque privacy policies](https://disqus.com/privacy-policy/) contain.
+
+![A screenshot of Disqus's privacy policy](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/Disqus_privacy_JJzbMEX1h.png "A fun, relaxing read")
+
+Or, if you want it decoded, you can take a look at [ToS;DR](https://tosdr.org/en/service/239), a handy service that grades company ToSs based on its user rights and privacy, and have your fears proven wrong—they are only rated an E, not an F. Oh wait—E is the lowest grade. Welp.
+
+### And there are many other issues...
+
+- It is entirely proprietary
+- It requires a sign in
+- A lot of features are locked behind pricy plans
+- There is no way to host it on your own infrastructure
+
+The list goes on.
+
+## What about other existing solutions?
+
+There are many alternative commenting systems, but I found them to be unsatisfactory for other reasons.\_createMdxContent
+
+### OpenWeb
+
+OpenWeb is basically just Disqus but rebranded and with more customized integration for larger customers. Also, [they recently spent $100 million on an advertising platform](https://www.openweb.com/blog/weve-acquired-adyoulike-to-build-a-more-sustainable-healthier-web).
+
+### Commento/Cusdis
+
+I am addressing these both at once because they are both very similar. They have most of the features I would want, but both are poorly maintained. Cusdis and Commento had their last release 3 and 2 1/2 years ago, respectively.
+
+### WordPress Commenting
+
+This solution is great for some cases, but a few limitations prevent me from using WordPress's comment system. First, this blog is statically generated using Astro, so migrating to WordPress would be a lot of work. Also, WordPress is missing some comment features like spam protection, forcing me to use other plugins like [Akismet](https://akismet.com/) and [Jetpack](https://jetpack.com/).
+
+## Yet Another Solution: ConvoComet
+
+Eventually, I decided to build my own commenting system that would solve all of these problems. This led to [ConvoComet](https://convocomet.dev/?utm_source=byteofdev&utm_campaign=replacing_disqus). ConvoComet is a commenting system I designed from the ground up intending to create a much faster, and more private experience. Here is the same chart as before, but comparing ConvoComet's widget to Disqus.
+
+![A benchmark of Disqus's widget and a ByteofDev article's page sizes](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/disqus_vs_convocomet_size_qUsuethmK.svg "As you can tell, I love graphs")
+
+As you can see, the difference is massive. While this benchmark is in no way scientific nor a completely accurate representation of the user experience, a difference this large cannot be ignored. ConvoComet also improves in other aspects, like privacy. Here is a screenshot of what uBlock Origin blocks when accessing the ConvoComet widget.
+
+![Screenshot of uBlock origin showing 0 trackers blocked on ConvoComet's widget](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/ublock_convocomet_blocks_bIJUxrpcw.png)
+
+ConvoComet is also open source, allows anonymous commenting, and should be self-hostable soon (currently, it is tied to Cloudflare infrastructure, so the only available options are to configure all of that infrastructure yourself or use the hosted version). There are still many missing features and bugs, but I am making fast progress on it. You can check out the [source code](https://github.com/AsyncBanana/convocomet), or try it out below this article. Let me know what you think, and if you want to try it for your own blog, [check out the hosted version](https://convocomet.dev/?utm_source=byteofdev&utm_campaign=replacing_disqus). I will probably also write another article with more technical details, so stay tuned.

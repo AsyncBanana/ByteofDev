@@ -8,18 +8,21 @@ updated: 1702954379201
 image:
   {
     url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/10_ways_to_speed_up_image_loading_bWQANFkTh,
-    alt: Singapore skyline with comparison of compression; 1 megabyte uncompressed vs 100 kilobytes compressed
+    alt: Singapore skyline with comparison of compression; 1 megabyte uncompressed vs 100 kilobytes compressed,
   }
 ---
+
 import Callout from "$lib/components/callout.svelte";
-import JuxtaposedImage from "$lib/components/juxtaposedImage.astro"
+import JuxtaposedImage from "$lib/components/juxtaposedImage.astro";
 
 According to the [HTTP Archive](https://httparchive.org/), images make up almost half of the weight of an average website, with around a megabyte per page. That is a megabyte that every user must download to see your website, which can often take a while for people on slow connections. Luckily, there are ways to mitigate this without much difficulty, from using modern image formats like AVIF or WebP, to using CDNs optimized for images, to replacing raster icons with SVGs. Here are 10 ways to improve image loading on a site.
 
 <Callout type="info">
-If you want to learn more about how to optimize your website, be sure to check out:
-- [10 ways to speed up font loading](https://byteofdev.com/posts/speed-up-font-loading/)
-- [10 ways to speed up JavaScript loading](https://byteofdev.com/posts/speed-up-javascript-loading/)
+	If you want to learn more about how to optimize your website, be sure to check
+	out: - [10 ways to speed up font
+	loading](https://byteofdev.com/posts/speed-up-font-loading/) - [10 ways to
+	speed up JavaScript
+	loading](https://byteofdev.com/posts/speed-up-javascript-loading/)
 </Callout>
 
 ## How to make images load faster
@@ -31,7 +34,11 @@ Images do not need to be the same size for all devices. An image might look blur
 `srcset` allow you to pass multiple different sources that are only activated if a particular condition is true, like if the screen width is over 1024 pixels. You can also describe a pixel density rather than a fixed width. To implement `srcset`, all you have to do is this:
 
 ```html
-<img src="/images/default.webp" sizes="(max-width: 720px) 600px, 1200px" srcset="/images/small.png 600w, /images/default.png 1200w">
+<img
+	src="/images/default.webp"
+	sizes="(max-width: 720px) 600px, 1200px"
+	srcset="/images/small.png 600w, /images/default.png 1200w"
+/>
 ```
 
 Let's go through this step by step. First, we define the default image URL, which can be used for browsers that do not support the `sizes` and `srcset` attribute. Next we define the image sizes using the `sizes` attribute. Here, we can pass a [media query](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_media_queries/Using_media_queries) to select the 600px wide image only if the screen is below 720 pixels wide. Otherwise, browsers will use the second declaration, a 1200px image. However, the browser still does not know which URL to select.
@@ -39,7 +46,8 @@ Let's go through this step by step. First, we define the default image URL, whic
 In order to send the browser to the right image URL based on the width in `sizes`, we use `srcset`. In the above example, when the size from `sizes` is 600 pixels, we tell the browser to request `/images/small.png`, and if the image width is 1200px, the browser requests `images.default.png`. While this example only has two images, you can add as many as you want for any valid media query.
 
 <Callout type="info">
-  Browsers might not always choose images based on just screen width. Network connections and other factors can affect the browser's choice.
+	Browsers might not always choose images based on just screen width. Network
+	connections and other factors can affect the browser's choice.
 </Callout>
 
 ### 2. Serve images with modern formats
@@ -50,9 +58,20 @@ WebP, a format developed by Google in 2010 based on the VP8, offers superior com
 
 Here is an example of an AV1 image versus its JPG equivalent (note this will not work on Edge due to the above issue):
 
-<JuxtaposedImage images={[{src: "https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/tr:f-avif/speed_up_images_avif_vMKIRdUpB", alt: "AVIF compressed image of Singapore; 70% smaller"},{src: "https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/tr:f-jpg/speed_up_images_original_R8oje17ew", alt: "Uncompressed image of singapore"}]}/>
+<JuxtaposedImage
+	images={[
+		{
+			src: "https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/tr:f-avif/speed_up_images_avif_vMKIRdUpB",
+			alt: "AVIF compressed image of Singapore; 70% smaller",
+		},
+		{
+			src: "https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/tr:f-jpg/speed_up_images_original_R8oje17ew",
+			alt: "Uncompressed image of singapore",
+		},
+	]}
+/>
 
-*Photo by [Mike Enerio](https://unsplash.com/@mikeenerio?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash) on [Unsplash](https://unsplash.com/photos/san-marina-bay-singapore-7ryPpZK1qV8?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash}*
+_Photo by [Mike Enerio](https://unsplash.com/@mikeenerio?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash) on [Unsplash](https://unsplash.com/photos/san-marina-bay-singapore-7ryPpZK1qV8?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)_
 
 The AVIF image is 50-70% smaller. Note that the size difference can vary but should be in that area. There is almost no quality difference between them, and in certain cases, the AVIF image seems to have removed some noise present in the JPG.
 
@@ -62,14 +81,16 @@ However, you might want to offer the most modern image format to newer browsers 
 
 ```html
 <picture>
-  <source srcset="/images/avif-optimized.avif" type="image/avif" /> <!-- First choice for browser --->
-  <source srcset="/images/webp-optimized.webp" type="image/webp" /> <!-- Used by browser if first choice is not supported --->
-  <img src="/images/fallback.jpg" alt="photo" width="1200" height="600" /> <!-- Used by browser if both previous choices are not supported; other attributes, like `alt` and `sizes`, will be shared across all possible images --->
+	<source srcset="/images/avif-optimized.avif" type="image/avif" />
+	<!-- First choice for browser --->
+	<source srcset="/images/webp-optimized.webp" type="image/webp" />
+	<!-- Used by browser if first choice is not supported --->
+	<img src="/images/fallback.jpg" alt="photo" width="1200" height="600" />
+	<!-- Used by browser if both previous choices are not supported; other attributes, like `alt` and `sizes`, will be shared across all possible images --->
 </picture>
 ```
 
 You can also use `srcset` as you would with individual `<img>` elements, except that `sizes` must be specified on the final `img` element rather than a `source`.
-
 
 ### 3. Use an image-optimized CDN
 
@@ -89,13 +110,15 @@ Here is a list of image-optimized CDNs that you might want to check out:
 Many images on your website might not be seen by the user upon page load, but by default, all images load immediately. The "eager" nature of these images causes users to download resources that might be halfway down the page. The solution to this is to use lazy loading. By default, HTML images load eagerly, meaning they are requested immediately as the page loads, no matter where on the page they are. Luckily, by adding the `loading="lazy"` attribute, you can make it so the browser only loads images when the user scrolls near them.
 
 ```html
-<img src="/images/lazy.webp" loading="lazy"> <!-- Lazy loaded! -->
+<img src="/images/lazy.webp" loading="lazy" />
+<!-- Lazy loaded! -->
 ```
 
 Lazy loading is [supported by 87% of users](https://caniuse.com/loading-lazy-attr), including all modern browsers. You can also implement [lazy loading through JavaScript](https://github.com/ApoorvSaxena/lozad.js), but at this point, it isn't really worth the complexity and performance cost.
 
 <Callout type="warning">
-  Do not lazy load images you expect to be in the user's initial viewport because this will delay their loading unnecessarily.
+	Do not lazy load images you expect to be in the user's initial viewport
+	because this will delay their loading unnecessarily.
 </Callout>
 
 ### 5. Decode images asynchronously
@@ -103,11 +126,14 @@ Lazy loading is [supported by 87% of users](https://caniuse.com/loading-lazy-att
 In a similar vein to image lazy loading, you can also enable asynchronous image decoding. In Chrome and Safari, images are decoded synchronously by default. Synchronous decoding allows for all content to be displayed simultaneously but comes at the cost of speed, as the user needs to wait for the image to be decoded before content can be displayed. To solve this, you can use `decoding="asynchronous"` which will not make the browser wait for the image to decode.
 
 ```html
-<img src="/images/lazy.webp" loading="lazy" decoding="asynchronous"> <!-- Lazy loaded and asynchronously decoded! -->
+<img src="/images/lazy.webp" loading="lazy" decoding="asynchronous" />
+<!-- Lazy loaded and asynchronously decoded! -->
 ```
 
 <Callout type="warning">
-  Just like lazy loading, you should use asynchronous decoding with care. Test the results before implementing this widely, as it can cause flashes of unstyled content (FOUC).
+	Just like lazy loading, you should use asynchronous decoding with care. Test
+	the results before implementing this widely, as it can cause flashes of
+	unstyled content (FOUC).
 </Callout>
 
 ### 6. Provide low resolution placeholders
@@ -141,12 +167,12 @@ The simplest way to allow the browser to reserve is to explicitly define `width`
 That is the best option if you know the exact dimensions and don't expect them to change based on screen size or other factors. However, sometimes, you might need a little more flexibility. You can get this flexibility from CSS `aspect-ratio`. `aspect-ratio allows you to define an aspect ratio, which combined with one dimension, can help the browser accurately reserve space for the image.
 
 ```html
-<img src="images/default.webp" alt="photo">
+<img src="images/default.webp" alt="photo" />
 <style>
-  img {
-    width: 100vw;
-    aspect-ratio: 16 / 9
-  }
+	img {
+		width: 100vw;
+		aspect-ratio: 16 / 9;
+	}
 </style>
 ```
 
@@ -157,16 +183,17 @@ The above CSS tells the browser to make the image fill the screen's width and fo
 By default, images are rendered in the layout upon page load. If you have a lot of images, this can use up a lot of unnecessary compute and slow down overall rendering. Luckily, modern browsers provide a property can control rendering: `content-visibility`. Setting `content-visibility` to `auto` tells the browser to only render the image when the user scrolls near it, rather than rendering everything upon page load.
 
 ```html
-<img src="images/default.webp">
+<img src="images/default.webp" />
 <style>
-  img {
-    content-visibility: auto;
-  }
+	img {
+		content-visibility: auto;
+	}
 </style>
 ```
 
 <Callout type="warning">
-  Once again, apply `content-visility` with care. Avoid using it for images viewable in the initial viewport.
+	Once again, apply `content-visility` with care. Avoid using it for images
+	viewable in the initial viewport.
 </Callout>
 
 ### 10. Use SVGs when possible
@@ -174,7 +201,15 @@ By default, images are rendered in the layout upon page load. If you have a lot 
 This is perhaps the most significant tip I have, as SVGs are incredibly underrated. Many raster images can be replaced with SVGs, leading to significantly smaller file sizes and sharper images.
 
 <Callout type="info">
-  SVG (scalable vector graphic) is unlike the other image formats we discussed previously. Where most image formats are raster (also commonly referred to as bitmap), meaning they define what are essentially grids of pixels, SVG is a vector graphics format, meaning it defines images in terms of shapes and lines. SVGs tend to scale from complexity, not resolution. This makes an image scalable to any resolution, as computers can render the figures at a very high definition without the image defining each pixel. SVGs are also more readable because they use XML rather than a binary format. In fact, many designers right SVGs directly in text.
+	SVG (scalable vector graphic) is unlike the other image formats we discussed
+	previously. Where most image formats are raster (also commonly referred to as
+	bitmap), meaning they define what are essentially grids of pixels, SVG is a
+	vector graphics format, meaning it defines images in terms of shapes and
+	lines. SVGs tend to scale from complexity, not resolution. This makes an image
+	scalable to any resolution, as computers can render the figures at a very high
+	definition without the image defining each pixel. SVGs are also more readable
+	because they use XML rather than a binary format. In fact, many designers
+	right SVGs directly in text.
 </Callout>
 
 SVGs are most popular for small images like icons, but you can use them in pretty much any image that has simple objects that were created digitally. You should never vectorize photos, as even though there are automatic vectorizers, photos have noise and complex lighting that are unsuitable for being vectorized. The other exception is images that are very complex or use other images that are only available rasterized. Other than that, SVGs can work quite well. For example, many of the heading photos in this blog are SVGs, allowing me to deliver sharp images with \<10kb payloads.
@@ -182,14 +217,14 @@ SVGs are most popular for small images like icons, but you can use them in prett
 Implementing SVGs in a website is very similar to implementing raster images. To create an SVG file, use a design program like Inkscape or Adobe Illustrator and export as an SVG. Make sure everything you use within your image is an SVG, or else you will lose the benefits of an SVG. Once you do this, you can use the SVG in an `<img>` tag.
 
 ```html
-<img src="/images/default.svg">
+<img src="/images/default.svg" />
 ```
 
 You can also embed the SVG directly into HTML, meaning you don't need to send another request for the SVG.
 
 ```html
 <svg>
-  <!-- SVG here -->
+	<!-- SVG here -->
 </svg>
 ```
 
