@@ -1,10 +1,10 @@
 ---
 title: "10 ways to speed up web font loading"
-description: Font loading can hurt performance a lot. This article shows you how to reduce the impact
+description: Font loading can slow page load times significantly. This article shows you how to reduce the impact.
 author: asyncbanana
 tags: [Web fonts, performance]
 published: 1644541426307
-updated: 1702950482052
+updated: 1734970074255
 image:
   {
     url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/Web_Font_Optimization,
@@ -12,7 +12,7 @@ image:
   }
 ---
 
-Fonts are popular tools on the web nowadays. Most modern websites use custom fonts, usually from Google Fonts, because they add a custom touch to the interface and allow for more optionality. However, there are many performance implications with fonts on the web. Fonts are often hundreds of kilobytes and are hosted on another domain, slowing down the website. Luckily, you can solve these problems. Here are ten tips to improve font loading performance on a website.
+Fonts are popular tools on the web nowadays. Most modern websites use custom fonts, usually from Google Fonts, because they add a personal touch to the website's interface. However, fonts, when improperly implemented, hurt loading speeds and performance for the user due to the bandwidth and network request requirements for them. Luckily, you can solve these problems and keep your website fast while maintaining its personality. Here are 10 methods to reach these performance improvements.
 
 ## How to make web fonts load faster
 
@@ -33,21 +33,23 @@ That means the website is using Google Fonts to load fonts. Google Fonts is exce
 
 ![Google font loading diagram](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/Google_Fonts_Loading)
 
-As you can see, Google Fonts loads fonts in a pretty convoluted way. However, you can reduce the number of requests you need by self-hosting the font and putting the `@font-face` declaration inside your CSS bundle instead of an external stylesheet. A tool like [Google Webfonts Helper](https://google-webfonts-helper.herokuapp.com/) can be helpful for this.
+As you can see, Google Fonts loads fonts in a pretty convoluted way. However, you can reduce the number of requests you need by self-hosting the font and putting the `@font-face` declaration inside your CSS bundle instead of an external stylesheet. A tool like [Google Webfonts Helper](https://gwfh.mranftl.com/fonts) can be helpful for this.
 
 You can also use tools built for specific frameworks like [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) for Next.js. These tools automatically download the font file and include it in the build process, allowing you to take advantage of the better performance without having to manage the font files yourself.
 
 ### 2. Use modern web font formats
 
-Just like images, web font formats have evolved over time to become more compact. With images, modern web formats like AVIF and WebP replaced less compressed formats like PNG and JPEG. Similarly, WOFF and WOFF2 are web font formats with superior compression to TrueType and OpenType (TTF and OTF). Additionally, modern web font formats are almost universally supported:
+System font formats like TrueType (TTF) or OpenType (OTF) are not designed for the web usage. Both TTF and OTF are uncompressed, which often makes them 3x+ larger than they should be, decreasing load speeds. To solve the problems created by these fonts, a newer font format, WOFF, uses zlib, a compression algorithm similar to what is commonly used in `.zip` and `.gzip` files, to compress traditional TTF or OTF fonts. Later, Google created WOFF2, which is the similar but even smaller because it uses Google's Brotli instead of zlib.
 
-![WOFF Support from CanIUse (98.36% of users support it)](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/WOFF_Support)
+These font formats should be used pretty much always for the significant size advantages they have. Additionally, modern web font formats are almost universally supported:
 
-Because of the almost universal browser support, the best format strategy to use is WOFF2 with a WOFF fallback, although you could even use WOFF2 alone, as ~97% of users support it.
+![WOFF2 Support from CanIUse (97.95% of users support it)](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/WOFF2_Support_Wn-o0RcqN)
+
+You can get away with just using WOFF2, as it offers the best compression and ~98% of web users support it, or include WOFF as a fallback to reach some older browsers.
 
 ### 3. Subset your fonts
 
-Font subsetting means trimming your fonts down to only the characters you need. Subsetting can yield massive amounts of size savings without drawbacks as long as you are not using the characters you remove. The simplest way to do this is subsetting to remove languages that you do not use. For example, take Inter, one of the most popular fonts. If you include all alphabets, which include Latin, Cyrillic, Vietnamese, and Greek, the size of the WOFF2 font is **95kb**. However, chances are you are not using all of those alphabets. Removing all characters outside of the English language reduces Inter's size to just **16kb**!
+Font subsetting means trimming your fonts down to only the characters you need. Subsetting can yield massive amounts of size savings without drawbacks as long as you are not using the characters you remove. The simplest way to do this is subsetting to remove languages that you do not use. For example, take Inter, one of the most popular fonts. If you include all alphabets, which include Latin, Cyrillic, Vietnamese, and Greek, the size of the WOFF2 font is **95kb**. However, chances are you are not using all of those alphabets. Removing all characters outside the English language reduces Inter's size to just **16kb**!
 
 There are many ways to subset fonts, including Google Fonts (and by extension, Google Webfonts Helper), [Everything Fonts](https://everythingfonts.com/subsetter), and [fontTools](https://github.com/fonttools/fonttools).
 
@@ -64,7 +66,9 @@ Luckily, you can customize font loading through the `font-display` option in you
 	font-family: "Example";
 	font-style: normal;
 	font-weight: 400;
-	src: local("Example"), local("Example"),
+	src:
+		local("Example"),
+		local("Example"),
 		url(https://example.com/example.woff2) format("woff2");
 	font-display: swap;
 }
@@ -86,9 +90,9 @@ Most major cloud providers, like AWS, Azure, and GCP, all have CDN services. You
 
 ### 7. Preload your fonts
 
-Preloading is often a good idea for fonts, as it lets the browser know it needs to download a resource sooner and increases that resource's priority. Instead of waiting to load and parse the CSS containing the font declaration, the browser can start downloading the font immediately. However, you do not always want to preload your fonts because it might unnecessarily load a font.
+Preloading is often a good idea for fonts, as it lets the browser know it needs to download a resource sooner and increases that resource's priority. Instead of waiting to load and parse the CSS containing the font declaration, the browser can start downloading the font immediately.
 
-Normally, the browser automatically detects whether the website uses a font on the page before downloading it, even if the `@font-face` is present. If the browser finds no text with that font, it will not download it. However, the browser cannot do this with preloaded fonts because the browser must start downloading the font immediately.
+Unfortunately, preloading comes with a tradeoff: the browser normally detects whether the website uses a font on the page before downloading it, even if the `@font-face` is present. If the browser finds no text with that font, it will not download it. However, the browser cannot do this with preloaded fonts because the browser must start downloading the font immediately.
 
 Now, you might know that you always use the fonts you include with `@font-face`, and therefore there is no chance of an unnecessary font load. Unfortunately, there is one other potential problem. If your font is not immediately needed, the drawbacks of deprioritizing the loading of other resources might outweigh the benefits. However, if these two potential issues aren't problems for you, preloading can greatly speed up your fonts.
 
@@ -101,35 +105,53 @@ Depending on the font, users can often have the font you are using locally insta
 	font-family: "Awesome Font";
 	font-style: normal;
 	font-weight: 400;
-	src: local("Awesome Font"),
+	src:
+		local("Awesome Font"),
 		url("example.com/awesome-font.woff2") format("woff2");
 }
 ```
 
-This `@font-face` checks if the user has the font locally, and if they do not, downloads it remotely. That means that users with the font get a free performance boost while adding little complexity to the code and no disadvantage to users who do not have the font locally. If you want to focus on fonts that computers usually have, you can check out [Windows 11's font list](https://docs.microsoft.com/en-us/typography/fonts/windows_11_font_list) and [macOS Sonoma's font list](https://developer.apple.com/fonts/system-fonts/).
+This `@font-face` checks if the user has the font locally, and if they do not, downloads it remotely. That means that users who already have the font don't need to redownload it. If you want to focus on fonts that computers usually have, you can check out [Windows 11's font list](https://docs.microsoft.com/en-us/typography/fonts/windows_11_font_list) and [macOS Sonoma's font list](https://developer.apple.com/fonts/system-fonts/).
 
-Unfortunately, it is essential to note modern browsers limit this capability to prevent fingerprinting. Webkit only allows `local` to [load fonts installed by default in the operating system](https://webkit.org/tracking-prevention/#anti-fingerprinting), meaning user-installed fonts will not appear.
+Unfortunately, it is essential to note modern browsers limit `locals()` capability to prevent fingerprinting. Webkit only allows `local` to [load fonts installed by default in the operating system](https://webkit.org/tracking-prevention/#anti-fingerprinting), meaning user-installed fonts will not appear.
 
 ### 9. Implement Caching
 
-Caching is very important, especially if you have lots of repeat visitors. Caching allows the font to load from the disk after the first time it is downloaded. You can implement caching through the `Cache-Control` header. If you use a [CDN](#use-a-cdn) like Cloudflare, it is simple to do from the dashboard. Otherwise, you can do it by simply sending the header with your font responses.
+Caching is very important, especially if you have lots of repeat visitors. Caching allows the font to load from the disk after the first time it is downloaded. You can implement caching through the `Cache-Control` header. If you use a [CDN](#use-a-cdn), it is simple to do from the dashboard. Otherwise, you can do it by simply sending a header with your font responses.
+
+```h
+Cache-Control: max-age=604800 // 1 week
+```
+
+The method of doing this depends on your server implementation.
 
 ### 10. Don't use custom fonts
 
-I bet you didn't see that one coming 😉. While all of these techniques are great, ultimately, the best performing web font is no web font. [System fonts](https://systemfontstack.com/) are great for unbranded text like body text. Even beyond the performance advantages, properly implemented system fonts look far more well integrated because they use the same font as the parent operating system. The feeling of integration has led companies like [GitHub](https://markdotto.com/2018/02/07/github-system-fonts/) to use a standard system font stack.
+I bet you didn't see that one coming 😉. While all of these techniques are great, ultimately, the best performing web font is no web font. [System fonts](https://systemfontstack.com/) are great for unbranded text like body text. Even beyond the performance advantages, properly implemented system fonts look far more well integrated because they use the same font as the parent operating system. The feeling of integration has led companies like GitHub to use a standard system font stack.
 
 You can implement system UI fonts through a [system font stack](https://systemfontstack.com/) like this one, which this blog uses:
 
 ```css
-font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui,
-	helvetica neue, helvetica, Ubuntu, roboto, noto, arial, sans-serif;
+font-family:
+	-apple-system,
+	BlinkMacSystemFont,
+	avenir next,
+	avenir,
+	segoe ui,
+	helvetica neue,
+	helvetica,
+	Ubuntu,
+	roboto,
+	noto,
+	arial,
+	sans-serif;
 ```
 
-The font stack above contains a variety of fonts, first listing fonts for popular operating systems, then listing web safe fonts. You could also just use one font family, `system-ui`. However, `system-ui` is known to have [some internationalization issues](https://markdotto.com/2018/02/07/github-system-fonts/) when users have default languages that are not the webpage's language.
+The font stack above contains a variety of fonts, first listing fonts for popular operating systems, then listing web safe fonts. You could also just use one font family, `system-ui`. However, `system-ui` is known to have [some internationalization issues](https://infinnie.github.io/blog/2017/systemui.html) when users have default languages that are not the webpage's language.
 
 ## Conclusion
 
-That is all! I hope you enjoyed learning how to optimize your web fonts, and I hope this has helped you optimize fonts on your websites. If you want to speed up other areas of your website, like images or JavaScript, check out these articles:
+That is all! I hope you enjoyed learning how to optimize your web fonts. Either way, you should now be able to speed up your website significantly. If you want to further improve the speed of other areas of your website, like images or JavaScript, check out these articles:
 
 - [10 ways to speed up web image loading](https://byteofdev.com/posts/speed-up-image-loading/)
 - [10 ways to speed up JavaScript loading](https://byteofdev.com/posts/speed-up-javascript-loading/)
