@@ -1,5 +1,5 @@
 ---
-title: "JavaScript Benchmarking is a mess"
+title: "JavaScript Benchmarking Is a Mess"
 description: Design decisions core to JavaScript have caused a multitude of problems for benchmarking. Is there a solution to this?
 author: asyncbanana
 tags: [Performance, Node, Benchmarks]
@@ -12,7 +12,7 @@ image:
   }
 ---
 
-I hate benchmarking code, just like any human (which, at this point, most viewers of this probably aren't ¯\\\_(ツ)\_/¯). It is much more fun to pretend that your caching of a value increased performance 1000% rather than testing to see what it did. Alas, benchmarking in JavaScript is still necessary, especially as JS is used ([when it shouldn't be?](https://byteofdev.com/posts/webassembly/)) in more performance-sensitive applications. Unfortunately, due to many of its core architectural decisions, JS doesn't make benchmarking any easier.
+I hate benchmarking code, just like any human (which, at this point, most viewers of this probably aren't ¯\\\_(ツ)\_/¯). It is much more fun to pretend that your caching of a value increased performance 1000% rather than testing to see what it did. Alas, benchmarking in JavaScript is still necessary, especially as JavaScript is used ([when it shouldn't be?](https://byteofdev.com/posts/webassembly/)) in more performance-sensitive applications. Unfortunately, due to many of its core architectural decisions, JavaScript doesn't make benchmarking any easier.
 
 ## What is wrong with JavaScript?
 
@@ -62,7 +62,7 @@ Even if you decide to run your code through the browser and let the compiler do 
 
 ### Every environment is different
 
-I love [Bun](https://byteofdev.com/posts/what-is-bun/) for what it has done to push server side JavaScript forward, but dang, it makes benchmarking JavaScript for servers a lot harder. A few years ago, the only server side JS environments people cared about were Node.js and [Deno](https://byteofdev.com/posts/deno/), both of which used the V8 JavaScript engine (the same one in Chrome). Bun instead uses JavaScriptCore, the engine in Safari, which has entirely different performance characteristics.
+I love [Bun](https://byteofdev.com/posts/what-is-bun/) for what it has done to push server side JavaScript forward, but dang, it makes benchmarking JavaScript for servers a lot harder. A few years ago, the only server side JavaScript environments people cared about were Node.js and [Deno](https://byteofdev.com/posts/deno/), both of which used the V8 JavaScript engine (the same one in Chrome). Bun instead uses JavaScriptCore, the engine in Safari, which has entirely different performance characteristics.
 
 This problem of multiple JavaScript environments with their own performance characteristics is relatively new in server-side JavaScript but has plagued clients for a long time. The 3 different commonly used JavaScript engines, V8, JSC, and SpiderMonkey for Chrome, Safari, and Firefox, respectively, all can perform significantly faster or slower on an equivalent piece of code.
 
@@ -77,7 +77,7 @@ function factorial(i, num = 1) {
 }
 ```
 
-Try benchmarking `factorial(100000)` in Bun. Now, try the same thing in Node or Deno. You should get an error similar to this one:
+Try benchmarking `factorial(100000)` in Bun. Now, try the same thing in Node.js or Deno. You should get an error similar to this one:
 
 ```
 function factorial(i, num = 1) {
@@ -86,7 +86,7 @@ function factorial(i, num = 1) {
 RangeError: Maximum call stack size exceeded
 ```
 
-In V8 (and by extension Node and Deno) each time the `factorial()` calls itself at the end, the engine creates an entirely new function context for the nested function to run in, which eventually is limited by the call stack. But why doesn't this happen in Bun? JavaScriptCore, that Bun uses, implements TCO, which optimizes these types of functions by turning them in to a for loop more like this:
+In V8 (and by extension Node.js and Deno) each time the `factorial()` calls itself at the end, the engine creates an entirely new function context for the nested function to run in, which eventually is limited by the call stack. But why doesn't this happen in Bun? JavaScriptCore, that Bun uses, implements TCO, which optimizes these types of functions by turning them in to a for loop more like this:
 
 ```js
 function factorial(i, num = 1) {
@@ -121,11 +121,11 @@ v8 --sparkplug --always-sparkplug --no-opt [file]
 
 _An example of D8 with a specific compilation tier (sparkplug) enabled. D8, by default, includes more control of GC and more debug info in general._
 
-You can get some similar features on JavaScriptCore??? Honestly, I have not used JavaScriptCore's CLI much, and it is _heavily_ underdocumented. You can enable specific tiers using [their command line flags](https://trac.webkit.org/wiki/JSC), but I am not sure how much debug information you can retrieve. Bun also includes some helpful [benchmarking utilities](https://bun.sh/docs/project/benchmarking), but they are limited similarly to Node.
+You can get some similar features on JavaScriptCore??? Honestly, I have not used JavaScriptCore's CLI much, and it is _heavily_ underdocumented. You can enable specific tiers using [their command line flags](https://trac.webkit.org/wiki/JSC), but I am not sure how much debug information you can retrieve. Bun also includes some helpful [benchmarking utilities](https://bun.sh/docs/project/benchmarking), but they are limited similarly to Node.js.
 
 Unfortunately, all of this requires the base engine/test version of the engine, which can be quite hard to get. I have found that the simplest way to manage engines is [esvu](https://github.com/devsnek/esvu) paired with [eshost-cli](https://github.com/bterlson/eshost-cli), as they together make managing engines and running code across them considerably easier. Of course, there is still a lot of manual work required, as these tools just manage running code across different engines—you still have to write the benchmarking code yourself.
 
-If you are just trying to benchmark on engine with default options as accurately as possible on the server, there are off the shelf Node tools like [mitata](https://github.com/evanwashere/mitata) that help improve timing accuracy and GC related errors. Many of these tools, like Mitata, can also be used across many engines; of course, you will still have to set up a pipeline like the above.
+If you are just trying to benchmark on engine with default options as accurately as possible on the server, there are off the shelf Node.js tools like [mitata](https://github.com/evanwashere/mitata) that help improve timing accuracy and GC related errors. Many of these tools, like Mitata, can also be used across many engines; of course, you will still have to set up a pipeline like the above.
 
 On the browser, everything is a lot more difficult. I don't know of any solutions for more precise timing, and control of the engine is far more limited. The most information you can get relating to runtime JavaScript performance in the browser will be from the [Chrome devtools](https://developer.chrome.com/docs/devtools/performance), which offer basic flame graph and CPU slowdown simulation utilities.
 
