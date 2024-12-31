@@ -56,7 +56,7 @@ const t = performance.now();
 console.log(performance.now() - t);
 ```
 
-Except... they are all in increments of 100μs. Now let's make [add some headers](https://developer.mozilla.org/en-US/docs/Web/API/Performance_API/High_precision_timing#reduced_precision) to mitigate the risk of timing attacks. Oops, we still can only 5μs increments. 5μs is probably enough precision for many use cases, but you will have to look elsewhere for anything that requires more granularity. As far as I know, no browser allows for more granular timers. Node.js does, but of course, that has its own issues.
+Except... they are all in increments of 100μs. Now let's [add some headers](https://developer.mozilla.org/en-US/docs/Web/API/Performance_API/High_precision_timing#reduced_precision) to mitigate the risk of timing attacks. Oops, we still can only 5μs increments. 5μs is probably enough precision for many use cases, but you will have to look elsewhere for anything that requires more granularity. As far as I know, no browser allows for more granular timers. Node.js does, but of course, that has its own issues.
 
 Even if you decide to run your code through the browser and let the compiler do its thing, clearly, you will still have more headaches if you want accurate timing. Oh yeah, and not all browsers are made equal.
 
