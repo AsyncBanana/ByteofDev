@@ -1,0 +1,212 @@
+---
+title: "What JavaScript Needs for 2025"
+description: JavaScript has a lot of room for improvement. These five things are especially important.
+author: asyncbanana
+tags: [JavaScript, WASM, ESM]
+published: 1735608693803
+updated: 1735608693803
+image:
+  {
+    url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/WhatJavaScriptNeeds2025_2bGhId2Qn.png,
+    alt: "Logos of Haskell, Node.js, WebAssembly, and Vite radiating around a ring-encircled JavaScript logo.",
+  }
+---
+
+Similar to myself when I realize I have spent more time looking up API methods on MDN than actually writing code, JavaScript has had one extended identity crisis. First, JavaScript was supposed to be a simple scripting language to help you connect your Java Applets. Then, it slowly encroached more web scripting, and a [certain tiger fan](https://github.com/ry) decided it should be used on the server. Nowadays, it is used nearly everywhere.
+
+Was this evolution a good thing? Eh, that's debatable. Either way, with all of these new uses, JavaScript has required significant changes. While ES6 and later versions of JavaScript have brought some of these necessary changes, JavaScript and its ecosystem still need a lot of work. These are some of the most important changes JavaScript needs and should get in 2025.
+
+# 1. Haskell-ify JavaScript
+
+Despite the [lackluster relationship with industry](https://steve-yegge.blogspot.com/2010/12/haskell-researchers-announce-discovery.html) and mainstream programming that most functional languages like Haskell enjoy, they have some pretty good ideas that JavaScript could benefit from.
+
+For those unfamiliar with functional programming, it is a programming paradigm that focuses on creating small, composable functions to transform data step-by-step while isolating side effects. In fact, functional programming is arguably very similar to how math is typically expressed due to its focus on data, whereas typical procedural programming is more focused on the effects of the data.
+
+As a multi-paradigm language, JavaScript has always had some functional influences, which many developers extend with libraries like [Ramda.js](https://github.com/ramda/ramda). However, even as a devout procedural programmer (y'all's fancy paradigms hurt my head), I can see great utility in including more functional features in JavaScript.
+
+One of the most significant issues I see in JavaScript right now is with function nesting. Currently, nesting functions so the result of one gets passed to the next gets unreadable quickly. For example, this is the nesting required for simple string formatting and styling in [React's Jest config](https://github.com/facebook/react/blob/17.0.2/scripts/jest/jest-cli.js):
+
+```js
+console.log(
+	chalk.dim(
+		`$ ${Object.keys(envars)
+			.map((envar) => `${envar}=${envars[envar]}`)
+			.join(" ")}`,
+		"node",
+		args.join(" "),
+	),
+);
+```
+
+All this piece of code is doing is taking a piece of data, formatting it for a CLI with `chalk`, and printing it. Notice how, to pass the result of one of these operations to another function, you have to wrap the entire segment in another piece of code.
+
+Luckily, this pattern is often not necessary, and if you look at libraries like the ever-present jQuery, they present an alternative API for nesting functions that looks more like this:
+
+```js
+$("div").first().css("background-color", "green");
+
+// as opposed to
+css(first($("div"), { "background-color": "green" }));
+```
+
+This technique is called fluent interfaces and works by returning an object with all modifier methods from each function. You might notice that this looks a lot like the Builder pattern like you would see in Express. Both of these techniques usually use method chaining, but fluent interfaces are more defined by their syntactical structure being [like a DSL](https://www.martinfowler.com/bliki/FluentInterface.html), whereas builder patterns are defined by their function. As such, there is a lot of overlap.
+
+Unfortunately, this approach has one major limitation. As you might have guessed by now, the fluent interface pattern requires all modifications to be methods placed inside the "super-object".
+
+Take a look back at the first example; would it make sense for `chalk`, or some other similar library, to have a dedicated `log` method to replace `console.log`? Of course not, they are designed only to format strings in a CLI, and you couldn't cover the variety of different places those strings could be going. The only reasonable solution is to use nesting like the above, which of course can hurt readability.
+
+(Fun fact: Chalk actually uses fluent interfaces to build its strings)
+
+The limitations of fluent interfaces become even more obvious when you consider that simple operations like addition or string concatenation would require dedicated methods to avoid nesting (nobody wants to use a `.add` method, and unfortunately "super-objects" don't really add well). Fortunately, the [function pipe proposal](https://github.com/tc39/proposal-pipeline-operator) is making its way through tc39 and promises to help solve this problem.
+
+The function pipe operator proposal replicates the semantics of function piping in [Hack](https://hacklang.org/) to allow functions to receive the output of their predecessor without nesting. For example, I could simplify the above React example to this:
+
+```js
+Object.keys(envars)
+	.map((envar) => `${envar}=${envars[envar]}`)
+	.join(" ")
+|> `$ ${%}`
+|> chalk.dim(%, "node", args.join(" "))
+|> console.log(%);
+```
+
+_The big arrows are "|>". Sorry if that is unclear_
+
+Not only do I find the lack of deep nesting more readable in this scenario, but the ordering of each function also makes much more sense. Each function pipe signals the next function to process the data, rather than there being a pseudo-reverse order.
+
+However, some parts of this example, like the inclusion of `%`, might seem odd. `%` essentially becomes a variable for each step that includes whatever the output of the previous function was, giving you the flexibility to use the previous output in any way you see fit.
+
+I would like to note that this example still uses part of a fluent interface in the array when it operates with `.map`. While that inclusion introduces a weird syntax split that I don't love, fluent interfaces work fine in that context and it wouldn't make sense to replace what already works. JavaScript still won't be going full Haskell ¯\_(ツ)\_/¯.
+
+JavaScript could also learn from many other functional patterns, like [pattern matching](https://github.com/tc39/proposal-pattern-matching), which I have been needing for _way_ too long. Clearly, JavaScript could learn some things from Haskell and other functional languages in the coming year, and I hope they do.
+
+# 2. Find consensus around server runtimes
+
+Only a few years ago, Node.js alone reigned supreme in the world of JavaScript server runtimes. It wasn't perfect, but it was _good enough_. Today, everyone is picky and needs to use their own _special_ JavaScript runtime. Okay, I am joking; there are legitimate reasons to use a newer runtime. That doesn't mean the current situation is necessary.
+
+We are now amidst a dichotomy where most of the JavaScript world is still on Node, but a lot of the newest developments are on runtimes like [Deno](https://b yteofdev.com/posts/deno/), or more recently [Bun](https://byteofdev.com/posts/what-is-bun/). The increasing division means that library authors and deployment platforms who are used to only worrying about one server runtime now have to worry about three (and, with Bun, and entirely separate engine). While compatibility layers are supposed to solve this, in practice they are imperfect.
+
+Deno, Ryan Dahl's project to replace Node, is arguably the worst offender. It attempts to push an idealistic "JavaScript without past baggage" view and initially avoided compatibility with past Node.js code, making it unusable in most cases at that time. Deno couldn't even directly run CommonJS files until its [v2.0 release](https://deno.com/blog/v2.0-release-candidate), only a few months ago.
+
+Deno has entirely overstepped even more in certain areas like package management by trying to entirely forgo package managers in favor of URL imports; they are now attempting to [realign with Node and Bun with traditional package managers](https://deno.com/blog/your-new-js-package-manager).
+
+Don't get me wrong—I appreciate many of Deno's features, like automatic TypeScript compilation, the inclusion of a permission system, and more native browser APIs. But as we will see, Node is quickly catching up, and Deno has very little that Node can't replicate.
+
+The development of Bun, the newest popular JavaScript runtime, was approached in a more reasonable way, focusing on Node compatibility rather than trying to avoid past designs entirely. Bun also includes many improvements that neither Node nor Deno have—most of its i/o is significantly faster, being implemented in native Zig, and it includes much more feature-rich (and crazy fast) compile-time tooling.
+
+However, Bun still _isn't_ Node, and while it is mostly compatible, differences like its use of Safari's JavaScriptCore over v8 as its JavaScript engine cause frequent issues. If Node.js was complacent and didn't change anything, I would likely advocate for Bun more, but that isn't true.
+
+Node.js now [supports TypeScript](https://nodejs.org/en/learn/typescript/run-natively), [permissions](https://nodejs.org/api/permissions.html), [web APIs like fetch](https://nodejs.org/docs/latest-v23.x/api/globals.html#fetch), and much faster (albeit third party) [tooling](https://oxc.rs/). The Deno or Bun-inspired list of features that Node adopts should only grow in the coming year, bringing the engines closer to parity.
+
+I greatly appreciate Bun and Deno for pushing the server-side JavaScript world forward, but at a certain point, there aren't enough benefits to dividing up the JavaScript world as Node catches up. I will admit I could be wrong about this—Node might never reach parity with Bun. But everything suggests that, as it has for the past 15 years, Node will adapt and evolve.
+
+Okay, that is probably(?) my most controversial take in this article. On to some things more people can agree with.
+
+# 3. Implement deferred loading for ES Modules
+
+[ES Modules](https://byteofdev.com/posts/how-to-use-esm/) still hasn't entirely reached feature parity with CommonJS, the module format released in 2009—you know, back when everyone thought Adobe Flash was the future of the web. As sad as that fact is, ESM is still a major advancement for the web, and its adoption should be encouraged. To allow it to reach its full potential, we need to bridge those gaps between CommonJS and ESM.
+
+One feature ESM sorely needs is deferred module loading; currently, if you statically import something, it must be downloaded and evaluated immediately, even if it will be used much later.
+
+```js
+import generateRare from "./generateRare.js";
+
+if (Math.random() > 0.99) {
+	generateRare(); // even if this never executes, generateRare.js will download and execute
+}
+```
+
+This behavior can waste valuable compute and bandwidth, both of which are critical on the web. In contrast, CommonJS allows you to `require` modules at any point in a script, allowing you to choose when to load a module. It is possible to replicate this in ESM by using dynamic `import()`s, but by doing that you are missing out on a lot of the static analysis and tree-shaking benefits of ESM. Additionally, the asynchronous model dynamic imports introduce can require API changes.
+
+[Deferred module evaluation](https://github.com/tc39/proposal-defer-import-eval) is a stage 2 proposal that promises to solve this by introducing deferred loading/evaluation of statically imported modules.
+
+```js
+import defer generateRare from "./generateRare.js"
+
+if (Math.random() > 0.99) {
+    generateRare(); // now generateRare.js will only be evaluated if this is run!
+}
+```
+
+Unfortunately, this does come with some complications. Previously, all imports were either evaluated before the parent module was evaluated or imported as a promise. Deferred module evaluation introduces the possibility that a module is evaluated in a forced synchronous context, causing features like top-level await not to work.
+
+```js
+// generateRare.js
+const generator = await initGenerator(); // this wouldn't work if generateRate was imported like above, unless you wrapped initGenerator in an async function
+```
+
+This issue worries me slightly as it means that any module with the possibility of deferred evaluation would be unable to use top-level await and could introduce some hard-to-track errors.
+
+Given that anyone who adopts deferred ES module loading already likely uses almost entirely promise-based interfaces, the disadvantage of making deferred module loading promise-based doesn't seem that significant. Of course, I don't know how the API ergonomics would work to ensure promises are evaluated. Perhaps the engine could automatically wrap deferred exports in promises? Either way, this feature would be beneficial in giving ESM even more power.
+
+# 4. Find consensus around bundlers
+
+You might notice a pattern here: the JavaScript ecosystem is heavily fragmented. However, [bundler](https://byteofdev.com/posts/bundlers/) fragmentation is like the grizzled uncle to runtime fragmentation—it feels like nobody has ever reached a consensus on bundlers. Hopefully, this can change.
+
+A few years back, aside from a few stragglers using Browserify, everyone settled on Webpack, as it was by far the most feature-complete bundler. Then bundlers like Rollup, which was more ESM focused, and Parcel, which promised to be simpler, burst onto the scene. Now, we have countless different bundlers, from Vite to esbuild and Bun.
+
+Just like with runtimes, fragmentation in the bundler ecosystem has allowed for rapid growth in the feature set of many of these bundlers. Beyond what Rollup and Parcel have done, Vite significantly increased reload speed by serving assets unbundled during development, esbuild (also) significantly increased development speed by introducing a more performant Go-based transpiler, etc.
+
+Unfortunately, the development here has gone too far. Now we have enough different bundlers and plugins APIs that someone decided [third-party compatibility layer](https://unplugin.unjs.io/) was necessary. When there enough different APIs to require a compatibility layer and each API is similar enough in underlying functionality that a single compatibility layer can be created with relatively few caveats, you have to ask: Are all of these different interfaces necessary?
+
+The answer is no; they aren't. We should start unifying around a plugin API, if not a bundler and build tool. However, unlike for runtimes, I will not advocate for the "old-guard" of bundlers, Webpack. While Webpack has evolved to a certain extent, making config files optional and increasing performance, it appears unwilling to make the more significant changes necessary to truly adapt. Instead, it seems more focused on features like [module federation](https://webpack.js.org/concepts/module-federation/). I will save my thoughts on module federation for another day, but to put it simply I believe it has been made redundant by other new technologies/approaches.
+
+Instead of Webpack, the web community should find consensus around the leader of the newer bundlers: Vite. Vite is mature by the standards of these new bundlers, having been around for a few years, and is widely used across frameworks like SvelteKit, Astro, and SolidStart. Vite has also proven to be willing to evolve, developing [Rolldown](https://rolldown.rs/) to take advantage of native code performance while preserving compatibility by sticking to the Rollup plugin API.
+
+As unlikely as it is, I can hope people will unite around Vite as a bundler so we can stop making three copies of each plugin for different APIs.
+
+# 5. Use a little less JavaScript?
+
+Okay, maybe this doesn't belong on a list about JavaScript, but we really could use a little less JavaScript. Of course, I am referring to [WebAssembly](https://byteofdev.com/posts/webassembly/), the assembly-like format available on the web. While WASM has seen significant adoption, ergonomics issues have somewhat limited its potential. Luckily, issues like the inability to express higher-level types efficiently (an earlier version of WASM could only deal with integers and floating point numbers) have been focused on by proposals like Reference Types, Garbage Collection, and the Component Model.
+
+However, there is another issue significantly affecting ergonomics for WASM in the JavaScript world that it seems like fewer people pay attention to: WASM imports. Many library authors could greatly benefit from integrating WASM if it wasn't so hard to make it deployable. The web has one method of importing and instantiating WASM modules, Node has an entirely separate method, and, of course, every bundler has its own different method.
+
+```js
+// Web
+const module = WebAssembly.instantiate(
+	await (await fetch("./module.wasm")).arrayBuffer(),
+	imports,
+);
+
+// Node
+const module = WebAssembly.instantiate(
+	await fs.readFile("./module.wasm") /* could use readFileSync */,
+	imports,
+);
+
+// Bun
+import module from "./module.wasm";
+
+// Vite
+import init from "./module.wasm?init"; /* You can use the web method, but you miss out on some optimizations */
+
+const module = init(imports);
+```
+
+This example does not even include streaming, which is commonly used on the web to evaluate WASM while downloading. Notice how each method is different to a varying degree—while all of these are fairly simple, it gets annoying to detect different environments to us the proper method. The [ESM Integration Proposal](https://github.com/WebAssembly/esm-integration/tree/main/proposals/esm-integration) aims to solve this.
+
+ESM Integration specifies a method of including WASM modules in an ESM graph using the same import statements (most like Bun above). This approach would greatly simplify deploying WASM in cross-platform libraries. However, as you might have noticed above, Bun's approach doesn't really allow for custom imports to be passed. To remedy this, we can use yet another proposed feature, [Source Phase Imports](https://github.com/tc39/proposal-source-phase-imports).
+
+Source phase imports allow WebAssembly modules to be downloaded without evaluating them, meaning you can still `.instantiate` them later with your imports.
+
+```js
+import source moduleInit from "./module.wasm";
+
+const module = await WebAssembly.instantiate(moduleInit, imports);
+```
+
+However, this comes with the downside of more code and the inability to stream imports. You can also dynamically import modules under this proposal, but strangely, imports aren't allowed unless you use source phase imports there as well. While allowing users to pass custom imports to WASM would require some sort of modification of the dynamic imort API, the inability to include an import object means dynamic imports run into the same issue as static imports.
+
+```js
+const module = await import("./module.wasm"); /* No imports :( */
+
+// source import
+const moduleInit = await import.source("./module.wasm");
+const module = await WebAssembly.instantiate(moduleInit, imports);
+```
+
+Hopefully, these issues will be resolved, but it is more likely that the syntax will remain the same. Either way, this will be a massive step forward for enabling simpler integration of JavaScript and WASM, especially in cross-platform libraries. Currently, it is not widely implemented—Node.js has it behind a flag, and no browsers have implemented it at all as far as I know. Its standardization and wider implementation is something that I hope 2025 will bring.
+
+# Conclusion
+
+Wow, that was a lot. This article was originally supposed to be about 1,000 words shorter, but I got carried away. These different potential changes to JavaScript and its ecosystem vary widely in scale as well as probability, but they all will help make JavaScript a better and more usable language. Hopefully 2025 will be the year that many of these things happen.

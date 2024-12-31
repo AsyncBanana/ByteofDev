@@ -46,7 +46,7 @@ article p {
 		noto,
 		arial,
 		sans-serif;
-	@apply my-5 text-xl break-words;
+	@apply my-5 text-lg break-words;
 }
 
 article p code {
