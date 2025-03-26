@@ -73,9 +73,11 @@ article li {
 article :is(ul, ol) {
 	@apply mx-6 my-2;
 }
+article figure:has(img:not(.cocoen-img)) {
+	@apply my-4;
+}
 article img:not(.cocoen-img) {
-	@apply mx-auto my-4;
-	max-height: 50%;
+	@apply mx-auto max-h-[70vh];
 }
 article figcaption {
 	@apply text-center italic;

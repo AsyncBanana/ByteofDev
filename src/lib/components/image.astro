@@ -1,4 +1,29 @@
-{Astro.props.title?(<figure>
-    <img src={Astro.props.src} alt={Astro.props.alt} title={Astro.props.title} />
-    <figcaption>{Astro.props.title}</figcaption>
-</figure>):(<img src={Astro.props.src} alt={Astro.props.alt} />)}
+---
+/* Image component configuration:
+    Prefix alt with |fullwidth| to allow it to scroll on mobile
+    e.g. [|fullwidth| cool JavaScript thing]
+*/
+let attrs = [];
+if (Astro.props.alt && Astro.props.alt[0] === "|") {
+	if (!Astro.props.alt.indexOf("|", 1))
+		throw new Error(
+			"Unopened image config sequence with alt " + Astro.props.alt
+		);
+	attrs = Astro.props.alt.slice(1, Astro.props.alt.indexOf("|", 1)).split(",");
+	Astro.props.alt = Astro.props.alt.split("|")[2].trimStart();
+}
+---
+
+<figure>
+	<div class={attrs.includes("fullwidth") ? "overflow-x-auto" : undefined}>
+		<img
+			src={Astro.props.src}
+			alt={Astro.props.alt}
+			title={Astro.props.title}
+			class={attrs.includes("fullwidth")
+				? "max-w-none md:max-w-full"
+				: undefined}
+		/>
+	</div>
+	{Astro.props.title ? <figcaption>{Astro.props.title}</figcaption> : ""}
+</figure>

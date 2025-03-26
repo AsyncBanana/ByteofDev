@@ -1,0 +1,152 @@
+---
+title: "Why I hate JavaScript numbers and what everyone has (not) done with them"
+description: JavaScript went against the grain in only using floating point numbers initially, and now we pay the price
+author: asyncbanana
+tags: [JavaScript, v8]
+published: 1742957702532
+updated: 1742957702532
+image:
+  {
+    url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/why_dislike_javascript_numbers_sU8Geof5u.svg,
+    alt: e^pi-pi,
+  }
+---
+
+Imagine you are implementing an ID system like [Twitter's Snowflake](https://blog.x.com/engineering/en_us/a/2010/announcing-snowflake). Everything fits perfectly into a 64-bit integer—41 bits used for a millisecond-precision unix timestamp, 10 bits for a server ID, and the remaining 12 bits used to increment for each new ID within a given server-millisecond. You implement these IDs in your JavaScript app, but wait... your IDs keep rounding off. The problem? When handling numbers, JavaScript acts like a _special snowflake_ (sorry).
+
+As you can probably tell, I encountered this issue pretty recently, and it reminded me why I so strongly dislike JavaScript's numbers, or, more accurately, the JavaScript ecosystem's ignorance when it comes to solving JavaScript's number problems.
+
+> **If you already know about JavaScript's number problems, you can skip to why (Spoiler alert!) [BigInts haven't quite solved the problem (yet)](#what-about-bigint?)**
+
+## What are "JavaScript numbers"?
+
+In most languages, you have two general classes of numbers: Integers and floating-point numbers. Integers, unsurprisingly, store only integers, using a simple base-2 format, with the first bit reserved for the sign in the case of signed integers. Floating-point numbers are more complex and include an exponent base 2 (or 10) along with the base-2 number (significand), which allows the number to represent values larger than 2^63 at the cost of precision. The exponent also enables floating-point numbers to describe fractional values using a negative exponent. In essence, floating-point numbers use scientific notation, with the significand as the coefficient.
+
+![|fullwidth|A diagram describing integer and floating layouts in memory using colored blocks showing each segment](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/float_vs_integer_layout_bcifSHIuY.png "The bit layout of signed integers vs floating point numbers. The significand is similar to the base-2 number component of the integer, except that the highest bit is 2^-1 (hence it being a fraction).")
+
+![|fullwidth|A diagram of a double-precision binary floating-point number creating the number 14](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/double_float_example_OvYN3YD15.png "How you make 14 with a binary float; The exponent starts at 2^-1022 to allow for values <1, similar to two's complement signed integers")
+
+Even Python, a language that tries its best to hide complex systems concepts like "memory" and "data types", includes both integers and floats. Both types of numbers are important to include, as it is impossible to approximate large numbers or complicated fractions with integers, but precision for integers is lost when using floating-point numbers. However, I guess Brendan Eich didn't consider integers important, as JavaScript numbers are double-precision binary floating-points.
+
+```js
+const float1 = 52.5; // this is floating-point
+const float2 = 53; // this is also floating-point
+```
+
+There are quite a few problems with this:
+
+## So many problems...
+
+### 10 bits of precision, gone?
+
+Think back to the scenario I presented earlier of implementing a 64-bit snowflake ID. The number never overflows, instead beginning to round itself because it exceeds the floating-point's 53 bits of precision. The rounding due to the exponent adjsuting itself to store the large number, increasing above ±2^53 and causing the smallest possible increment goes from 1 to 2, to 4, and so on.
+
+![|fullwidth|A diagram showing how it is impossible to create 2^53+1 because the exponent becomes too large](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/large_double_example_ILNC-2gYI.png "Note how the calculation of the smallest bit's influence on the final value (and therefore the smallest increment that the float can change by) is 2^{exponent value}*2^-52")
+
+Of course, this also extends to all other integers with values greater than ±2^53.
+
+```js
+console.log(2 ** 53 + 5 - 2 ** 53);
+// 4
+
+console.log(2 ** 54 + 2 - 2 ** 54);
+// 3
+```
+
+Integers rarely get near 2^53, but when they do, rounding makes JavaScript numbers almost useless. Almost every use case of integers in programming requires complete precision, and silently losing 10 bits of that precision in the default number format causes many issues.
+
+### Bitwise operators use a transformed number
+
+_Well_, you think, _might as well use my 53 bits to the greatest extent I can_; then, you try using bitwise operators and run into another problem. Bitwise operators are typically designed to be used on integers—the more complex, nonstandard bit layout of floating-point numbers causes most bitwise operations to not make sense. JavaScript's bitwise operators are no different: they convert the floating-point representations of numbers into integers before applying bitwise operations to them.
+
+Conversion to a valid integer probably isn't a problem, as your float should already contain an integer. However, JavaScript doesn't let you use just any integers; it converts all numbers to 32-bit integers, resulting in overflows for values >2^31:
+
+```js
+console.log(1 << 30);
+// 1073741824, same as 2**30; makes sense
+
+console.log(1 << 31);
+// -2147483648, or -2**31 because now we are changing the two's complement bit
+
+console.log(1 << 32);
+// 1; now we have overflowed back to the first bit.
+```
+
+So now we have lost an additional 22 bits of precision when using bitwise operators.
+
+### General inconsistencies
+
+The use of floating-point numbers also causes a lot of other strange JavaScript behaviors. `NaN`, everyone's favorite bug-creator, exists as part of the IEEE floating-point standard used by JavaScript. This part of the standard was designed to handle arithmetic errors (`0/0`) more efficientlyl, but JavaScript takes that and massively expands upon its use, despite JavaScript not being fast enough in the first place to justify using `NaN` instead of throwing an exception.
+
+```js
+console.log(0 / 0);
+// NaN; ok...
+
+console.log(parseInt("a"));
+// NaN; really?
+```
+
+Floating-points also introduce issues with operations on decimals. Of course, similar to the case of large integers, issues only happen on complex decimals. You know, complex decimals like `0.1`.
+
+```js
+console.log(0.3 - 0.2 - 0.1);
+// -2.7755575615628914e-17
+```
+
+![xkcd comic 217 about floating point rounding](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/xkcd_217_fp_0OKLPzLH_.png?updatedAt=1742954869032 "Ideally, no number format should be complex enough for this to happen (https://xkcd.com/217/)")
+
+It is important to note that the only true way to avoid this is by using integers as numerators and denominators. Decimal floating-point numbers are often _better_, because the exponent has a base of 10 and therefore can handle anything typically handled by your typical written decimal numbers, but it still won't correctly represent numbers like `1/3`. Either way, JS doesn't provide effective enough alternatives.
+
+### Bonus: sneaky optimizations?
+
+I lied when I said JavaScript numbers are just floating-points. In fact, V8, the engine behind Node.js, Chrome, and many other JavaScript runtimes, sneakily optimizes some floats into 32-bit integers. Typically, values require both a tagged pointer on the stack defining their datatype and location, as well as the actual value on the heap. If you just threw a 64-bit floating-point number on the stack, it would be impossible to tell whether that value is a pointer or a number itself.
+
+However, for small integers, V8 only allocates 32-bytes for the number itself, in the form of a 32-bit integer. Because all values must be 64-bit aligned on a 64-bit system, the remaining bits are free for V8 to define the value's type with.
+
+Effectively, this means that integers within [-2^31,2^31-1] will be more memory efficient and faster to allocate on V8 runtimes. Of course, optimizations aren't exactly a disadvantages for JavaScript numbers, but the subtle nature of this one leads to unexpected performance differences and, more importantly, accidental deoptimizations (such is the life of a [JavaScript developer](https://byteofdev.com/posts/javascript-benchmarking-mess/)). If the integer format was not implementation-specific and hidden, this optimization could be more effectively used by developers without significant knowledge about V8's innards.
+
+SpiderMonkey (the engine in Firefox) and JavaScriptCore (the engine in Safari and Bun) don't have this problem. They implement packing in a manner that allows for all valid floats to be packed into 64 bits without a pointer, which I would love to describe further here but instead will leave to [this article](https://craftinginterpreters.com/optimization.html#nan-boxing).
+
+## What about BigInt?
+
+I can already hear Redditor angrily typing _BigInts solve all of these problems!_. While that is true, they are limited by the language and, even more significantly, by the JavaScript ecosystem.
+
+For the uninitiated, BigInt is a new datatype introduced by ES2020, designed to allow for the storage of variable-length integers. Because they are variable length, they can store integers of arbitrary size, and because BigInt's are standard two's complement integers, they don't have the same inconsistencies.
+
+```js
+console.log(2n ** 64n - (2n ** 64n + 5n)); // `n` signifies a BigInt, as opposed to a number
+// -5n
+```
+
+Unfortunately, BigInts aren't that well integrated into modern JavaScript and feel more like another rich datatype than a true integer primitive. Most notably, they don't support any [Math functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math).
+
+```js
+Math.max(5n, 10n);
+// Uncaught TypeError: Cannot convert a BigInt value to a number
+```
+
+There are many other, similar cases of bad integration:
+
+- BigInts require custom handling functions in `JSON.stringify()`/`JSON.parse()`
+- BigInts cannot be parsed from strings with custom radixes
+- Unary plus errors with BigInts
+
+etc. I think the point is pretty clear: BigInts have unnecessarily inconsistent behavior with numbers in JavaScript.
+
+These problems are not inherently dealbreakers until you consider the libraries that depend on this type-specific behavior. Most of these libraries are woefully behind in supporting the use of BigInts. Even JavaScript ORMs, where BigInts are critical for interfacing with databases that include 64-bit intgers, often [don't](https://github.com/drizzle-team/drizzle-orm/issues/1980) [include](https://orkhan.gitbook.io/typeorm/docs/entities#:~:text=Note%20about%20bigint%20type%3A%20bigint%20column%20type%2C%20used%20in%20SQL%20databases%2C%20doesn%27t%20fit%20into%20the%20regular%20number%20type%20and%20maps%20property%20to%20a%20string%20instead.) [BigInts](https://knexjs.org/guide/schema-builder.html#biginteger), using strings or numbers instead.
+
+With JavaScript projects incredibly complex today, chances are some dependencies of any given project have spotty BigInt support, making use of BigInts significantly harder or even impossible. All of this is despite BigInts being part of the standard for 5+ years.
+
+## So, it is an ecosystem problem
+
+The most important solution is for JavaScript library authors to _please_ design with BigInts along with regular numbers in mind. Seriously—start considering BigInts. If libraries were more versatile in their number format, this problem would be much closer to being solved, and a JavaScript with proper integers is a much more useful JavaScript.
+
+The JavaScript (technically ECMAScript, because [Oracle is being Oracle](https://javascript.tm/)) standard could use some changes as well: [BigInt Math](https://github.com/tc39/proposal-bigint-math) and [.fromString](https://github.com/tc39/proposal-number-fromstring), among other proposals, aim to remedy some of inconsistencies in JavaScript's BigInt behavior. However, these proposals have their own complexities, and even if they were standardized, libraries would still need manual work to support BigInts.
+
+So, the key takeaways from this is that:
+
+- JavaScript numbers are very flawed
+- BigInts mitigate many of those flaws but are handicapped by lacking support
+- If you are a library author, start thinking about how BigInts fit into your library.
+
+Thanks for reading, and let me know if you vehemently disagree, or even if you mildly disagree.
