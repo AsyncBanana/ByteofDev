@@ -1,5 +1,5 @@
 ---
-title: "Why I hate JavaScript numbers and what everyone has (not) done with them"
+title: "JavaScript numbers have an (adoption) problem"
 description: JavaScript went against the grain in only using floating point numbers initially, and now we pay the price
 author: asyncbanana
 tags: [JavaScript, v8]
@@ -12,11 +12,9 @@ image:
   }
 ---
 
-Imagine you are implementing an ID system like [Twitter's Snowflake](https://blog.x.com/engineering/en_us/a/2010/announcing-snowflake). Everything fits perfectly into a 64-bit integer—41 bits used for a millisecond-precision unix timestamp, 10 bits for a server ID, and the remaining 12 bits used to increment for each new ID within a given server-millisecond. You implement these IDs in your JavaScript app, but wait... your IDs keep rounding off. The problem? When handling numbers, JavaScript acts like a _special snowflake_ (sorry).
+JavaScript, for all of its merits, has some _questionable_ design decisions. One of the most signifcant of those decisions is the use of only IEEE 754 floating-point numbers by default, which has caused countless issueus for me and many others. However, in modern JavaScript, number handling isn't a language problem; it is an adoption problem.
 
-As you can probably tell, I encountered this issue pretty recently, and it reminded me why I so strongly dislike JavaScript's numbers, or, more accurately, the JavaScript ecosystem's ignorance when it comes to solving JavaScript's number problems.
-
-> **If you already know about JavaScript's number problems, you can skip to why (Spoiler alert!) [BigInts haven't quite solved the problem (yet)](#what-about-bigint?)**
+> **If you already know about JavaScript's floating-point number problems, you can skip to why [adoption is the real problem](#what-about-bigint?)**
 
 ## What are "JavaScript numbers"?
 
@@ -39,7 +37,7 @@ There are quite a few problems with this:
 
 ### 10 bits of precision, gone?
 
-Think back to the scenario I presented earlier of implementing a 64-bit snowflake ID. The number never overflows, instead beginning to round itself because it exceeds the floating-point's 53 bits of precision. The rounding due to the exponent adjsuting itself to store the large number, increasing above ±2^53 and causing the smallest possible increment goes from 1 to 2, to 4, and so on.
+Floating-point precisions errors are incredibly deceptive: unlike integers, floating-points rarely overflow, instead beginning to round itself because it exceeds the floating-point's 54 bits of precision. The rounding due to the exponent adjsuting itself to store the large number, increasing above ±2^53 and causing the smallest possible increment goes from 1 to 2, to 4, and so on. Note the 54 bits: even though double-precision floating-point numbers occupy the same 64 bits in memory as 64-bit integers, they lose 10 bits of precision to store the exponent.
 
 ![|fullwidth|A diagram showing how it is impossible to create 2^53+1 because the exponent becomes too large](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/large_double_example_ILNC-2gYI.png "Note how the calculation of the smallest bit's influence on the final value (and therefore the smallest increment that the float can change by) is 2^{exponent value}*2^-52")
 
@@ -76,7 +74,7 @@ So now we have lost an additional 22 bits of precision when using bitwise operat
 
 ### General inconsistencies
 
-The use of floating-point numbers also causes a lot of other strange JavaScript behaviors. `NaN`, everyone's favorite bug-creator, exists as part of the IEEE floating-point standard used by JavaScript. This part of the standard was designed to handle arithmetic errors (`0/0`) more efficientlyl, but JavaScript takes that and massively expands upon its use, despite JavaScript not being fast enough in the first place to justify using `NaN` instead of throwing an exception.
+The use of floating-point numbers also causes a lot of other strange JavaScript behaviors. `NaN`, everyone's favorite bug-creator, exists as part of the IEEE floating-point standard. This part of the standard was designed to handle arithmetic errors (`0/0`) more efficiently. However, JavaScript, due to its largely exclusive use of floating-points, has been able to expand the use of `NaN`, despite JavaScript not being fast enough in the first place to justify using `NaN` instead of throwing an exception.
 
 ```js
 console.log(0 / 0);
@@ -109,7 +107,7 @@ SpiderMonkey (the engine in Firefox) and JavaScriptCore (the engine in Safari an
 
 ## What about BigInt?
 
-I can already hear Redditor angrily typing _BigInts solve all of these problems!_. While that is true, they are limited by the language and, even more significantly, by the JavaScript ecosystem.
+I can already hear Redditor angrily typing _BigInts solve all of these problems!_. BigInts do solve most issues with using floating-points as integers, but they introduce another problem: adoption and language integration.
 
 For the uninitiated, BigInt is a new datatype introduced by ES2020, designed to allow for the storage of variable-length integers. Because they are variable length, they can store integers of arbitrary size, and because BigInt's are standard two's complement integers, they don't have the same inconsistencies.
 
@@ -133,7 +131,9 @@ There are many other, similar cases of bad integration:
 
 etc. I think the point is pretty clear: BigInts have unnecessarily inconsistent behavior with numbers in JavaScript.
 
-These problems are not inherently dealbreakers until you consider the libraries that depend on this type-specific behavior. Most of these libraries are woefully behind in supporting the use of BigInts. Even JavaScript ORMs, where BigInts are critical for interfacing with databases that include 64-bit intgers, often [don't](https://github.com/drizzle-team/drizzle-orm/issues/1980) [include](https://orkhan.gitbook.io/typeorm/docs/entities#:~:text=Note%20about%20bigint%20type%3A%20bigint%20column%20type%2C%20used%20in%20SQL%20databases%2C%20doesn%27t%20fit%20into%20the%20regular%20number%20type%20and%20maps%20property%20to%20a%20string%20instead.) [BigInts](https://knexjs.org/guide/schema-builder.html#biginteger), using strings or numbers instead.
+These integrations issues are stil relatively insignificant. The real problem is libraries that rely on these type-specific behaviours, neglecting BigInts entirely.
+
+Even JavaScript ORMs, where BigInts are critical for interfacing with databases that include 64-bit intgers, often [don't](https://github.com/drizzle-team/drizzle-orm/issues/1980) [include](https://orkhan.gitbook.io/typeorm/docs/entities#:~:text=Note%20about%20bigint%20type%3A%20bigint%20column%20type%2C%20used%20in%20SQL%20databases%2C%20doesn%27t%20fit%20into%20the%20regular%20number%20type%20and%20maps%20property%20to%20a%20string%20instead.) [BigInts](https://knexjs.org/guide/schema-builder.html#biginteger), using strings or numbers instead.
 
 With JavaScript projects incredibly complex today, chances are some dependencies of any given project have spotty BigInt support, making use of BigInts significantly harder or even impossible. All of this is despite BigInts being part of the standard for 5+ years.
 
@@ -141,7 +141,9 @@ With JavaScript projects incredibly complex today, chances are some dependencies
 
 The most important solution is for JavaScript library authors to _please_ design with BigInts along with regular numbers in mind. Seriously—start considering BigInts. If libraries were more versatile in their number format, this problem would be much closer to being solved, and a JavaScript with proper integers is a much more useful JavaScript.
 
-The JavaScript (technically ECMAScript, because [Oracle is being Oracle](https://javascript.tm/)) standard could use some changes as well: [BigInt Math](https://github.com/tc39/proposal-bigint-math) and [.fromString](https://github.com/tc39/proposal-number-fromstring), among other proposals, aim to remedy some of inconsistencies in JavaScript's BigInt behavior. However, these proposals have their own complexities, and even if they were standardized, libraries would still need manual work to support BigInts.
+The JavaScript (technically ECMAScript, because [Oracle is being Oracle](https://javascript.tm/)) standard could use some changes as well: [BigInt Math](https://github.com/tc39/proposal-bigint-math) and [.fromString](https://github.com/tc39/proposal-number-fromstring), among other proposals, aim to remedy some of inconsistencies in JavaScript's BigInt behavior.
+
+However, these proposals have their own complexities, and even if they were standardized, libraries would still need manual work to support BigInts.
 
 So, the key takeaways from this is that:
 
