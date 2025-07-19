@@ -4,19 +4,28 @@ import BaseLayout from "$layouts/BaseLayout.astro";
 import { getCollection, getEntry } from "astro:content";
 let posts = await getCollection("posts");
 posts.sort((a, b) => b.data.published - a.data.published);
-posts = posts.slice(0, 30);
+posts = posts.slice(0, 35);
 ---
 
 <BaseLayout>
-	<h1 class="font-bold font-sans text-center text-4xl">ByteofDev</h1>
-	<h2 class="text-center italic">Bite Sized articles for developers</h2>
 	<div
-		class="m-auto grid p-4 gap-5 md:p-0 md:w-3/4 md:grid-cols-2 lg:grid-cols-3"
+		class="m-auto p-4 md:p-0 md:w-3/4 grid gap-5 md:grid-cols-2 lg:grid-cols-3"
 	>
 		{
 			posts.map(async (item, index) => {
 				const author = await getEntry("author", item.data.author.slug);
-				return <StoryCard item={item} lazy={index > 0} author={author} />;
+				return (
+					<StoryCard
+						item={item}
+						lazy={index > 0}
+						author={author}
+						class={
+							index == 0
+								? "md:col-span-2 lg:col-span-3 2xl:col-span-2 2xl:row-span-2"
+								: ""
+						}
+					/>
+				);
 			})
 		}
 	</div>

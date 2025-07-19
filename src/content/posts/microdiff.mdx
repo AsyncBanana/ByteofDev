@@ -1,5 +1,5 @@
 ---
-title: Building the fastest object and array differ
+title: How I Built the Fastest JavaScript Data Differ
 description: How I built Microdiff and how it is faster than most other object and array diffing libraries
 author: asyncbanana
 image:
@@ -13,9 +13,9 @@ updated: 1641090190755
 ---
 
 import Callout from "$lib/components/callout.svelte";
+import Barchart from "$lib/components/barchart.svelte";
 
-I maintain [Microdiff](https://github.com/AsyncBanana/microdiff), a performance and size optimized library for deep object diffing.
-Someone posted in a [Microdiff issue](https://github.com/AsyncBanana/microdiff/issues/2#issuecomment-962491393) that asked me to write a blog post about how I made Microdiff fast.
+[Microdiff](https://github.com/AsyncBanana/microdiff), a diffing algorithm for structured data in JavaScript that I maintain, is pretty fast. So fast, in fact, that you might be wondering whether there is black magic behind the scenes, or perhaps [randomness and a lot of luck when benchmarking](https://en.wikipedia.org/wiki/Bogosort). An inquisitve and probably bored developer [asked me to explain why Microdiff is this fast](https://github.com/AsyncBanana/microdiff/issues/2#issuecomment-962491393):
 
 <Callout type="quote">
 	I believe that an explainer (perhaps a blog post?) of the inefficiencies
@@ -24,15 +24,11 @@ Someone posted in a [Microdiff issue](https://github.com/AsyncBanana/microdiff/i
 	They'd also help correctly interpret the benchmark results.
 </Callout>
 
-So, I decided to do that. This blog post describes how I made Microdiff faster than most other object and array diffing libraries.
+So, I decided to write a blog post about it, describing how I made Microdiff faster than most other object and array diffing libraries.
 
-<Callout type="warning">
-	**Disclaimer**: I am very biased on this subject.
-</Callout>
+## What is diffing?
 
-## Intro to diffing
-
-Diffing (difference tracking) is tracking what is different between two objects. For example, let's say you have two objects, object a and object b.
+Diffing (difference tracking) algorithms track changes made between two pieces of data. For example, if you have two objects, `a` `b`:
 
 ```js
 const a = {
@@ -47,7 +43,7 @@ const b = {
 };
 ```
 
-With Microdiff, to get the differences, you would do this
+With Microdiff you could retrieve the differences by passing both to the diffing function:
 
 ```js
 import diff from "microdiff";
@@ -56,78 +52,133 @@ console.log(JSON.stringify(microdiff(a, b)));
 /*
 [
     {
-        'type':'CHANGE',
-        'path':['apples'],
-        'value':false,
-        'oldValue':true},
+        'type': 'CHANGE',
+        'path': ['apples'],
+        'value': false,
+        'oldValue': true,
     {
-        'type':'REMOVE',
-        'path':['peaches'],
-        'oldValue':true
+        'type': 'REMOVE',
+        'path': ['peaches'],
+        'oldValue': true
     },
     {
-        'type':'CREATE',
-        'path':['lemons'],
-        'value':true
+        'type': 'CREATE',
+        'path': ['lemons'],
+        'value': true
     }
 ]
 */
 ```
 
-As you can see, all changes, whether values were changed, added, or removed, were recorded. Diffing is essential for many things, like Virtual DOMs, because they need to record changes in elements. Now, let's learn about the problems with the diffing ecosystem before Microdiff.
+All edits, removals, and additions are recorded. These records can be used to reconstruct the new data from the original data, meaning data updates can be transferred using diffing records. In cases where data transfer is expensive and the diffs are relatively small in comparison to the overall piece of data, diffing is often used to maximize performance. This includes Virtual DOMs, document editing functionalities, NoSQL databases, and quite a few other pieces of software.
 
-## The Diffing Ecosystem before Microdiff
+## How fast is Microdiff?
 
-The diffing ecosystem was in a bad state. Many libraries had millions of downloads but were not maintained actively and were poorly made. Now, let's look at our first example, deep-diff.
+To measure Microdiff's performance, I took a sampling of benchmarks matching real-world use cases from [PandaCSS's configuration diffing](https://github.com/AsyncBanana/microdiff/blob/master/benchmarks/applied/panda.js), [Scalar's OpenAPI document diffing](https://github.com/AsyncBanana/microdiff/blob/master/benchmarks/applied/scalar.js), and [vanilla-extract's theme diffing](https://github.com/AsyncBanana/microdiff/blob/master/benchmarks/applied/vanilla-extract.js). All of these benchmarks match the document formats used in these open-source projects, and are chosen to vary in size and data types included. I measured the time/operation for each of these samples under Microdiff and the 4 most popular JavaScript diffing libraries.
 
-### [Deep-Diff](https://www.npmjs.com/package/deep-diff)
+All benchmarks were run multiple times under [mitata](https://github.com/evanwashere/mitata) on Node v22.12.0.
 
-Deep-Diff is one of the most popular JavaScript libraries for deep object diffing. It gets between 1 and 2 million downloads each week, and tools with more than 10k GitHub stars use it. However, there are many flaws with it. First, the last commit was in 2019, and it doesn't follow modern conventions like supporting ESM and offering bundled TypeScript types.
+![Microdiff vs. other diffing algorithms in the performance of each benchmark](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/microdiff_performance_88Mzx4oAE.png)
 
-Additionally, there are problems with its size and performance. It has a size of 5.5kb minified and 1.9kb Gzipped. That size is not terrible, except that this is a simple utility and therefore should have an even smaller size. In comparison, Microdiff has a size of 0.9kb minified and 0.5kb Gzipped. Now, for performance, Deep-Diff also does not do that well. It is not made to be small or fast, as it has many different functions, which adds significant overhead. Additionally, it does not do things like grouping type behavior to improve performance. Because of all these things, Microdiff can be as much as [400% faster](https://github.com/AsyncBanana/microdiff#benchmarks).
+Microdiff vastly outperforms all other diffing algorithms in these benchmarks, especially with cycle protection disabled (which is a feature not included in many diffing algorithms anyway), being 97% faster than the next closest algorithm, [deep-diff](https://github.com/flitbit/diff)
 
-### [Deep-Object-Diff](https://www.npmjs.com/package/deep-object-diff)
+## How is Microdiff so fast?
 
-Deep-Object-Diff is another popular diffing library. While it has not been updated since 2018, it has some of the modern features that Deep-Diff was missing, like ESM and built-in TypeScript types. Additionally, it can perform at speeds near Microdiff if you use the basic diffing. However, there are still two problems with it, the size and the information it provides. First, while it is not as big as deep-diff, it is still significant, weighing in at 5.2kb minified and 1kb Gzipped. Second, because of the way the output is designed, it provides few details. Where Microdiff provides the change type, new value, old value, and path, the most detailed diff (`detailedDiff`) of Deep-Object-Diff does not provide the old value. Additionally, if you want near Microdiff speeds, you have to use the primary diff function instead of `detailedDiff`, making it so you do not know the change type.
+### Unified rich type handling
 
-### [jsdiff](https://www.npmjs.com/package/diff)
-
-While JSDiff supports object diffing, it is primarily designed for diffing text. It is big, at 15.8kb minified and 5.9kb Gzipped, and extremely slow ([2100% slower than Microdiff](https://github.com/AsyncBanana/microdiff#benchmarks)). I will not go in-depth on why it is so slow because it is simply not designed for object diffing.
-
-## What Microdiff does to fix this
-
-### Performance focused architecture
-
-Microdiff fixes many of these problems by focusing on performance and size without sacrificing ease of use. Instead of having a web of complicated functions, it is a simple recursive function.
-Microdiff also uses strategies like combining type behaviors to reduce size while increasing performance. For example, lets say you want to see the differences between RegEx and JavaScript Dates. In order to get accurate change tracking, you have to stringify the RegEx and turn the Date into a number. A naive implementation of this might be like this:
+One central aspect of JavaScript's design, tracing back to JavaScript's attempt to copy Java and its OOPisms, is the extensive use of unique objects, like `Date` and `RegExp`. Unfortuantely, these data types make diffing a lot more complicated. If you attempt to diff `Date`s with a naive diffing algorithm designed for primitives and basic objects only, the algorithm will fail. Either it will attempt to compare the dates using a strict equality comparison `===` and mark two equal dates as unequal, or it will interpret the dates as basic objects and attempt to recursively diff them. Both of these outcomes will give you the incorrect result.
 
 ```js
-if (value instanceof RegExp && value2 instanceof RegExp) {
-	return value.toString() === value.toString();
-} else if (value instanceof Date && value2 instanceof Date) {
-	return Number(value) === Number(value2);
-}
+const date = new Date();
+const equivalentDate = new Date(date);
+console.log(date === equivalentDate);
+// false
 ```
 
-This works, but what if you needed to check `new String()` objects or `new Number()` objects too? (`new String()` and `new Number()` do not create primitives, so you have to convert them into primitives like with the Dates and RegExs) To fix this without introducing a lot of `if then`s, Microdiff's implementation of this is more like this:
+To handle these more complex types, prior JavaScript diffing algorithms resorted to creating a list of potential data types, each with its own classification and comparison method. For example, [deep-diff's code for datatype classifcation](https://github.com/flitbit/diff/blob/master/index.js#L103-L121) checks for RegEx and Dates individually (and, oddly enough, the math global, which I will talk about later):
+
+```js
+var type = typeof subject;
+if (type !== "object") {
+	return type;
+}
+
+if (subject === Math) {
+	return "math";
+} else if (subject === null) {
+	return "null";
+} else if (Array.isArray(subject)) {
+	return "array";
+} else if (Object.prototype.toString.call(subject) === "[object Date]") {
+	return "date";
+} else if (
+	typeof subject.toString === "function" &&
+	/^\/.*\//.test(subject.toString())
+) {
+	return "regexp";
+}
+return "object";
+```
+
+Each datatype handled here requires a separate check, which quickly increases overhead for every piece of data that is not a primitive.
+
+Microdiff standardizes the handling of these data types. Instead of using a separate comparison method for every data type, Microdiff handles the vast majority of cases with three:
+
+1. A simple strict equality operator
+2. Implicit stringification or numeric conversion using `.toString()` or `+`
+3. Deep diffing, creating a new nested Microdiff instance
+
+```js
+// Comparison method 1
+obj1 === obj2;
+
+// Comparison method 2
+obj1.toString() === obj2.toString();
+// More accurately, in Microdiff method 2 is implemented like:
+isNaN(obj1) ? obj1 + "" === obj2 + "" : +obj1 === +obj2;
+
+// Comparison method 3
+microdiff(obj1, obj2); // recursively call Microdiff, add diffs
+```
+
+Each of these cases can handle primitives, objects with custom prototypes that include stringification methods, and basic objects with default prototypes, respectively. Now, instead of needing to classify exactly what datatype a certain value is, Microdiff only needs to figure out which of those three classes the object fits in to.
+
+Microdiff separates objects and primitives using `typeof`, similar to existing diffing algorithms. However, to handle all rich types, I added a lookup table that compared the data's prototype tree with a lookup table of known rich types:
 
 ```js
 const richTypes = { Date: true, RegExp: true, String: true, Number: true };
-if (richTypes[Object.getPrototypeOf(value).constructor.name]) {
-	return isNaN(value)
-		? value.toString() === value2.toString()
-		: Number(value) === Number(value2);
+const isRichType = richTypes[Object.getPrototypeOf(value)?.constructor?.name];
+```
+
+Now Microdiff will coerce any object conforms to one of the classes in `richTypes` to a primitive rather than attempting to execute a nested diff, while remaining within a time complexity that will not scale with the number of `richTypes`.
+
+### Avoiding unnecessary checks and exceptions
+
+The example of deep-diffs type classification mechanism used earlier in the article also highlights another unoptimized design feature of most other diffing alogorithms—they handle edge cases that should never occure. In that example, the first conditional checks for whether an object is `Math`:
+
+```js
+if (subject === Math) {
+	return "math";
 }
 ```
 
-This code first gets a list of types that cannot be compared directly (`richTypes`). Then, it checks if the value is one of those types. If it is, then the code checks if the value can be coerced into a number with `isNaN`. If it can (which is true in the case of dates and `new Number()`s), it checks the version coerced into a number. If not (which is the case for RegEx and `new String()`), it coerces the value into a string and compares that version. The actual rich type conversion logic is not that different in Microdiff, although there are a few differences that decrease the size and help the logic fit in with the rest of the code.
+To be clear, this piece of code is comparing the data to `Math`, the global. You know, the object you use to get the max of values:
 
-Things like that are part of why Microdiff is fast. However, another reason is that it focuses on only more common cases instead of every possible edge case.
+```js
+console.log(Math.max(1, 2, 3));
+// 3
+```
 
-### Focusing on 99% of cases instead of fixing all edge cases
+I have no clue why anyone would be passing this into data. Including `Math` is almost like including the standard library in another language, which is pretty much impossible in any language other than JavaScript. All of this is to say, `Math` contains utility functions, **NOT** data, and should never be in an object you are diffing.
 
-In this regard, Microdiff has improved massively since its release. In fact, since writing the [initial explanation](https://github.com/AsyncBanana/microdiff/issues/2#issuecomment-960291469), Microdiff has added support for more rich types and cyclical references. However, there are still cases where Microdiff has less correct behavior, like when comparing objects with prototype properties, because it includes prototype properties. Type combination solves this for the listed types but not for all other types. In testing previously, ways of excluding prototype properties have not been fast. However, I might add a way for you to pass custom inheritance types for string/number coercion, which might help certain things. Nonetheless, currently, this is not possible.
+Most diffing algorithms spend valuable CPU cycles and bytes of code checking for values like `Math`. Microdiff does not. As time has gone on, Microdiff has gradually included support for more data types, to the point where it covers almost anything that _should_ be included in JavaScript data. However, Microdiff avoids covering these extra cases that should never exist in practice.
 
-## Conclusion
+### Simplifying the execution model
 
-In conclusion, Microdiff is the fastest diffing library because of its performance-focused architecture and the focus on 99% of cases, and Microdiff is still able to also use modern features and make it possible to use easily. If you are interested in Microdiff, [check out the GitHub repo](https://github.com/AsyncBanana/microdiff). I hope you have learned something from this, and thank you for reading.
+Most other diffing algorithms are built as classes, with a variety of methods and helper functions performing specific subtasks in the overall diffing process. Microdiff instead uses a single function that recurses for nested objects, and intentionally does not follow DRY principles. Because JavaScript in a JIT compiled language, the semantics used to maximize code sharing generate significant overhead, especially at the beginning of execution. Even the calls to utility functions can quickly become expensive when they are required for every property being diffed. Most optimizing JavaScript engines will eventually unroll some of these functions, lessening the performance hit, but the unrolling process is requires multiple invocations and is unreliable.
+
+Microdiff's architecture maximizes performance without these optimizations, and, as a side effect, in my opinion, the code is actually more readable. Instead of being a complex tree of scattered utility functions, Microdiff is a single function that fits within 1kB of code.
+
+## Final Thoughts
+
+I am slightly amazed you are interested enough in diffing algorithms to reach the end of this. If you think you have any further improvements, come over to the [Microdiff repo](https://github.com/AsyncBanana/microdiff) and open a pull request, but more importantly, I hope you learned some helpful optimization tips.
