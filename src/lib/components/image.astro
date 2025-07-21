@@ -1,7 +1,8 @@
 ---
 /* Image component configuration:
-    Prefix alt with |fullwidth| to allow it to scroll on mobile
-    e.g. [|fullwidth| cool JavaScript thing]
+    Prefix alt with |attr| to enable
+    e.g. [|attr| cool JavaScript thing]
+	Used to be used for fullwidth, right now just being left in case future uses arise
 */
 let attrs = [];
 if (Astro.props.alt && Astro.props.alt[0] === "|") {
@@ -15,15 +16,13 @@ if (Astro.props.alt && Astro.props.alt[0] === "|") {
 ---
 
 <figure>
-	<div class={attrs.includes("fullwidth") ? "overflow-x-auto" : undefined}>
+	<button class="max-w-full cursor-zoom-in">
 		<img
 			src={Astro.props.src}
 			alt={Astro.props.alt}
 			title={Astro.props.title}
-			class={attrs.includes("fullwidth")
-				? "max-w-none md:max-w-full"
-				: undefined}
+			class={"max-w-full"}
 		/>
-	</div>
+	</button>
 	{Astro.props.title ? <figcaption>{Astro.props.title}</figcaption> : ""}
 </figure>

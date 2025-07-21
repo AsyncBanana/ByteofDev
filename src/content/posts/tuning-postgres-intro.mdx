@@ -1,0 +1,227 @@
+---
+title: A Quick(ish) Introduction to Tuning Postgres
+description: Learn some of the most important elements of tuning Postgres for performance and get a better understanding of Postgres fundamentals along the way.
+author: asyncbanana
+tags: [Postgres, Databases]
+published: 1753127964796
+updated: 1753127964796
+image:
+  {
+    url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/how_to_tune_postgres_obL6Kseib.png,
+    alt: "The Postgres elephant with a speedometer icon above memory, disk, and CPU icons",
+  }
+---
+
+Most guides to the finer aspects of managing databases like Postgres are... not great. The Postgres documentation is well-written, but it has too much information for most developers. On the other hand, most online Postgres optimization guides are essentially a repeated version of: "Run this command. Got it? Cool." This should provide you with a relatively brief introduction to Postgres tuning, focusing on the most important knobs, while also describing how these knobs relate to Postgres's overall functioning and internals.
+
+> You are expected to have a basic understanding of SQL, and, for some sections, you will need a server with Linux.
+
+## Why Postgres (and other databases) are slow
+
+### Disk Access
+
+The core function of a database is to, well... retrieve data, as efficiently as possible. Unfortunately, a database can only retrieve data as quickly as the storage medium on which the data sits. Modern servers typically include three tiers of memory: CPU caches, RAM, and durable storage (colloquially referred to as disk), with varying levels of latency and capacity.
+
+Databases like Postgres must ultimately store data on disk. It is the only medium that can withstand power loss, and most databases will exceed the capacity of all other media. However, durable storage has the highest latency and lowest bandwidth of all forms of memory local to a server.
+
+![A pyramid of all four storage tiers: CPU Cache, RAM, disk, and network attached storage, with an arrow pointing downwards next to text describing the latency and bandwidth decreasing with the lower tiers. Network and disk storage are outlined in a red box, and text with an arrow point to the box says to minimize use of them](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/tuning_postgres_yyUqL4EDN.png "These are the four primary tiers of memory on most servers (network represents external disk storage like EBS). To minimize latency, databases try to use the higher tiers whenever possible.")
+
+Postgres attempts to minimize the latency caused by reading from disk by caching in RAM. Improperly configured caches cause Postgres to retrieve more data from disk, hindering query processing speed.
+
+### Userspace-Kernel Communication
+
+As you learn more about databases, you will quickly find that [the operating system is not your friend](https://www.youtube.com/watch?v=1D81vXw2T_w&t=1385s). Operating systems must optimize for objectives such as security against unknown processes and fairness in process scheduling that are not as relevant to a database. Issues that arise from operating systems become very clear with syscalls, which are methods for interfacing with the operating system to perform operations like file reads/writes.
+
+Syscalls require switching into the kernel, which is incredibly slow. The thread performing the syscall must save all userspace state and perform data integrity checks, which take precious time and compute/memory resources. Tuning helps Postgres minimize costly syscalls through caching and the use of new OS interfaces.
+
+### Cache/Disk Contention
+
+_Almost_ every (_cough_ not Redis) modern high-scale database, including Postgres, processes queries or segments of queries in parallel using threads. However, each of these threads shares resources, like memory caches and files, that shouldn't be accessed simultaneously. For example, one thread could attempt to update a cache while another thread reads from it, causing the reader to mix cache data from before and after the update.
+
+Postgres prevents simultaneous access by requiring threads to acquire locks that only one writer can hold at a time. As you can imagine, if the lock to one resource needed by many different threads simultaneously, performance quickly drops as all threads wait to gain the lock.
+
+Improper configuration can lead to activity being concentrated at a specific time or on a particular set of pages, resulting in contention for locks on those resources, and ultimately, database stalling.
+
+These are far from the only issues that databases experience, but they are the typical causes of degraded database performance. Of course, knowing the problem is useless without knowing a solution, so now let's discuss ways to solve these problems by tuning Postgres.
+
+## Optimizing memory allocation
+
+By default, Postgres uses memory very conservatively. By allowing it to utilize the full capacity and capabilities of the RAM on your server, you can enable it to cache values more effectively and avoid expensive disk retrievals.
+
+### Increase Shared Memory Allocation
+
+> TL;DR Set `shared_buffers` to 25-40% of your system RAM, depending on your data access patterns.
+
+To minimize disk accesses, Postgres caches data from the disk using a shared buffer pool. When Postgres accesses a page from disk, it stores the page in the buffer pool, allowing any subsequent requests to read it from RAM. Most databases are larger than the RAM of the computer running them, so when the cache exceeds the amount of RAM allocated, Postgres evicts another page that hasn't been used recently. The evicted page will need to be loaded from disk next time a query requires it.
+
+![A diagram describing the path for a disk request between the query executor, buffer cache, and disk. The line representing the first request goes directly to disk, whereas the second line afterwards stops at the buffer cache. The second line is next to text that states how it is a lot faster](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/postgres_buffer_pool_-OubuUWEd.png "This represents two requests to the same page. The first goes to disk, whereas the second can be answered more quickly through cache")
+
+The `shared_buffers` parameter controls the amount of RAM allocated to the Postgres buffer pool. Its default value is 128MB in most distributions, but on servers with more memory, it should be set much higher, typically at 25-40% of the total RAM. Higher values allow more pages to be stored in the cache, reducing the frequency with which Postgres needs to retrieve pages from disk storage.
+
+However, the performance story by default isn't as bad as it might seem. The operating system includes its own cache, which is why most DBAs recommend allocating 40% of the RAM at most to the database buffer cache. Unfortunately, the OS cache is still accessed through an inefficient syscall, so the buffer cache is still faster. Testing varying `shared_buffers` values in a benchmark of TPC-C with 128 warehouses reveals the performance difference: higher `shared_buffers` values consistently reduce disk reads and increase throughput (measured in transactions per second), as less time is wasted reading from disk.
+
+![Two bar charts representing benchmarks. The first benchmark, TPC-C performance in Transactions per second for various buffer cache sizes, shows the 128MB test at 4,338 TPS, the 5GB test at 6,730, and 10GB at 6,959. The second benchmark shows the buffer cache hit rate for 128MB at 89.92%, 99.3% for 5GB, and 99.9% for 10GB](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/tpc_c_postgres_buffer_benchmark_PEKqXJWRS.png "For more details on the process used here, check out the benchmarking details at the bottom of this article")
+
+As you can see, there is a 55% increase in TPS when moving from the default 128MB buffer cache to a 5GB buffer cache. The speed jump from 5GB to 10GB is much smaller at 3% likely reflecting the fact that the entire database is only ~25GB. Sorry, I had already put my SSD through enough repeatedly load testing massive databases, and I didn't want to kill it with a larger benchmark prematurely. The buffer cache hit rate explains the throughput improvement from 128MB to 5GB: the number of page requests that can be fulfilled from cache increases from 89% to 99%, reducing the number of read syscalls sent to the OS by >90%.
+
+To change your database's `shared_buffers`, execute an `ALTER SYSTEM` query:
+
+```sql
+ALTER SYSTEM SET shared_buffers = 'YOUR_VALUE'; -- Ex: '16GB'
+```
+
+Alternatively, you can set `shared_buffers` in `postgresql.conf`. When choosing a value, start with 25% of your system's total memory, and test slowly increasing it. It might be helpful to check the ratio of cache hits to overall reads, which is available through the `pg_stat_io` table.
+
+```sql
+SELECT
+ context,
+  object,
+  SUM(hits) AS hits,
+  SUM(reads) AS reads,
+  SUM(evictions) AS evictions,
+  ROUND(100.0 * SUM(hits) / NULLIF(SUM(hits) + SUM(reads), 0), 2) AS shared_buffer_hit_rate_percent
+FROM
+ pg_stat_io
+GROUP BY
+  object, -- Target of reads. Focus on columns with 'relation'
+ context -- Buffers context used. 'normal' contains most standard transactions
+```
+
+The optimal value depends on the database, but in general, you should see the hit rate increase as you increase the memory allocated to `shared_buffers`. You can also view the number of evictions in the buffer pool using the `evictions` column in `pg_stat_io`.
+
+### Increase Per-Operation Memory Allocation
+
+> TL;DR If you are running more complex queries, test increasing `work_mem`.
+
+Not all memory used by Postgres is encompassed in `shared_buffers`; temporary formations of data used in operations such as creating hash tables for joins use a dedicated memory allocation for that operation. To limit the size of these allocations, if they consume more memory than the limit specified by `work_mem`, Postgres will use a temp file on disk.
+
+As you might have guessed, using a temporary file slows down query processing. Postgres needs to perform both additional reads and writes instead of reading from RAM. On servers with enough RAM, you can prevent offloading to a file by increasing `work_mem`. In many cases, queries aren't complex enough to use the 4MB `work_mem` allows by default, but for more complex cases, increasing `work_mem` can significantly improve transaction speed.
+
+Similar to `shared_buffers`, you can change `work_mem` using `ALTER SYSTEM` or by changing it in `postgres.conf`.
+
+## Increasing Disk Efficiency
+
+Tuning `shared_buffers` and `work_mem` is a great way to reduce disk accesses, but you still can't avoid using the disk entirely. When Postgres needs to read from or write to disk, it should be as fast as possible, which can be achieved through tuning.
+
+### Use io_uring for Asynchronous I/O
+
+> TL;DR When Postgres 18 releases, set `io_method` to `io_uring`, especially if you are managing larger databases.
+
+This configuration option won't become available in mainline Postgres until Postgres v18 releases later this year, but you should still be aware of it.
+
+`io_method` helps optimize reads and writes on disk by utilizing Linux's new `io_uring` API. Before `io_uring`, Postgres could only perform synchronous file I/O, meaning threads had to wait for a blocking I/O syscall to complete before they could continue processing a query.
+
+`io_uring`, instead, places I/O calls into a buffer ring queue (the "submission queue") shared between the kernel and userspace, which a dedicated thread on the kernel then draws from and fulfills, placing the results in a separate buffer ring (the "completion queue").
+
+I tested various configurations of `io_method` using TPC-C once again, using the same configuration as before, only with a smaller 8MB allocated to `shared_buffers` to increase disk I/O usage and mimic the caching characteristics of a larger database.
+
+![A diagram comparing io_uring and sychronous I/O in Postgres. The query processing thread is able to continue processing with io_uring, instead of being stopped to execute the I/O processor.](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/postgres_io_uring_vs_sync_x_L-xSItFw.png "Notice how queries are batched in the io_uring case, how neither thread needs to change context, and how the query processing thread can continue processing while waiting for read results.")
+
+This solves many of the most significant performance problems with I/O.
+
+1. The separate Kernel and userspace threads stay in their respective context, preventing expensive context switches
+2. The buffer rings are shared between the kernel and userspace threads, meaning it doesn't need to be copied between threads
+3. The userspace thread can continue to operate while the kernel thread executes I/O operations without requiring an intermediary worker thread.
+
+As you can imagine, given how much Postgres relies on disk I/O, these benefits translate into significant performance uplifts. Instead of each query thread waiting on I/O, it can continue to process other data and queue multiple I/O requests that are handled by a dedicated I/O thread.
+
+![A chart representing TPC-C performance by io_method. io_method=sync reaches 1,002 TPS, io_method=worker reaches 876 TPS, and io_method=io_uring reaches 1,079 TPS](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/tpcc_postgres_io_method_benchmark_2B8Zcx8L8.png "Once again, benchmark details can be found at the bottom of this article")
+
+`io_method=io_uring` is 7% faster than `io_method=sync` in this workload, even though it is relatively light on I/O usage. `io_method=worker`, which is another new configuration option that offloads I/O operations to dedicated worker threads, is the slowest in the group, which is likely due to it using the default configuration of only 3 worker threads.
+
+To enable `io_uring`, first check your server's kernel. `io_uring` is a relatively new Linux-specific method, so make sure you are running an operating system with Linux 5.1 or later. You can check the kernel version by running `uname -r`.
+
+I recommend revisiting this in a few months, once Postgres 18 has reached stability. If you want to try changing the io_method now, you will need to download [Postgres 18 Beta source code](https://www.postgresql.org/developer/beta/) and compile it with the `--with-iouring` flag.
+
+On Postgres 18, you can set `io_method` to `io_uring` using `ALTER SYSTEM SET` or `postgresql.conf` like any other parameter.
+
+Once you restart Postgres, it should process all I/O requests with `io_uring`! To maximize performance gains with longer running queries, try changing the `effective_io_concurrency`, which defines how many simultaneous I/O requests can originate from one query, as well. Postgres leaves it at a default of 1, but higher settings could allow for more expensive queries to finish faster. Note that `effective_io_concurrency` has a limited effect in Postgres 17 and Postgres 18 with `io_method=sync`.
+
+### Decrease Overall I/O Operation Count With Huge Pages
+
+> TL;DR Allocate enough huge pages for Postgres's shared buffer cache to improve I/O performance
+
+Throughout most of this guide, I have used "pages" to describe Postgres/disk pages, which are the logical units that Postgres reads/writes on disk and are what Postgres ultimately operates on. Confusingly, there is another relevant "page": operating system pages. These are the pages that Postgres manages its shared memory within. Typically, they are only 8kB, which means larger databases can have millions of pages, causing increased fragmentation and overhead.
+
+The Linux kernel has reduced the severity of this issue through the introduction of huge pages. Huge pages, as you could guess from the name, are much larger (typically 2MB) OS pages that Postgres can use to manage memory. However, enabling them requires messing with the operating system.
+
+First, disable transparent huge pages (THP). They make traditional applications compatible with huge pages, but in doing so, they miss some of the performance benefits of a purpose-built huge pages usage layer like that of Postgres. You can temporarily disable THP by writing `never` to `/sys/kernel/mm/transparent_hugepage/enabled`.
+
+```sh
+echo never > /sys/kernel/mm/transparent_hugepage/enabled
+```
+
+Different distributions have varying methods for persisting this configuration between resets, so I suggest you Google the specific method for your distribution. You can confirm that THP is disabled by reading the file:
+
+```sh
+cat /sys/kernel/mm/transparent_hugepage/enabled
+# always madvise [never]
+# note that the square brackets represent the selected option
+```
+
+Then, find the number of huge pages Postgres allocates with the following:
+
+```sh
+postgres -D /var/lib/pgsql/data -C shared_memory_in_huge_pages
+```
+
+Replace `/var/lib/pgsql/data` with your Postgres data folder. Note that you might need to reconfigure permissions. You can then allocate that number of huge pages with the following:
+
+```sh
+sudo sysctl -w vm.nr_hugepages=<calculated_number>
+```
+
+Now, restart Postgres, and it should use huge pages! If you want to force Postgres to require huge pages (it will error if they are unavailable), set `huge_pages` to `on` in `postgresql.conf`.
+
+## Optimizing Query Processing
+
+While memory and disk I/O are the most common database bottlenecks, tuning query processing can also provide significant benefits.
+
+### Tune CPU core usage.
+
+At a sufficiently large scale, databases of any kind will become limited by the performance of a single CPU core. Most databases (_cough_ not Redis), including Postgres, attempt to avoid this limit by distributing the CPU load across multiple threads or processes. Every process can handle its own query or segment of a query simultaneously, increasing the database's throughput.
+
+> Note: In this section, I will refer to both processes and threads. Postgres uses [separate processes with individual threads, rather than multiple threads within one process](https://stackoverflow.com/questions/4315292/concurrency-processes-vs-threads#:~:text=Processes%20have%20their%20own%20isolated,likely%20sync%20automatically%20with%20that.), as its units of parallel execution. However, the execution unit on a CPU is still considered a thread.
+
+Postgres sets a fairly conservative limit for the number of these processes that can run simultaneously: only 8. On modern servers, which often have up to 128 cores, this leaves considerable performance on the table. Luckily, you can change the maximum via the `max_worker_processes` parameter. In most cases, you should set `max_worker_processes` to the number of CPU threads available, allowing Postgres to use all of them. There are some cases, such as when you have a lot of background processes that can be suspended frequently, when `max_worker_processes` should be set even greater than the thread count.
+
+However, if you test your database with a higher `max_worker_processes`, you probably won't notice much of a difference. While Postgres now has more threads at its disposal, other knobs limit how it can use those threads.
+
+![A diagram of Postgres's various worker designations. max_worker_processes encompassed both maintenance workers and parallel workers, which includes query workers and parallel maintenance workers](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/postgres_worker_limits_JEM6PCyGo.png "These are the various designations Postgres assigns for workers, and the config variable that limits them. A CPU icon represents an individual worker. Note that this is not a typical distribution of workers.")
+
+Increasing `max_parallel_worker_processes` allows Postgres to allocate more threads for parallel maintenance operations (also controlled through `max_parallel_maintenance_worker_processes`), and, more importantly, parallel query processing. If your workload includes long-running and expensive individual queries, you can also increase `max_parallel_workers_per_gather`, which defines the number of processes that can be used for one individual gather operation in a query.
+
+As with the previous sections, you can set these parameters through `postgres.conf` or the `ALTER SYSTEM` command. In most cases, a near-optimal configuration will consist of `max_worker_processes` and `max_parallel_worker_processes` set to the number of threads that the server has, with all other settings left at their default values.
+
+Write-heavy workloads might benefit from more allocated maintenance workers to handle vacuuming and other maintenance operations. Of course, as you change these values, continuously check for speed degradation or stalling due to contention for memory or disk resources.
+
+### Calibrate the Query Planner's Cost Calculation
+
+Postgres's query planner typically generates multiple potential plans to fulfill queries. Each plan utilizes different indexes and algorithms, which significantly impact query performance. When attempting to find the optimal query plan, Postgres first breaks down plans into an estimation of what they will require, in terms of basic logical operations like rows processed and pages accessed. Then, Postgres plugs the result for each plan into a lookup table that includes static costs for each operation, and chooses the plan with the lowest overall cost.
+
+Unfortunately, the cost of each operation varies between hardware configurations, and Postgres's default is often suboptimal. By default, Postgres considers accessing a random page from disk 4x as expensive as a sequential page, which doesn't make sense in the age of SSDs. On a hard drive, random pages, which can be located anywhere on the disk, are slower to read than sequential pages, as the reader must wait to rotate to the next page's location. SSDs do not have the same constraints and can access data from anywhere on the drive at essentially the same speed.
+
+Postgres's cost calculation is more aligned with using a hard drive, meaning that an untuned Postgres instance on an SSD will prioritize sequential scans, even when using indexes or other devices that result in more random reads could be faster.
+
+If your server is running on an SSD, you can change Postgres's random page cost calculation by setting `random_page_cost` in `postgres.conf` to a much lower value like `1.1` or even `1`.
+
+Most other query planner-related knobs are likely already close to optimal, but there is one other knob that you should reconfigure: `effective_cache_size`. `effective_cache_size` tells Postgres how large the RAM cache (including the buffer pool and page cache) will likely be, and therefore how likely any given piece of data will be available in that cache. By default, Postgres sets this at 4GB, but the actual cache size should be much larger depending on what you set `shared_buffers` to and how much RAM your computer has in total.
+
+A good starting point for `effective_cache_size` is 60% of your computer's RAM; some of the RAM will be used for processing queries rather than caching, and the OS page cache may store duplicates of some pages in the buffer pool, meaning the effective amount of pages cached is much less than 100% of the computer's RAM. As with other options, you can change `effective_cache_size` through `postgres.conf`
+
+## Final Thoughts
+
+Postgres tuning is not easy. Unfortunately, there is no true replacement for a deep understanding of Postgres internals paired with time spent testing, but hopefully, this guide helped you introduce you to some of the relevant concepts, and, more importantly, I hope you were able to learn more about how Postgres works
+
+## Benchmark Details
+
+All benchmarks were run using [Benchbase](https://github.com/cmu-db/benchbase) on Postgres 19devel as of 7/14/2025 in a computer running Linux 6.15 with a 32 core Ryzen 7950x, 32 GB of DDR5 RAM, and a 2TB NVMe SSD. Unless otherwise mentioned, the default Postgres configuration was used, with the following exceptions:
+
+```ini
+io_method = io_uring
+max_parallel_workers = 32
+max_worker_processes = 32
+shared_buffers = 10GB
+```
+
+Postgres was reset between each test, and a 90 second warmup preceded each benchmark to fill the cache. After the benchmark, TPS and cache statistics were collected.
