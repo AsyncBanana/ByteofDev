@@ -1,0 +1,258 @@
+---
+title: Making Postgres 42,000x slower because I am unemployed
+description: As an respectable unemployed person must do, I tried to make Postgres as slow as possible
+author: asyncbanana
+tags: [Postgres, Databases]
+published: 1753649121416
+updated: 1753649121416
+image:
+  {
+    url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/tuning_postgres_extremes_pWR8_-CVM.png,
+    alt: "The Postgres elephant with a declining speed",
+  }
+---
+
+Everyone is always wondering how to make Postgres _faster_, _more efficient_, etc, but nobody ever thinks about how to make Postgres slower. Now, of course, most of those people are being paid to focus on speed, but I am not (although, if you wanted to change that, let me know). As I was writing a [slightly more useful guide](https://byteofdev.com/posts/tuning-postgres-intro/), I decided someone needed to try to create a Postgres configuration optimized to process queries as slowly as possible. Why? I am not sure, but this is what came of that thought.
+
+## The Parameters
+
+I can't make this too easy. This is a Postgres tuning challenge, not a throttle-your-CPU-to-one-megahertz-and-delete-indexes challenge, so **all changes must be on parameters in `postgresql.conf`**. Additionally, the database will still need to have the capability to process at least one transaction within a reasonable amount of time—it would be too simple just to grind Postgres to a halt. This is more difficult than it might seem, because Postgres tries to make it as difficult as possible to make decisions this stupid by enforcing limits and minimizing configuration.
+
+To measure performance, I will use TPC-C with 128 warehouses as implemented in Benchbase, using 100 connections each attempting to output 10k transactions per second, all being processed by Postgres 19devel (latest as of 7/14/2025) running on a Linux 6.15.6 with a Ryzen 7950x, 32GB of RAM, and a 2TB SSD. Each test will last 120 seconds and will execute twice: first to warm the cache and second to collect measurements.
+
+I measured a baseline with everything left to its default in `postgresql.conf`, except for basic tweaks increasing `shared_buffers`, `work_mem`, and the number of worker processes. In that test, I got a nice 7082 TPS. Now, let's see how much slower Postgres will go.
+
+## Caching? Nah...
+
+One of the ways Postgres can respond to read queries efficiently is through extensive caching. Accessing data from the disk is _slow_, so whenever Postgres reads a block of data from the disk, it caches that block in RAM, allowing the next query that requires that block to read it from RAM. Of course, I want to force all queries to use the slowest possible reading method, so the smaller this cache is, the better. I can freely control the size of the buffer cache and other elements of Postgres's shared memory using the `shared_buffers` knob. Unfortunately, I cannot simply set this to 0, as Postgres also uses the buffer cache as the area where active database pages are processed. Luckily, I can still get it pretty low.
+
+First, I tried going from the `10GB` I allocated in the baseline to `8MB`.
+
+```ini
+shared_buffers = 8MB
+```
+
+![A terminal showing Benchbase with 1052 TPS](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/postgres_8mb_again_uKmDpoaKE.png)
+
+Already, Postgres is operating at only 1/7th of its initial speed. The reduced buffer cache forced Postgres to keep fewer pages in RAM, meaning the percentage of page requests that could be fulfilled without going to the operating system plummeted from 99.90% to 70.52%, resulting in an almost 300x increase in the number of read syscalls.
+
+But we can do better. 70% is still too high, and it should be possible to reduce the cache size further. Next, I tried 128kB.
+
+![A terminal showing the error "no unpinned buffers"](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/oops_PHnDfJ1t0.png)
+
+Oops. 128kB of shared buffers can only store a maximum of 16 database pages (excluding any other content in the shared buffers), and Postgres likely requires simultaneous access to more than 16 pages. After some messing around, I found that the lowest possible value was approximately 2 MB. Postgres is now below 500 TPS.
+
+```ini
+shared_buffers = 2MB
+```
+
+![A terminal showing Benchbase with 485 TPS](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/postgres_2mb_shared_buffers_gL8w2NhYa.png)
+
+## Making Postgres Perform As Background Work Much As Possible
+
+Postgres has several tasks beyond processing transactions that can be computationally expensive. I can use this to my advantage. To minimize storage fragmentation, Postgres runs an autovacuum process that finds empty space (from operations like deletions) and fills that space with other tuples. Usually, this only runs after a certain number of changes are made to prevent an excessive performance penalty, but I can reconfigure autovacuum to minimize the time between each run.
+
+```ini
+autovacuum_vacuum_insert_threshold = 1 # autovacuum can be triggered with only 1 insert
+autovacuum_vacuum_threshold = 0 # minimum number of inserts, updates, or deletes needed to trigger a vacuum
+autovacuum_vacuum_scale_factor = 0 # proportion of the unfrozen table size to consider when calculating thresholds
+autovacuum_vacuum_max_threshold = 1 # max number of inserts, updates, or deletes needed to trigger a vacuum
+autovacuum_naptime = 1 # the minimum delay between autovacuums in seconds; unfortunately, this cannot be set below 1, which limits us
+vacuum_cost_limit = 10000 # query cost limit, which, if exceeded, will cause the vacuum to pause; I don't want the vacuum to ever stop, so I maxed this out
+vacuum_cost_page_dirty = 0
+vacuum_cost_page_hit = 0
+vacuum_cost_page_miss = 0 # all of these minimize the cost for operations when calculating for `vacuum_cost_limit`
+```
+
+I also reconfigured the autovacuum analyzer, which collects statistics to guide vacuuming and query planning (spoiler: accurate statistics shouldn't stop me from messing with the query planner):
+
+```ini
+autovacuum_analyze_threshold = 0 # same as autovacuum_vacuum_threshold, but for ANALYZE
+autovacuum_analyze_scale_factor = 0 # same as autovacuum_vacuum_scale_factor
+```
+
+I also tried to make the vacuuming process itself as slow as possible:
+
+```ini
+maintenance_work_mem = 128kB # the amount of memory allocated for vacuuming processes
+log_autovacuum_min_duration = 0 # the duration (in milliseconds) that a autovacuum operation is required to run for before it is logged; I might as well log everything;
+logging_collector = on # enables logging in general
+log_destination = stderr,jsonlog # sets the output format/file for logs
+```
+
+I should note that the opposite approach might also work: if I disable autovacuuming entirely, pages will fill with dead tuples, and performance will gradually decrease. However, because this is an insert-heavy workload that only runs for 2 minutes, I didn't see that approach as being as inefficient.
+
+![A terminal showing Benchbase with 293 TPS](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/postgres_autovacuum_CVdr9hcyF.png)
+
+Postgres is now operating at less than 1/20th of its original speed. I confirmed the source of its performance hit by checking the logs:
+
+```log
+2025-07-20 09:10:20.455 EDT [25210] LOG:  automatic vacuum of table "benchbase.public.warehouse": index scans: 0
+ pages: 0 removed, 222 remain, 222 scanned (100.00% of total), 0 eagerly scanned
+ tuples: 0 removed, 354 remain, 226 are dead but not yet removable
+ removable cutoff: 41662928, which was 523 XIDs old when operation ended
+ frozen: 0 pages from table (0.00% of total) had 0 tuples frozen
+ visibility map: 0 pages set all-visible, 0 pages set all-frozen (0 were all-visible)
+ index scan not needed: 0 pages from table (0.00% of total) had 0 dead item identifiers removed
+ avg read rate: 116.252 MB/s, avg write rate: 4.824 MB/s
+ buffer usage: 254 hits, 241 reads, 10 dirtied
+ WAL usage: 2 records, 2 full page images, 16336 bytes, 1 buffers full
+ system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.01 s
+2025-07-20 09:10:20.773 EDT [25210] LOG:  automatic analyze of table "benchbase.public.warehouse"
+ avg read rate: 8.332 MB/s, avg write rate: 0.717 MB/s
+ buffer usage: 311 hits, 337 reads, 29 dirtied
+ WAL usage: 36 records, 5 full page images, 42524 bytes, 4 buffers full
+ system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.31 s
+2025-07-20 09:10:20.933 EDT [25210] LOG:  automatic vacuum of table "benchbase.public.district": index scans: 0
+ pages: 0 removed, 1677 remain, 1008 scanned (60.11% of total), 0 eagerly scanned
+ tuples: 4 removed, 2047 remain, 557 are dead but not yet removable
+ removable cutoff: 41662928, which was 686 XIDs old when operation ended
+ frozen: 0 pages from table (0.00% of total) had 0 tuples frozen
+ visibility map: 0 pages set all-visible, 0 pages set all-frozen (0 were all-visible)
+ index scan bypassed: 2 pages from table (0.12% of total) have 9 dead item identifiers
+ avg read rate: 50.934 MB/s, avg write rate: 9.945 MB/s
+ buffer usage: 1048 hits, 1009 reads, 197 dirtied
+ WAL usage: 6 records, 1 full page images, 8707 bytes, 0 buffers full
+ system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.15 s
+2025-07-20 09:10:21.220 EDT [25210] LOG:  automatic analyze of table "benchbase.public.district"
+ avg read rate: 47.235 MB/s, avg write rate: 1.330 MB/s
+ buffer usage: 115 hits, 1705 reads, 48 dirtied
+ WAL usage: 30 records, 1 full page images, 17003 bytes, 1 buffers full
+ system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.28 s
+2025-07-20 09:10:21.543 EDT [25212] LOG:  automatic vacuum of table "benchbase.public.warehouse": index scans: 0
+ pages: 0 removed, 222 remain, 222 scanned (100.00% of total), 0 eagerly scanned
+ tuples: 0 removed, 503 remain, 375 are dead but not yet removable
+ removable cutoff: 41662928, which was 845 XIDs old when operation ended
+ frozen: 0 pages from table (0.00% of total) had 0 tuples frozen
+ visibility map: 0 pages set all-visible, 0 pages set all-frozen (0 were all-visible)
+ index scan not needed: 0 pages from table (0.00% of total) had 0 dead item identifiers removed
+ avg read rate: 131.037 MB/s, avg write rate: 5.083 MB/s
+ buffer usage: 268 hits, 232 reads, 9 dirtied
+ WAL usage: 1 records, 0 full page images, 258 bytes, 0 buffers full
+ system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.01 s
+2025-07-20 09:10:21.813 EDT [25212] LOG:  automatic analyze of table "benchbase.public.warehouse"
+ avg read rate: 10.244 MB/s, avg write rate: 0.851 MB/s
+ buffer usage: 307 hits, 337 reads, 28 dirtied
+ WAL usage: 33 records, 3 full page images, 30864 bytes, 2 buffers full
+ system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.25 s
+# ... it continues similarly
+```
+
+Postgres runs automatic vacuum and analysis operations on hot tables every second, which, because the buffer cache hit rate is already low, forces it to read significant amounts from disk. Better yet, these are doing almost nothing because so little has changed between each run. Of course, 293 TPS is still too much.
+
+## Turning Postgres into Brandon Sanderson
+
+[Bradon Sanderson writes _a lot_](https://theportalist.com/how-brandon-sanderson-writes-the-stormlight-archive-so-stormin-fast). You know what else (will) write(s) a lot? My Postgres instance, once I am done messing with the WAL configurations. Before committing changes to the actual database files, Postgres writes them to a WAL (write-ahead-log), and then commits those changes in a checkpointing operation. The WAL is very configurable, which I can use to our advantage. First, Postgres typically keeps some of the WAL in memory before flushing to disk. I can't let that happen.
+
+```ini
+wal_writer_flush_after = 0 # the minimum amount of WAL produced that requires a flush
+wal_writer_delay = 1 # the minimum delay between flushes
+```
+
+I also want to get the WAL to checkpoint as often as possible.
+
+```ini
+min_wal_size = 32MB # minimum WAL size after checkpointing; I want to checkpoint as much as possible
+max_wal_size = 32MB # max WAL size, after which a checkpoint will happen. Unfortunately, I have to set both at 32MB minimum to match 2 WAL segments
+checkpoint_timeout = 30 # max time between checkpoints in seconds; 30s is the minimum
+checkpoint_flush_after = 1 # flush writes to disk after every 8kB
+```
+
+And, of course, I still need to maximize the WAL's writes.
+
+```ini
+wal_sync_method = open_datasync # the method of flushing to disk; this should be the slowest
+wal_level = logical # makes the WAL output additional information for replication. The extra info isn't needed, but it hurts performance
+wal_log_hints = on # forces the WAL to write out full modified pages
+summarize_wal = on # another extra process for backups
+track_wal_io_timing = on # more information collected
+checkpoint_completion_target = 0 # prevents spreading the I/O load at all
+```
+
+![A terminal showing Benchbase with 98 TPS](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/postgres_wal_SCIVbbIZiP.png)
+
+Postgres is now processing transactions at a rate in the double digits, at less than 1/70th of its original rate. Just like with autovacuum, I can confirm that this is due to WAL inefficiency by taking a look at the logs:
+
+```log
+2025-07-20 12:33:17.211 EDT [68697] LOG:  checkpoint complete: wrote 19 buffers (7.4%), wrote 2 SLRU buffers; 0 WAL file(s) added, 3 removed, 0 recycled; write=0.094 s, sync=0.042 s, total=0.207 s; sync files=57, longest=0.004 s, average=0.001 s; distance=31268 kB, estimate=31268 kB; lsn=1B7/3CDC1B80, redo lsn=1B7/3C11CD48
+2025-07-20 12:33:17.458 EDT [68697] LOG:  checkpoints are occurring too frequently (0 seconds apart)
+2025-07-20 12:33:17.458 EDT [68697] HINT:  Consider increasing the configuration parameter "max_wal_size".
+2025-07-20 12:33:17.494 EDT [68697] LOG:  checkpoint starting: wal
+2025-07-20 12:33:17.738 EDT [68697] LOG:  checkpoint complete: wrote 18 buffers (7.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 2 removed, 0 recycled; write=0.089 s, sync=0.047 s, total=0.280 s; sync files=50, longest=0.009 s, average=0.001 s; distance=34287 kB, estimate=34287 kB; lsn=1B7/3F1F7B18, redo lsn=1B7/3E298BA0
+2025-07-20 12:33:17.923 EDT [68697] LOG:  checkpoints are occurring too frequently (0 seconds apart)
+2025-07-20 12:33:17.923 EDT [68697] HINT:  Consider increasing the configuration parameter "max_wal_size".
+2025-07-20 12:33:17.971 EDT [68697] LOG:  checkpoint starting: wal
+```
+
+Yeah, normally WAL checkpoints should not be happening (_checks notes_ 487 milliseconds apart). But I am still not done.
+
+## Essentially Deleting Indexes
+
+Remember in the intro, when I said we couldn't mess with the indexes? Well, we don't really need to. Postgres considers random access of pages from disk differently from sequential access when calculating query plans, because randomly accessed pages are typically slower to load on hard drives. Querying a table with an index typically requires accessing pages randomly, whereas a table scan usually involves sequential access, meaning that adjusting the relative costs of random pages should enable us to prevent the use of any indexes.
+
+```ini
+random_page_cost = 1e300 # sets the cost of accessing a random page
+cpu_index_tuple_cost = 1e300 # sets the cost of processing one tuple from an index
+```
+
+Those are the only two parameters I need to change to disable indexes in almost all cases. I ended up having to increase the `shared_buffers` value back up to `8MB` to prevent errors with table scans, but it evidently didn't help much performance-wise.
+
+![A terminal showing Benchbase with 0.87 TPS](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/postgres_indexless_planner_ouf0bU3_c.png)
+
+Postgres is now under one transaction per second, more than 7,000x slower than the default tuning, all without changing anything outside of `postgresql.conf`. However, I still have one last trick up my sleeve.
+
+## Forcing I/O Into One Thread
+
+I cannot make Postgres single-threaded, because each of the 100 connections has its own process. However, with new options in Postgres 18, I can still make I/O single-threaded. Postgres 18 introduces a new knob, `io_method`, which controls whether threads synchronously issue I/O syscalls (`io_method = sync`), asynchronously ask worker threads to issue syscalls (`io_method = worker`), or use the new `io_uring` Linux API (`io_method = io_uring`). In combination with `io_workers`, which establishes the max number of worker threads when using `io_method=worker`, I can force all I/O into one worker thread.
+
+```ini
+io_method = worker
+io_workers = 1
+```
+
+![A terminal showing Benchbase with 0.016 TPS](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/postgres_singlethreaded_io_AC7q4sZts.png)
+
+Well, Postgres is now well below even 0.1 TPS: more than 42,000 times slower than what we started with. If you exclude the transactions that didn't finish due to deadlocks, the story gets even worse (better?): across 100 connections and 120 seconds, only 11 transactions successfully completed.
+
+## Final Thoughts
+
+Well, a few hours and 32 knobs later, I have successfully killed a Postgres database. Who would've thought you could do that much damage to Postgres performance just by messing with `postgresql.conf`? I figured I could get down to the single-digit TPS, but I didn't think Postgres would let me do this much. If you want to try to reproduce this yourself, here are the knobs changed from default:
+
+```ini
+shared_buffers = 8MB
+autovacuum_vacuum_insert_threshold = 1
+autovacuum_vacuum_threshold = 0
+autovacuum_vacuum_scale_factor = 0
+autovacuum_vacuum_max_threshold = 1
+autovacuum_naptime = 1
+vacuum_cost_limit = 10000
+vacuum_cost_page_dirty = 0
+vacuum_cost_page_hit = 0
+vacuum_cost_page_miss = 0
+autovacuum_analyze_threshold = 0
+autovacuum_analyze_scale_factor = 0
+maintenance_work_mem = 128kB
+log_autovacuum_min_duration = 0
+logging_collector = on
+log_destination = stderr,jsonlog
+wal_writer_flush_after = 0
+wal_writer_delay = 1
+min_wal_size = 32MB
+max_wal_size = 32MB
+checkpoint_timeout = 30
+checkpoint_flush_after = 1
+wal_sync_method = open_datasync
+wal_level = logical
+wal_log_hints = on
+summarize_wal = on
+track_wal_io_timing = on
+checkpoint_completion_target = 0
+random_page_cost = 1e300
+cpu_index_tuple_cost = 1e300
+io_method = worker
+io_workers = 1
+```
+
+You can benchmark the configuration by installing [BenchBase Postgres](https://github.com/cmu-db/benchbase) and using the example TPC-C configuration with a length of 120 seconds, warmup of 120 seconds, 128 warehouses, and 100 connections with a max throughput of 50k TPS. You could also attempt to further worsen performance. I focused on the knobs that I thought would impact Postgres performance the most, and left most knobs untested.
+
+Alright, in the course of writing this, my lower back has begun hurting, so I think it is time for me to go outside or something.
