@@ -48,7 +48,7 @@ shared_buffers = 2MB
 
 ![A terminal showing Benchbase with 485 TPS](https://ik.imagekit.io/serenity/ByteofDev/Blog_Content_Images/postgres_2mb_shared_buffers_gL8w2NhYa.png)
 
-## Making Postgres Perform As Background Work Much As Possible
+## Making Postgres Perform As Much Background Work As Possible
 
 Postgres has several tasks beyond processing transactions that can be computationally expensive. I can use this to my advantage. To minimize storage fragmentation, Postgres runs an autovacuum process that finds empty space (from operations like deletions) and fills that space with other tuples. Usually, this only runs after a certain number of changes are made to prevent an excessive performance penalty, but I can reconfigure autovacuum to minimize the time between each run.
 
