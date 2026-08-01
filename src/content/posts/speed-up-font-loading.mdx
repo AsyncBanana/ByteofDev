@@ -119,7 +119,7 @@ Unfortunately, it is essential to note modern browsers limit `locals()` capabili
 
 Caching is very important, especially if you have lots of repeat visitors. Caching allows the font to load from the disk after the first time it is downloaded. You can implement caching through the `Cache-Control` header. If you use a [CDN](#use-a-cdn), it is simple to do from the dashboard. Otherwise, you can do it by simply sending a header with your font responses.
 
-```h
+```
 Cache-Control: max-age=604800 // 1 week
 ```
 
