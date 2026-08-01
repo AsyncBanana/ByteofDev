@@ -6,7 +6,6 @@ import "balloon-css/balloon.css";
 import EmailPrompt from "$lib/components/emailPrompt.svelte";
 import { faRssSquare } from "@fortawesome/free-solid-svg-icons";
 import BaseLayout from "$layouts/BaseLayout.astro";
-import Popup from "$lib/components/popup.svelte";
 import mdxComponents from "$lib/modules/mdxComponents";
 import {
 	faTwitterSquare,
@@ -53,7 +52,7 @@ const author = await getEntry("author", Astro.props.content.data.author.slug);
 			<a
 				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
 				href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
-					title
+					title,
 				)}&url=${encodeURIComponent(canonicalURL.toString())}`}
 				target="_blank"
 				aria-label="Share to Twitter"
@@ -65,7 +64,7 @@ const author = await getEntry("author", Astro.props.content.data.author.slug);
 			<a
 				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
 				href={`https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(
-					title
+					title,
 				)}&u=${encodeURIComponent(canonicalURL.toString())}`}
 				target="_blank"
 				rel="noopener"
@@ -77,7 +76,7 @@ const author = await getEntry("author", Astro.props.content.data.author.slug);
 			<a
 				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
 				href={`https://www.linkedin.com/sharing/share-offsite?url=${encodeURIComponent(
-					canonicalURL.toString()
+					canonicalURL.toString(),
 				)}`}
 				target="_blank"
 				rel="noopener"
@@ -105,11 +104,16 @@ const author = await getEntry("author", Astro.props.content.data.author.slug);
 			alt="Story heading"
 			class="rounded m-auto bg-base-200 w-full max-h-70vh aspect-video"
 		/>
-		<div class="flex flex-wrap">
+		<h1
+			class="font-bold text-shadow-md shadow-warm-gray-600 text-4xl md:text-6xl"
+		>
+			{title}
+		</h1>
+		<div class="flex flex-wrap gap-3">
 			{
 				tags.map((tag: string) => (
 					<a
-						class="font-sans font-bold mx-3 my-1 text-2xl uppercase no-underline decoration-purple-500 hover:underline text-purple-600"
+						class="font-sans my-1 text-md lowercase underline opacity-80 decoration-purple-500 hover:underline"
 						href={`/tagged/${tag.replaceAll(" ", "-")}/`.toLowerCase()}
 					>
 						{tag}
@@ -117,11 +121,6 @@ const author = await getEntry("author", Astro.props.content.data.author.slug);
 				))
 			}
 		</div>
-		<h1
-			class="font-bold text-shadow-md shadow-warm-gray-600 text-4xl md:text-6xl"
-		>
-			{title}
-		</h1>
 		<div class="font-normal text-lg">
 			By <a href={`/author/${author?.slug}/`} rel="author"
 				>{author?.data.name}</a
@@ -150,7 +149,7 @@ const author = await getEntry("author", Astro.props.content.data.author.slug);
 			<a
 				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
 				href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
-					title
+					title,
 				)}&url=${encodeURIComponent(canonicalURL.toString())}`}
 				target="_blank"
 				aria-label="Share to Twitter"
@@ -162,7 +161,7 @@ const author = await getEntry("author", Astro.props.content.data.author.slug);
 			<a
 				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
 				href={`https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(
-					title
+					title,
 				)}&u=${encodeURIComponent(canonicalURL.toString())}`}
 				target="_blank"
 				rel="noopener"
@@ -174,7 +173,7 @@ const author = await getEntry("author", Astro.props.content.data.author.slug);
 			<a
 				class="btn-ghost btn btn-square hover:bg-base-content hover:bg-opacity-20 hover:border-opacity-0"
 				href={`https://www.linkedin.com/sharing/share-offsite?url=${encodeURIComponent(
-					canonicalURL.toString()
+					canonicalURL.toString(),
 				)}`}
 				target="_blank"
 				rel="noopener"
@@ -200,5 +199,4 @@ const author = await getEntry("author", Astro.props.content.data.author.slug);
 		@import "../lib/stylesheets/postTheme.css";
 	</style>
 	<script src="../lib/modules/articleLightbox.ts"></script>
-	<Popup client:idle />
 </BaseLayout>

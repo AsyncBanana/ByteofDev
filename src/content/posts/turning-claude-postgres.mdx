@@ -1,0 +1,345 @@
+---
+title: "Turning Claude into Postgres so I can raise a Series A"
+description: Watch out, Databricks
+author: asyncbanana
+tags: [Claude, Postgres, Databases, Experiments]
+published: 1785613958235
+updated: 1785613958235
+image:
+  {
+    url: https://ik.imagekit.io/serenity/ByteofDev/Blog_Heading_Images/claudegres_6_1Gu2dN2_.png,
+    alt: Claude logo with "-gres" attached to the end on an orange background with a translucent Slonik behind it,
+  }
+---
+
+Right now, it seems like nobody cares about databases aside from their AI opportunities. Databricks, PlanetScale, Supabase, even Andy Pavlo's mysterious [SYDHT](https://sydht.ai/) all are adding AI optimization, vector storage, MCP servers, etc. And, of course, investors dump money on all of them. I want that money.
+
+But, for all of their AI appendages, most databases' core functions are still woefully boring and AI-less. Sure, an LLM might use your database, and maybe even tune database parameters, but the database itself only runs deterministic code. What if, instead, (almost) everything was AI? Claude might not be great at writing database code, but surely it can be a database itself when I hand it a filesystem.
+
+It will be expensive and slow, but I am not a stranger to building [shitty databases](https://byteofdev.com/posts/making-postgres-slow/). Besides, it is a good way to display database internals. So, in the spirit of [Keenan Feldspar](https://www.youtube.com/watch?v=kUAnN-FXcdE), let's build a trendy demo that performs terribly.
+
+## Scaffolding claudegres
+
+The goal is to teach Claude to process and respond to queries like a real Postgres database would, including persisting data. Covering all of Postgres would take too long, so I focused on the <s>TPC-C</s> Twitter benchmark requirements.
+
+I decided to use Sonnet 5 medium because it is relatively fast, has a larger context window, and is probably smart enough for query planning. Yeah, I probably should have used GLM-5.2 or GPT 5.6 Luna, but these didn't exist when I started. More importantly, GPTgres sounds terrible.
+
+Claude can only interact via text responses over HTTP, so I used [Buena Vista](https://github.com/jwills/buenavista), a Python Postgres proxy, to convert Postgres's TCP-based wire protocol packets to simple SQL text.
+
+I told Claude to respond with a structured textual format similar to the format Postgres uses for `COPY`, which is converted to response packets by Buena Vista. I added this to the prompt:
+
+```md
+Reply with ONLY the result. Each part on
+its own line:
+STATUS: <command tag>
+COLUMNS: [["<col1>","<type1>"],...] (omit if no result set)
+DATA (omit if no result set)
+<one row per line, columns separated by a single TAB, in the text COPY format>
+
+COLUMNS is a JSON array of [name, type] pairs. Each data row is its own line:
+column values joined by a single tab character, in Postgres's text COPY
+representation. Numbers are written bare, booleans as t or f, and SQL NULL as \\N
+(an empty field is a zero-length string, which is distinct from NULL). Text is
+written literally with no surrounding quotes; encode special characters with
+backslash escapes (\\t for tab, \\n for newline, \\r for carriage return, \\\\ for
+a literal backslash).
+
+Example: SELECT id, name FROM users returning two rows:
+STATUS: SELECT 2
+COLUMNS: [["id","int4"],["name","text"]]
+DATA
+1 lietkynes
+2 letoatreides
+```
+
+And... it works! Well, not really.
+
+```sql
+psql -h 127.0.0.1 -p 5433
+psql (18.4, server 14.0 (BuenaVista/Claude))
+Type "help" for help.
+
+jacob=> CREATE TABLE users (users_id UUID PRIMARY KEY DEFAULT gen_random_uuid(), email TEXT UNIQUE NOT NULL, home_planet TEXT NOT NULL);
+CREATE TABLE
+jacob=> INSERT INTO users(email, home_planet) VALUES ('lkynes@corrino.gov','Arrakis');
+42P01: relation "users" does not exist
+```
+
+Claude can respond, but it still has no way of persisting the internal database files.
+
+## Implementing storage and encoding
+
+Claude needs to persist the data itself. Giving it access to a disk is easy enough. I created an API similar to Postgres's `fd.c` (also kind of `md.c`) API, which normally handles data retrieval and storage in the form of pages (8kB chunks) on disk. I then passed those functions to Claude to call when needed. However, encoding the data in files is a little more complicated.
+
+Normal Postgres uses a binary encoding format for rows, where fixed-length binary headers define the row's metadata, and the length of all dynamically sized values (like `TEXT`) is determined by leading integers. This is much more efficient than any text encoding: Integers are more compact, and fixed size columns don't require a terminator to show their end (like a comma would in CSV). This format also allows for simpler random access, so Postgres can query specific data within a page without reading the whole page. Unfortunately, Claude doesn't play so well with it.
+
+Claude doesn't tokenize binary efficiently, and, more importantly, Claude doesn't have a strong enough grasp of data size to use offset/length integers instead of terminators to find data. Besides, the JSON-based networking doesn't encode binary efficiently. So, I need a text format.
+
+I first tried using the same tab-based format for file storage, which seemed to work.
+
+Unfortunately, Claude got a bit rebellious (foreshadowing?). I told it to use tab literals for separators and `\t` for any tabs within column values so a value with a tab wouldn't be read as two values, but it kept using escaped tabs for everything.
+
+```sql
+PAGE\t0\t2
+ITEM\t1\t1\t0\t0\t1\t11\ttesting\ttesting -- it isn't possible to tell whether the last value is both words joined by a tab or if each "testing" is its own value
+```
+
+Oh well. I switched to telling it to encode all tuples as a JSON array, which Claude knows how to escape already, and use pipes as separators.
+
+```sql
+PAGE|0|2
+ITEM|1|1|0|0|1|[11,"testing","testing"]
+```
+
+I'm not complaining if it works.
+
+```sql
+psql (18.4, server 14.0 (BuenaVista/Claude))
+Type "help" for help.
+
+jacob=> CREATE TABLE users (users_id UUID PRIMARY KEY DEFAULT gen_random_uuid(), email TEXT UNIQUE NOT NULL, home_planet TEXT NOT NULL);
+CREATE TABLE
+jacob=> INSERT INTO users(email, home_planet) VALUES ('lkynes@corrino.gov','Arrakis');
+42P01: relation "users" does not exist
+```
+
+Well, I guess not. Agh.
+
+## Bootstrapping, catalogs, and RelCaches, oh my!
+
+The issue preventing Claude from persisting a table isn't because of file encoding. Claude doesn't know where to start storing files in the first place. I could get away with giving it `ls` on the data directory and telling it to figure things out itself, but that would be even slower than it already is. Instead, I borrowed from normal Postgres's design: the RelCache.
+
+When Postgres retrieves data from a table or other relation, it needs to find where that relation's data is stored. This information lives in [Postgres catalogs](https://www.postgresql.org/docs/current/catalogs.html), which also contain table statistics, stored procedures, etc. Claude knows this. However, it runs into a bootstrapping issue. Postgres catalogs are tables themselves, and so, without the catalog's data location info, it is impossible to access the catalog.
+
+To allow bootstrapping, Postgres hardcodes some catalog locations. I implemented something similar (which did require some hardcoded Python, sorry) for a simplified catalog set. However, reading the core catalogs every query is inefficient.
+
+Instead of reading and parsing catalogs off of disk constantly, Postgres uses a RelCache, which caches relation data (surprising, I know), like storage location. Postgres keeps the RelCache in memory, reducing its need to query catalogs off of disk and bootstrapping its database knowledge. Similarly, I created my own sort-of RelCache that gives Claude initial storage locations and saves it an evaluation loop on every query.
+
+In this case, the RelCache is simple. A Python script finds the files of core catalogs and dumps them into the prompt verbatim. It takes up a bit more of the context window, but let's be real, nobody is scaling this database up to the point where the relation data will be a significant amount of context.
+
+Now, finally, it works.
+
+```sql
+jacob=> CREATE TABLE users (users_id UUID PRIMARY KEY DEFAULT gen_random_uuid(), email TEXT UNIQUE NOT NULL, home_planet TEXT NOT NULL);
+CREATE TABLE
+jacob=> INSERT INTO users(email, home_planet) VALUES ('lkynes@corrino.gov','Arrakis');
+INSERT 0 1
+jacob=> SELECT * FROM users;
+               users_id               |       email        | home_planet
+--------------------------------------+--------------------+-------------
+ a3f1c2d4-5e6b-4a1c-9f3d-8b2e7c1a4d9f | lkynes@corrino.gov | Arrakis
+(1 row)
+```
+
+A (not really) fully functional Postgres database, with none of the Postgres source code. Sure, it takes 10 seconds and costs $0.03 to run a single `SELECT` that returns one row, but that is just helping you tokenmaxx.
+
+But, in order to attract VC funding, I need to show scale.
+
+## Scaling up (Sort of)
+
+Now it's time to test more complex scenarios. I filled the database with 5000 placeholder rows using a simpler user schema.
+
+```sql
+jacob=> CREATE TABLE users (
+    users_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    home_planet TEXT NOT NULL
+);
+CREATE TABLE
+jacob=> INSERT INTO users (name, home_planet)
+SELECT
+    substr(md5(random()::text || (i * 13)::text), 1, 8) AS name,
+    substr(md5(random()::text || (i * 13)::text), 1, 8) AS home_planet
+FROM generate_series(1, 5000) AS i;
+INSERT 0 5000
+```
+
+Surprisingly enough, Claude created and stored every row correctly in a 408kB data file. It was definitely helped by the computational nature of the query (which allowed Claude to write a script for it instead of having to process each row itself), but I will take the win nonetheless.
+
+```sql
+SELECT count(*) FROM users;
+ count
+-------
+  5000
+(1 row)
+
+SELECT * FROM users ORDER BY users_id OFFSET 250 LIMIT 3;
+               users_id               |   name   | home_planet
+--------------------------------------+----------+-------------
+ 0debdf69-9ad9-4787-887e-2060762696d9 | 9e227d09 | 087f7577
+ 0decabd1-4f31-4c69-8f36-f4ab62031572 | 3046af4b | 18cc3f88
+ 0df18fad-29a5-449b-b9f6-01adda3295c2 | a025e8e8 | 4d5616bb
+(3 rows)
+```
+
+Counting the rows via grep is consistent.
+
+```sh
+$ grep -c "ITEM" ./data/base/16384
+5000
+```
+
+Now I gotta try some actual SQL features beyond basic inserts and scans. First, I wanted to see how Claude handled indexes. There is some instruction in the prompt around index catalogs, but nothing about how to actually store and query indexes. Unfortunately, implementing B-tree indexes, which are the most commonly used indexes in Postgres, is a little more complicated than a flat table, so I wasn't super confident the indexes would be stored correctly.
+
+```sql
+CREATE INDEX users_name ON users (name);
+CREATE INDEX
+
+\di
+                List of indexes
+ Schema |    Name    | Type  |  Owner   | Table
+--------+------------+-------+----------+-------
+ public | users_name | index | postgres | users
+ public | users_pkey | index | postgres | users
+(2 rows)
+```
+
+It _appears_ that the indexes are being stored properly. Now, to see if the query planner actually uses the index.
+
+```sql
+EXPLAIN SELECT name FROM users ORDER BY name LIMIT 3;
+                                    QUERY PLAN
+----------------------------------------------------------------------------------
+ Limit  (cost=0.15..0.27 rows=3 width=32)
+   ->  Index Scan using users_name on users  (cost=0.15..20.35 rows=460 width=32)
+(2 rows)
+
+SELECT name FROM users ORDER BY name LIMIT 3;
+   name
+----------
+ 00057c04
+ 000c060c
+ 00291273
+(3 rows)
+
+Time: 212827.080 ms (03:32.827)
+```
+
+That looks... good. Kinda. I timed the second query, which should not have taken three minutes. Yeah, this isn't exactly a high performance database, but this query should only require one page retrieval (the first page of the index), so it should be \<30 seconds. You have no idea how odd it feels to say that about a query that just retrieves 3 rows on a single small table. Also, the only new data Claude stored is a catalog entry with an empty filenode attached. So, Claude is just lying about using the index.
+
+I tried adding some explicit instructions to tell Claude how to create indexes.
+
+```md
+<!-- other prompt segments -->
+
+## Indexes
+
+An index (relkind='i') is a B-tree, the same structure as Postgres's own nbtree. grep `manual/btree.md`
+"B-Tree Structure" if unsure. It lives in the index's own file in the same
+{BLCKSZ}-byte blocks but with a page layout distinct from a table heap.
+
+Block 0 is the METAPAGE: a single line, no ITEMs,
+META|<root_block>|<root_level>
+where <root_block> is the current root page's block number and <root_level> is
+its level (0 when the root is itself a leaf). A brand-new / empty index is block 0
+`META|1|0` plus an empty leaf at block 1.
+
+<!-- continues on -->
+```
+
+That got Claude to build the indexes... sort of. I guess it was kinda lazy, because it only indexed the first page of rows for both the name index and the implicit `users_id` index. Luckily, as it turns out, all Claude needs is a bit of positive encouragement.
+
+```md
+<!-- other prompt segments -->
+
+Pretty please build the entirety of the index Claude 🥺. Don't stop one page in,
+include every single row in the parent table! You got this.
+```
+
+I figured since LLMs love emojis so much, talking their language might help. That seemed to convince Claude to get everything in order, and it spit out a full index data file, which it used in later queries.
+
+```sql
+SELECT name FROM users ORDER BY name LIMIT 3;
+   name
+----------
+ 00057c04
+ 000c060c
+ 00291273
+(3 rows)
+
+Time: 6500.844 ms (00:06.501)
+```
+
+Wow. So fast.
+
+I also wanted to see whether Claude would actually use this index for proper traversal. To test this, I created a very simple point read query.
+
+```sql
+-- Get a name from the middle of the index
+SELECT name FROM users ORDER BY name OFFSET 2500 LIMIT 1;
+   name
+----------
+ 7fd92438
+(1 row)
+-- Query that name (should traverse the name index tree)
+SELECT * FROM users WHERE name = '7fd92438';
+               users_id               |   name   | home_planet
+--------------------------------------+----------+-------------
+ 28ee49d2-b2d1-4ed2-bd1c-90f875828df3 | 7fd92438 | 0fd559a9
+(1 row)
+```
+
+And... it doesn't. I checked the logs of each file read run through the filesystem API, and it appears to query each block sequentially, doing a linear scan.
+
+```sql
+SELECT * FROM users WHERE name = '7fd92438';
+INFO claude_backend: executing SQL via Claude: SELECT * FROM users WHERE name = '7fd92438';
+INFO claude_backend: tool FileRead({'relfilenode': 16388, 'offset': 0, 'amount': 8192}) -> {'bytes_read': 8192, 'data': '<8192B>'}
+INFO claude_backend: tool FileRead({'relfilenode': 16388, 'offset': 8192, 'amount': 8192}) -> {'bytes_read': 8192, 'data': '<8192B>'} -- note that offset of 8192 between each call; these are sequential blocks
+INFO claude_backend: tool FileRead({'relfilenode': 16388, 'offset': 16384, 'amount': 8192}) -> {'bytes_read': 8192, 'data': '<8192B>'}
+INFO claude_backend: tool FileRead({'relfilenode': 16388, 'offset': 24576, 'amount': 8192}) -> {'bytes_read': 8192, 'data': '<8192B>'}
+INFO claude_backend: tool FileRead({'relfilenode': 16388, 'offset': 32768, 'amount': 8192}) -> {'bytes_read': 8192, 'data': '<8192B>'}
+INFO claude_backend: tool FileRead({'relfilenode': 16388, 'offset': 40960, 'amount': 8192}) -> {'bytes_read': 8192, 'data': '<8192B>'}
+INFO claude_backend: tool FileRead({'relfilenode': 16388, 'offset': 49152, 'amount': 8192}) -> {'bytes_read': 8192, 'data': '<8192B>'}
+INFO claude_backend: tool FileRead({'relfilenode': 16388, 'offset': 57344, 'amount': 8192}) -> {'bytes_read': 8192, 'data': '<8192B>'}
+-- continues
+```
+
+Adding specific instructions telling Claude how to read indexes along with how to plan queries fixed this.
+
+```sql
+SELECT * FROM users WHERE name = '7fd92438';
+INFO claude_backend: executing SQL via Claude: SELECT * FROM users WHERE name = '7fd92438';
+INFO claude_backend: tool FileRead({'relfilenode': 16388, 'offset': 0, 'amount': 8192}) -> {'bytes_read': 8192, 'data': '<8192B>'}
+INFO claude_backend: tool FileRead({'relfilenode': 16388, 'offset': 73728, 'amount': 8192}) -> {'bytes_read': 8192, 'data': '<8192B>'} -- notice the different offsets
+-- continues
+```
+
+Constraints required some similar changes. There was a lot of iteration in the prompt. But, now, it should have all of the features for TPC-C.
+
+## Putting claudegres to work
+
+Investors, gather round. It is time to get serious. I am scared to run a benchmark on this database for my wallet's sake, but I will do it anyway.
+
+I first tried running TPC-C, which is the industry-standard benchmark for transactional relational databases like Postgres. However, I quickly remembered that the ~100MB of data required for one warehouse would take a _very_ long time to load into the database with Claude. I say "quickly", but it really took me half an hour and ~$10 before I realized :|. Anyway, I switched to Benchbase's Twitter benchmark, which, as you can probably guess, measures database performance using a workload modeled after Twitter. It is a less well known benchmark but allows for better fractional scaling and still tests similar features to TPC-C.
+
+I set it to a scale of 0.05 (I couldn't go any larger without essentially burning my money in tokens) and, after waiting for the data to load, I got a grand total of... 4 transactions over 120 seconds. Surprisingly enough, they all were correct. Claude handled indexing, joins, etc, remarkably well. Of course, 4 transactions isn't a large sample, and I don't think ~0.033 transactions per second is really competitive performance-wise. For context, that is about 200,000x slower than my 7950x with 32GB DDR5 and a 1TB NVMe SSD running default PG 18. Oh, and it cost ~$0.26 for each transaction.
+
+## So, what?
+
+Don't expect to see any new a16z funded AI-as-a-database startups anytime soon. That being said, this was pretty interesting. I had not expected Claude to maintain correctness, given how many moving parts are in a modern relational database, and how little handholding I gave it aside from prompt instructions. It appears to function, which is more than I thought I would be able to say. Of course, there are still quite a few things missing.
+
+- WAL, MVCC, Transactions, and concurrency in general
+- Table stats (I really wanted to add these, but it was a bit too much)
+- Stored procedures and views
+- Extensions, replication, etc.
+- Pretty much 95% of Postgres
+
+Maybe I will come back to this at some point (probably with a cheaper model xD). Regardless, if you are interested in looking more into the usage of LLMs for databases, there are a lot of interesting and more practical explorations. I already mentioned SYDHT, but Andy Pavlo and his CMU Database Group have also been publishing papers on using AI to tune and query databases for years. There is also some interesting research going on over at [Cornell](https://itrummer.github.io/dbbert/).
+
+If you want to check out the source code and run it yourself, I published [claudegres](https://github.com/asyncbanana/claudegres) online.
+
+## Fun with hallucinations
+
+In case you feel like this article didn't have enough of Claude being stupid.
+
+```sql
+ITEM|1|1|1|1|1|[16424,"ol_i_id",5,23,"int4",4,true,false]
+ITEM|2|1|1|1|2|[16424,"ol_delivery_d",6,1114,"timestamp",8,false,false]
+ITEM|3|1|1|1|3|[16424,"ol_amount",7,1700,"numeric",-1,true,false]
+ITEM|4|1|1|1|4|[16424,"ol_supply_w_id",8,23,"int4",4,true,false]
+ITEM|5|1|1|1|5|[16424,"ol_quantity",9,1700,"numeric",-1,true,false]
+ITEM|6|1|1|1|6|[16424,"ol_dist_info",10,1042,"char",-1,true,false]
+false]
+false] -- what?
+```
